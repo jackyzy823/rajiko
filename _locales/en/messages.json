@@ -1,0 +1,15 @@
+{
+    "manifest_app_description": {
+        "message": "Rajiko is a tool for unblocking geolocation restriction of radiko.jp! Enjoy radio of Tokyo，Aomori,and etc From Osaka,Nagazaki even overseas!"
+    }
+    ,"confirm_button":{
+        "message":"Confirm"
+    }
+    ,"refresh_alert":{
+        "message":"Please refresh pages of radiko.jp!"
+    }
+    ,"popup_title":{
+        "message":"Choose Area - Rajiko"
+    }
+
+}

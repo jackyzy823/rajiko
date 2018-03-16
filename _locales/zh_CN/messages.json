@@ -1,0 +1,14 @@
+{
+    "manifest_app_description": {
+        "message": "Rajiko是一个解除radiko.jp地区限制的工具。能从大阪、长崎，甚至海外听到东京、青森等地的电台。"
+    }
+    ,"confirm_button":{
+        "message":"确认"
+    }
+    ,"refresh_alert":{
+        "message":"请刷新radiko.jp的网页！"
+    }
+    ,"popup_title":{
+        "message":"选择地区 - Rajiko"
+    }
+}

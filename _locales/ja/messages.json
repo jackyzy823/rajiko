@@ -1,0 +1,14 @@
+{
+    "manifest_app_description": {
+        "message": "Rajikoはradiko.jpのジオロケーション制限を解除するツールです！ 大阪、長崎、そして海外から東京、青森などのラジオをお楽しみください！"
+    }
+    ,"confirm_button":{
+        "message":"確認する"
+    }
+    ,"refresh_alert":{
+        "message":"radiko.jpのページを更新してください"
+    }
+    ,"popup_title":{
+        "message":"エリアを選択してください - Rajiko"
+    }    
+}

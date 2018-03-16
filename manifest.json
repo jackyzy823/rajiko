@@ -1,0 +1,34 @@
+{
+
+  "manifest_version": 2,
+  "name": "Rajiko",
+  "version": "0.1",
+
+  "description": "__MSG_manifest_app_description__",
+
+  "icons": {
+    "256": "Circle-icons-radio.png"
+  },
+  "permissions":[
+      "tabs",
+      "cookies", 
+      "storage", 
+      "webRequest", 
+      "webRequestBlocking", 
+      "*://*.radiko.jp/*" 
+  ]
+
+  ,"default_locale": "ja"
+
+  ,"background":{
+      "scripts":["constants.js","background.js"]
+
+  }
+  ,"browser_action":{
+     "default_icon":"Circle-icons-radio.png"
+    ,"default_popup":"popup.html"
+    ,"default_title":"__MSG_popup_title__"
+
+  }
+
+}
