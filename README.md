@@ -3,13 +3,13 @@ Rajiko
 
 Premission Details:
 -------------------
-1. tab : for  firefox only ,to get tab's url to decide auto refresh or alert.
-2. cookies : for force setting radiko.jp location.
+1. tab : for  firefox only ,to get tab's url to decide to auto refresh or alert.
+2. cookies : for force setting radiko.jp's current location.
 3. storage : for storing your location configure.
-4. webRequest : modify request to pass the auth.
-5. webRequestBlocking : modify request to pass the auth.
+4. webRequest : modify request to pass the authentication.
+5. webRequestBlocking : modify request to pass the authentication.
 6. *://*.radiko.jp/* : the only site we aimed at.
-7. declartiveContent : [TODO] for showing icon only on radiko pages.But firefox does not support this api.When firefox support this api,tab permission will not be required.
+7. declartiveContent : [TODO] for showing icon only on radiko pages.But firefox does not support this api.When firefox supports this api,tab permission will not be required.
 
 
 Technical Details:
@@ -18,9 +18,9 @@ Technical Details:
 
     The authentication of pc(html5) version radkio validate user's location via ip address.
     
-    However the android version of radkio validate user via geolocation provided by GPS.
+    However the android version of radkio validate user via geolocation provided by GPS,not via user's ip.
     
-    So why dont we use the authentication method of android version in pc?
+    So why don't we use the authentication method of android version in pc to bypass ip check?
 
     The authentication includes two step:
     1.  auth1
@@ -47,5 +47,6 @@ Technical Details:
 
 TODO
 ------------
-1. fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection
+1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection
 2. Automatic switch location , no need for manually choice.
+3. Add recording function?
