@@ -217,4 +217,4 @@ const areaListParRegion = {
             name: '沖縄'
         }
     ]
-}
+};

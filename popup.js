@@ -43,7 +43,7 @@ window.onload = function(){
             window.close();
         });
            
-    }
+    };
 
 
     //load region and area
@@ -71,7 +71,7 @@ window.onload = function(){
 
         });
 
-    })
+    });
 
 
 };

@@ -49,5 +49,7 @@ Technical Details:
 TODO
 ------------
 1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection
+    due to the limitation of extension , cannot captialize some header's key 
 2. Automatic switch location , no need for manually choice.
 3. Add recording function?
+4. Force Firefox android load web page,not app download page.
