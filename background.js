@@ -120,7 +120,7 @@ let GENERATED_RANDOMINFO = function () {
 
 //remove accept-language accept cookie   referer 
 //pragma accept Cache-Control and origin(for cors) cannot be removed
-const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device"];
+const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device","x-radiko-partialkey"];
 
 function genGPS(area_id) {
     let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
