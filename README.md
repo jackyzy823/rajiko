@@ -51,5 +51,9 @@ TODO
 1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection
     due to the limitation of extension , cannot captialize some header's key 
 2. Automatic switch location , no need for manually choice.
-3. Add recording function?
+3. Add recording function? (find solution on firefox -> webRequest.filterResponseData() and localstorge/chrome.storage ->  downloads.download 'data:audio/aac'' dataurl , chrome may use xhr to save data , double trafic?) 
 4. Force Firefox android load web page,not app download page.
+5. consider generate different extension in different browser 
+
+    https://stackoverflow.com/questions/45911251/what-is-the-best-way-to-create-a-cross-browser-gmail-extension
+    https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/

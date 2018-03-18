@@ -120,7 +120,7 @@ let GENERATED_RANDOMINFO = function () {
 
 //remove accept-language accept cookie   referer 
 //pragma accept Cache-Control and origin(for cors) cannot be removed
-const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device","x-radiko-partialkey"];
+const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device", "x-radiko-partialkey"];
 
 function genGPS(area_id) {
     let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
@@ -133,6 +133,14 @@ function genGPS(area_id) {
 
 console.log("GENERATED_RANDOMINFO", GENERATED_RANDOMINFO);
 
+function streamListener(req){
+    //TODO  for firefox
+    let filter = chrome.webRequest.filterResponseData(req.requestId);
+}
+
+function requestReplayer(req){
+    //TODO: for chrome
+}
 
 chrome.storage.local.get("selected_area", function (data) {
     let area_id = "JP13"; //tokyo for default;
@@ -144,6 +152,32 @@ chrome.storage.local.get("selected_area", function (data) {
         function (msg) {
             if (msg["update-area"]) {
                 area_id = msg["update-area"];
+            } else if (msg["start-recoding"]) {
+                //for firefox download
+                //sample stream http://f-radiko.smartstream.ne.jp/BAYFM78/_definst_/simul-stream.stream/media-udk8kklma_w557577295_642414.aac
+                if (chrome.webRequest.filterResponseData) {
+                    chrome.webRequest.onBeforeRequest.addListener(
+                        streamListener
+                        , { urls: ["*://*.smartstream.ne.jp/*.aac"] } // may specific detailde FM name to avoid save other stream?
+                        , ["blocking"]
+                    );
+                } else{
+                    chrome.webRequest.onSendHeaders.addListener( //or oncompleted?
+                        requestReplayer
+                        ,{ url : ["*://*.smartstream.ne.jp/*.aac"]}
+                        ,["requestHeaders"] //need authtoken 
+                    )
+
+                }
+            }
+            else if (msg["stop-recording"]) {
+                chrome.webRequest.onBeforeRequest.removeListener(streamListener);
+                chrome.storage.local.get("",function(data){
+                    let dataurl = "data"
+                    chrome.downloads.downlad("")
+
+                })
+
             }
         });
 
