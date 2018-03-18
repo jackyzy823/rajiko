@@ -11,5 +11,11 @@
     ,"popup_title":{
         "message":"Choose Area - Rajiko"
     }
+    ,"record_button_to_start":{
+        "message":"Start recording"
+    }
+    ,"record_button_to_stop":{
+        "message":"Stop recording"
+    }
 
 }

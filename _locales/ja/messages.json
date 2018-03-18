@@ -10,5 +10,11 @@
     }
     ,"popup_title":{
         "message":"エリアを選択してください - Rajiko"
-    }    
+    }
+    ,"record_button_to_start":{
+        "message":"録音を開始する"
+    }
+    ,"record_button_to_stop":{
+        "message":"録音を停止する"
+    } 
 }

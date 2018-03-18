@@ -10,7 +10,8 @@ Permission Details:
 5. webRequestBlocking : modify request to pass the authentication.
 6. *://*.radiko.jp/* : the only site we aimed at.
 7. declartiveContent : [TODO] for showing icon only on radiko pages.But firefox does not support this api.When firefox supports this api,tab permission will not be required.
-
+8. downloads : for downloading recored audio.
+9. *://*.smartstream.ne.jp/* : the site where audio stored.
 
 Technical Details:
 ------------------
@@ -48,12 +49,19 @@ Technical Details:
 
 TODO
 ------------
-1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection
+1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection (paritally done)
     due to the limitation of extension , cannot captialize some header's key 
 2. Automatic switch location , no need for manually choice.
-3. Add recording function? (find solution on firefox -> webRequest.filterResponseData() and localstorge/chrome.storage ->  downloads.download 'data:audio/aac'' dataurl , chrome may use xhr to save data , double trafic?) 
-4. Force Firefox android load web page,not app download page.
+3. Add recording function? (find solution on firefox -> webRequest.filterResponseData() and localstorge/chrome.storage ->  downloads.download  URL.createObjectURL(BlobObject), chrome may use xhr to save data , double trafic?) 
+    the right way to download data uri 
+    https://stackoverflow.com/questions/40269862/save-data-uri-as-file-using-downloads-download-api/40279050
+
+    how to merge? (src site use hls.js to play m3u8 and aac) 
+        seems that directly concat is enough
+
+4. Force Firefox android load web page,not app download page.(done)
 5. consider generate different extension in different browser 
 
     https://stackoverflow.com/questions/45911251/what-is-the-best-way-to-create-a-cross-browser-gmail-extension
     https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/
+6. modify firefox android page to responsive page.

@@ -9,26 +9,35 @@
   "icons": {
     "256": "Circle-icons-radio.png"
   },
-  "permissions":[
+  "permissions": [
       "tabs",
-      "cookies", 
-      "storage", 
-      "webRequest", 
-      "webRequestBlocking", 
-      "*://*.radiko.jp/*" 
-  ]
+      "cookies",
+      "storage",
+      "webRequest",
+      "webRequestBlocking",
+      "*://*.radiko.jp/*",
+      "downloads",
+      "*://*.smartstream.ne.jp/*"
+    ]
 
-  ,"default_locale": "ja"
+    ,
+  "default_locale": "ja"
 
-  ,"background":{
-      "scripts":["constants.js","background.js"]
+    ,
+  "background": {
+    "scripts": ["constants.js", "background.js"]
 
-  }
-  ,"browser_action":{
-     "default_icon":"Circle-icons-radio.png"
-    ,"default_popup":"popup.html"
-    ,"default_title":"__MSG_popup_title__"
+  },
+  "browser_action": {
+    "default_icon": "Circle-icons-radio.png",
+    "default_popup": "popup.html",
+    "default_title": "__MSG_popup_title__"
 
+  },
+  "applications": {
+    "gecko": {
+      "id": "rajiko@rajiko.addons.mozilla.org"
+    }
   }
 
 }
