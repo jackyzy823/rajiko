@@ -55,30 +55,31 @@ window.onload = function () {
     };
 
     let record_button = document.getElementById("rajiko-record");
-    chrome.storage.local.get("record_state",function(data){ // can merge to below local.get
-        if(!data["record_state"] || data["record_state"]){
-            //tostart
-            record_button.setAttribute("state","stopped");
-            record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
-        } else{
-            //tostop
-            record_button.setAttribute("state","starting");
-            record_button.innerText = chrome.i18n.getMessage("record_button_to_stop");
-        }
-    });
+    // chrome.storage.local.get("record_state",function(data){ // can merge to below local.get
+    //     if(!data["record_state"] || data["record_state"]){
+    //         //tostart
+    //         record_button.setAttribute("state","stopped");
+    //         record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
+    //     } else{
+    //         //tostop
+    //         record_button.setAttribute("state","starting");
+    //         record_button.innerText = chrome.i18n.getMessage("record_button_to_stop");
+    //     }
+    // });
     record_button.onclick = function(data){
-        if(record_button.getAttribute("state") == "stopped"){
-            chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
-                //problem : viewing page may not listeing page??
-                let tab = arrayOfTabs[0];
-                if (/radiko.jp/.test(tab.url)) {
+        chrome.runtime.sendMessage({"stop-recording":true});
+        // if(record_button.getAttribute("state") == "stopped"){
+        //     chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
+        //         //problem : viewing page may not listeing page??
+        //         let tab = arrayOfTabs[0];
+        //         if (/radiko.jp/.test(tab.url)) {
                     
-                }
-                else {
+        //         }
+        //         else {
                    
-                }
-            });            
-        }
+        //         }
+        //     });            
+        // }
         // chrome.tabs.query -> get what radio to download (allow only single download task)
         //change states
         //notify backgroud

@@ -17,7 +17,8 @@
       "webRequestBlocking",
       "*://*.radiko.jp/*",
       "downloads",
-      "*://*.smartstream.ne.jp/*"
+      "*://*.smartstream.ne.jp/*",
+      "unlimitedStorage"
     ]
 
     ,
