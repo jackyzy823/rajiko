@@ -189,8 +189,8 @@ function streamListener(req){
 }
 
 //can this work for removeListener?
-function wrapperListener(radioname){
-    let radioname = radioname;
+function wrapperListener(name){
+    let radioname = name;
     return streamListener;
 }
 
