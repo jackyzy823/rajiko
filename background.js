@@ -226,8 +226,8 @@ function streamListener(req){
     }
     let radioname = req.url.split('/').splice(-4)[0];
     let filename = req.url.split('/').splice(-1)[0];
-    chrome.storage.local.get("current_recording",function(data){
-        if(!data["current_recording"]){
+    chrome.storage.local.get("current_recording",function(data){ //FIX: recording ui and worker is not sync. move part of this to onmessage
+        if(!data["current_recording"]){ 
             chrome.storage.local.set({"current_recording":{"radioname":radioname,"filename":filename}},function(){
                 console.log("set current_recording");
             });
@@ -309,6 +309,7 @@ function streamListener(req){
         });
         xhr.responseType = 'arraybuffer';
         xhr.onload = function(xhrevent){
+            //FIX: chrome in Linux has some data loss --> 00 is disappered?
             let audio_string =  ab2str(xhr.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
             chrome.storage.local.get(radioname,function(data){
                 let storage_set ={};
