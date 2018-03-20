@@ -54,6 +54,34 @@ window.onload = function () {
 
     };
 
+    //load region and area
+    chrome.storage.local.get("selected_areaid", function (data) {
+        let area_id = "JP13"; //default for tokyo;
+        if (data["selected_areaid"]) {
+            area_id = data["selected_areaid"];
+        }
+        for (let i = 0; i < regions.length; i++) {
+            let tmp = document.createElement("option");
+            tmp.setAttribute("id", regions[i].id);
+            tmp.innerText = regions[i].name;
+            region_select.appendChild(tmp);
+        }
+
+        Object.keys(areaListParRegion).forEach(function (key, keyindex) {
+            for (let i = 0; i < areaListParRegion[key].length; i++) {
+                if (areaListParRegion[key][i].id == area_id) {
+                    region_select.selectedIndex = keyindex
+                    loadArea(keyindex);
+                    area_select.selectedIndex = i;
+                }
+
+            }
+
+        });
+
+    });
+
+
 
     //should hide record button from other pages than radiko.
     //what radio
@@ -65,17 +93,19 @@ window.onload = function () {
     //<i class="icon icon--play-02"></i>
     let record_button = document.getElementById("rajiko-record");
     chrome.tabs.executeScript({code:"var tmpdata = {url : window.location.href,radioname:document.getElementById('url') && document.getElementById('url').value.slice(1) };tmpdata",runAt:"document_start"},function(results){
-        if(chrome.runtime.lastError){
-            console.log(chrome.runtime.lastError);
-        }
+        // if(chrome.runtime.lastError){
+        //     console.log(chrome.runtime.lastError);
+        // }
+        let error = chrome.runtime.lastError;
         console.log(results); //slice to remove #
-        if ( chrome.runtime.lastError || ! /radiko\.jp/.test(results[0].url)) {
-            record_button.hidden = true;
-            return;
-        }
+        // if ( ) {
+        //     record_button.hidden = true; // TODO: could stop in any page ,could not start in other page
+        //     return;
+        // }
         chrome.storage.local.get({"current_recording":false},function(data){
-            if(!data["current_recording"] ){
-                //record_button.setAttribute("state","starting");
+            let shouldhidden  =  error || ! /radiko\.jp/.test(results[0].url) ;
+            if(!data["current_recording"]  &&  !shouldhidden ){
+                //start to
                 record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
                 record_button.onclick = function(data){
                     // let radioname = results[0].radioname 
@@ -95,14 +125,16 @@ window.onload = function () {
                     }
 
                 }
-            }else{
-                //record_button.setAttribute("state","starting");
+            }else if(data["current_recording"]){
+                //stop doing
                 record_button.innerText = chrome.i18n.getMessage("record_button_to_stop"); // pass radioname to text via placeholders and substitutions
                 record_button.onclick = function(data){
                     chrome.runtime.sendMessage({"stop-recording":true},function(){ //stop's raioname --> from executescript / from storage.get current_recording?
                         window.close();
                     });
                 }
+            }else{
+                record_button.hidden = true;
             }
         
         });
@@ -142,32 +174,7 @@ window.onload = function () {
     // }
 
 
-    //load region and area
-    chrome.storage.local.get("selected_areaid", function (data) {
-        let area_id = "JP13"; //default for tokyo;
-        if (data["selected_areaid"]) {
-            area_id = data["selected_areaid"];
-        }
-        for (let i = 0; i < regions.length; i++) {
-            let tmp = document.createElement("option");
-            tmp.setAttribute("id", regions[i].id);
-            tmp.innerText = regions[i].name;
-            region_select.appendChild(tmp);
-        }
 
-        Object.keys(areaListParRegion).forEach(function (key, keyindex) {
-            for (let i = 0; i < areaListParRegion[key].length; i++) {
-                if (areaListParRegion[key][i].id == area_id) {
-                    region_select.selectedIndex = keyindex
-                    loadArea(keyindex);
-                    area_select.selectedIndex = i;
-                }
-
-            }
-
-        });
-
-    });
 
 
 
