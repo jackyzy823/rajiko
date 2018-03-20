@@ -112,12 +112,18 @@ window.onload = function () {
                     if(!results[0].radioname || results[0].radioname == ""  ){
                         let res = /radiko\.jp\/#!\/live\/(.*)/i.exec(results[0].url);
                         let waitraido = res && res[1];
-                        chrome.runtime.sendMessage({"start-recording":waitraido},function(){
-                            console.log("create task done!");
-                            //TODO: i18n
-                            window.alert("No playing radio! Prepare recording for ",waitraido);
+                        if(waitraido){
+                            chrome.runtime.sendMessage({"start-recording":waitraido},function(){
+                                console.log("create task done!");
+                                //TODO: i18n
+                                window.alert(chrome.i18n.getMessage("record_prepare",waitraido));
+                                window.close();
+                            });                            
+                        }else{
+                            window.alert("No playing radio!");
                             window.close();
-                        });
+                        }
+
                     }else{
                         chrome.runtime.sendMessage({"start-recording":results[0].radioname},function(){
                             window.close();
@@ -138,44 +144,8 @@ window.onload = function () {
             }
         
         });
-        //, radioname:document.getElementById('url').value
 
-
-    })
-
-    // record_button.onclick = function(data){
-
-    //     chrome.tabs.executeScript({code:"document.getElementById('url').value" ,runAt:"document_start"},function(results){
-    //         console.log(results);
-    //         chrome.runtime.sendMessage({"stop-recording":true},function(){
-    //             window.close();
-    //         });
-    //     });
-    //     // chrome.runtime.sendMessage({"stop-recording":true},function(){
-    //     //     window.close();
-    //     // });
-    //     // if(record_button.getAttribute("state") == "stopped"){
-    //     //     chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
-    //     //         //problem : viewing page may not listeing page??
-    //     //         let tab = arrayOfTabs[0];
-    //     //         if (/radiko.jp/.test(tab.url)) {
-                    
-    //     //         }
-    //     //         else {
-                   
-    //     //         }
-    //     //     });            
-    //     // }
-
-    //     // chrome.tabs.query -> get what radio to download (allow only single download task)
-    //     //change states
-    //     //notify backgroud
-        
-    // }
-
-
-
-
+    });
 
 
 };

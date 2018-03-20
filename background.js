@@ -119,7 +119,7 @@ let GENERATED_RANDOMINFO = function () {
 //remove accept-language accept cookie   referer 
 //pragma accept Cache-Control and origin(for cors) cannot be removed
 const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device", "x-radiko-partialkey"];
-const XHRREFUSELIST = ["origin" , "user-agent" , "referer" ,"accept-encoding"]
+const XHRREFUSELIST = ["origin" , "user-agent" , "referer" ,"accept-encoding", /*For using xhr in firefox*/"host","connection"];
 
 function genGPS(area_id) {
     let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
@@ -165,7 +165,9 @@ function firefox_getBytesInUse(keys,callback){
         });
         callback(size);
     })
-}
+} 
+//polyfill
+chrome.storage.local.getBytesInUse = chrome.storage.local.getBytesInUse || firefox_getBytesInUse;
 
 /*
 function recorder(radio){
@@ -216,7 +218,7 @@ let stopme = function(msg,sender,respCallback){
 //http://f-radiko.smartstream.ne.jp/JORF/_definst_/simul-stream.stream/media-u5qov5g4c_w376816114_646349.aac
 function streamListener(req){
     //TODO  for firefox
-    //console.log("in streamListener",req.url);
+    // console.log(req.url);
 
     if(!chrome.runtime.onMessage.hasListener(stopme)){
         console.log("install stop-recording msg listener only once!");
@@ -239,14 +241,13 @@ function streamListener(req){
             console.log(filename,"start!!!!",event);
         }
         filter.ondata = function(event){
-            console.log(filename,event.data.byteLength);
             filter.write(event.data);//pass through
             if(audio_uint8 == null){
                 audio_uint8 = new Uint8Array(event.data);
             }else{
                 let tmp = new Uint8Array(audio_uint8.byteLength + event.data.byteLength);
                 tmp.set(audio_uint8,0);
-                tmp.set(event.data,audio_uint8.byteLength);
+                tmp.set(new Uint8Array(event.data),audio_uint8.byteLength);
                 audio_uint8 = tmp;
             }
             // audiodata = new Blob([audiodata,event.data],{type:"audio/aac"});

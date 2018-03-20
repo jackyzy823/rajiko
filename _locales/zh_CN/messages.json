@@ -16,5 +16,14 @@
     }
     ,"record_button_to_stop":{
         "message":"停止录音"
+    }    
+    ,"record_prepare":{
+        "message":"没有正在播放的广播，已准备好为当前页面的$RADIO$录音。"
+        ,"placeholders":{
+            "radio":{
+                "content" :"$1",
+                "example" : "BAYFM"
+            }
+        }
     }
 }

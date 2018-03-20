@@ -17,5 +17,14 @@
     ,"record_button_to_stop":{
         "message":"Stop recording"
     }
+    ,"record_prepare":{
+        "message":"No radio playing currently! Ready to record $RADIO$ in the current page."
+        ,"placeholders":{
+            "radio":{
+                "content" :"$1",
+                "example" : "BAYFM"
+            }
+        }
+    }
 
 }

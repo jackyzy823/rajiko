@@ -17,4 +17,13 @@
     ,"record_button_to_stop":{
         "message":"録音を停止する"
     } 
+    ,"record_prepare":{
+        "message":"再生中の放送はありませんが、現在のページの$RADIO$に録音する準備ができました。"
+        ,"placeholders":{
+            "radio":{
+                "content" :"$1",
+                "example" : "BAYFM"
+            }
+        }
+    }
 }
