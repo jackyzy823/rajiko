@@ -10,6 +10,7 @@
     "256": "Circle-icons-radio.png"
   },
   "permissions": [
+      "activeTab",
       "tabs",
       "cookies",
       "storage",
