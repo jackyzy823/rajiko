@@ -178,6 +178,17 @@ function recorder(radio){
 }
 */
 
+function timestamp2Filename(t){
+    let d = new Date(t);
+    let d_str = ''+d.getFullYear();
+    d_str += (d.getMonth()+1).toString().length==1? '0'+(d.getMonth()+1).toString() : (d.getMonth()+1).toString();
+    d_str += d.getDate().length == 1? '0'+d.getDate():''+d.getDate();
+    d_str += d.getHours().length == 1? '0'+d.getHours():''+d.getHours();
+    d_str += d.getMinutes().length == 1? '0'+d.getMinutes():''+d.getMinutes();
+    d_str += d.getSeconds().length == 1? '0'+d.getSeconds():''+d.getSeconds();
+    return d_str;
+}
+
 let stopme = function(msg,sender,respCallback){
     if(msg["stop-recording"]){
         respCallback();
@@ -189,7 +200,9 @@ let stopme = function(msg,sender,respCallback){
             if(data["current_recording"]){
                 let info = data["current_recording"]
                 let radioname = info["radioname"];
-                let filename = info["filename"]
+                // let filename = info["filename"];
+                console.log("typeof start_time",typeof info["start_time"]);
+                let filename = timestamp2Filename(info["start_time"])+"_"+timestamp2Filename(info["end_time"])+".aac";
                 chrome.storage.local.get(radioname,function(data){
                     if(data[radioname]){
                         let audio_str_arr = data[radioname];
@@ -224,13 +237,21 @@ function streamListener(req){
         console.log("install stop-recording msg listener only once!");
         chrome.runtime.onMessage.addListener(stopme)
     }
-    let radioname = req.url.split('/').splice(-4)[0];
-    let filename = req.url.split('/').splice(-1)[0];
+    let radioname = req.url.split('/').splice(-4)[0]; //shoud i get this from url (validated by filter) or should i get this from storage (may slow)
+    // let filename = req.url.split('/').splice(-1)[0];
     chrome.storage.local.get("current_recording",function(data){ //FIX: recording ui and worker is not sync. move part of this to onmessage
-        if(!data["current_recording"]){ 
-            chrome.storage.local.set({"current_recording":{"radioname":radioname,"filename":filename}},function(){
-                console.log("set current_recording");
+        if(data["current_recording"]){ 
+            let info = data["current_recording"];
+            info["end_time"] = (new Date()).getTime();
+            if(!info["start_time"]){
+                info["start_time"] =info["end_time"]
+            }
+            data["current_recording"] = info;
+            chrome.storage.local.set(data,function(){
+                //
             });
+        }else{
+            console.log("should not go here!!");
         }
     });
     if(chrome.webRequest.filterResponseData){
@@ -238,7 +259,7 @@ function streamListener(req){
         let filter = chrome.webRequest.filterResponseData(req.requestId);
         let audio_uint8 = null// ;new Blob([],{type:"audio/aac"});
         filter.onstart = function(event){
-            console.log(filename,"start!!!!",event);
+            // console.log(filename,"start!!!!",event);
         }
         filter.ondata = function(event){
             filter.write(event.data);//pass through
@@ -250,14 +271,10 @@ function streamListener(req){
                 tmp.set(new Uint8Array(event.data),audio_uint8.byteLength);
                 audio_uint8 = tmp;
             }
-            // audiodata = new Blob([audiodata,event.data],{type:"audio/aac"});
         }
         filter.onstop = function(event){
             filter.disconnect();
-            // chrome.downloads.download({url:URL.createObjectURL(audiodata),filename:radioname+ "/" +filename},function(downloadId){
-            //     //filter.disconnect();
-            // });            
-            console.log(filename,"stopped!!!");
+            // console.log(filename,"stopped!!!");
             let audio_string =  ab2str(audio_uint8.buffer);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
             chrome.storage.local.get(radioname,function(data){ //what if storage is very large? read all and write all?
                 let storage_set ={};
@@ -309,12 +326,11 @@ function streamListener(req){
         });
         xhr.responseType = 'arraybuffer';
         xhr.onload = function(xhrevent){
-            //FIX: chrome in Linux has some data loss --> 00 is disappered?
+            //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Apppear only on chrome v22 linux.
             let audio_string =  ab2str(xhr.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
             chrome.storage.local.get(radioname,function(data){
                 let storage_set ={};
                 if(data[radioname]){
-                    //old
                     data[radioname].push(audio_string)
                     storage_set[radioname] =  data[radioname];
 
@@ -326,8 +342,6 @@ function streamListener(req){
                     })
 
                 }else{
-                    //new
-                    
                     storage_set[radioname] = [audio_string];
  
                     chrome.storage.local.set(storage_set,function(){
@@ -341,11 +355,6 @@ function streamListener(req){
                 })
             });
             
-
-
-            // let audiodata = new Blob([xhr.response],{type:"audio/aac"});
-            // chrome.downloads.download({url:URL.createObjectURL(audiodata),filename:radioname + "/" + filename},function(downloadId){
-            // });
         }
         xhr.send();
 
@@ -385,13 +394,18 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                 //     );        
                 // }
                 console.log("Strart recording",radioname);
-                chrome.webRequest.onBeforeSendHeaders.addListener(  //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
-                    streamListener
-                    , { urls: ["*://*.smartstream.ne.jp/"+radioname+"/*.aac"] } // may specific detailed FM name to avoid save other stream? 
-                                                                                // is filter case sensitive???
-                    , ["blocking","requestHeaders"]
-                );
-                respCallback();
+                chrome.storage.local.set({"current_recording":{"radioname":radioname}},function(){
+                    console.log("Add recording listener");
+                    chrome.webRequest.onBeforeSendHeaders.addListener(  //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
+                        streamListener
+                        , { urls: ["*://*.smartstream.ne.jp/"+radioname+"/*.aac"] } // may specific detailed FM name to avoid save other stream? 
+                                                                                    // is filter case sensitive??? yes path is case sensitive but domain is not
+                        , ["blocking","requestHeaders"]
+                    );
+                    respCallback(); 
+                });
+
+
 
             }
             /*else if (msg["stop-recording"]) {
