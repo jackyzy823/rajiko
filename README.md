@@ -3,15 +3,36 @@ Rajiko
 
 Permission Details:
 -------------------
-1. tab : for  firefox only ,to get tab's url to decide whether auto refresh or alert.
+1. activeTab : to get tab's url to decide whether auto refresh or alert or which radio to record.
 2. cookies : for force setting radiko.jp's current location.
 3. storage : for storing your location configuration.
 4. webRequest : modify request to pass the authentication.
 5. webRequestBlocking : modify request to pass the authentication.
-6. *://*.radiko.jp/* : the only site we aimed at.
+6. \*://*.radiko.jp/\* : the only site we aimed at.
 7. declartiveContent : [TODO] for showing icon only on radiko pages.But firefox does not support this api.When firefox supports this api,tab permission will not be required.
 8. downloads : for downloading recored audio.
-9. *://*.smartstream.ne.jp/* : the site where audio stored.
+9. \*://*.smartstream.ne.jp/\* : the site where audio stored.
+10. unlimitedStorage : for recording radio.
+
+What's new:
+-----------
+
++ version 0.1.3
+
+    experimentally support recording radio. [Caution: this would cause slowing down popup page and increasing cpu usage if recording too long. No more than 30 minutes is recommended.]
+
++ version 0.1.2
+    
+    fix bug in firefox
+
++ version 0.1.1
+
+    support firefox for android
+
++ version 0.1
+    
+    initial version
+    
 
 Technical Details:
 ------------------

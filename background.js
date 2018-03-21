@@ -134,12 +134,10 @@ console.log("GENERATED_RANDOMINFO", GENERATED_RANDOMINFO);
 
 
 function ab2str(buf) {
-    // return new TextDecoder('utf-16').decode(buf); //only support on chrome and firefox
     return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
 }
 
 function str2ab(str) {
-    // return new TextEncoder('utf-16').encode(str);
     var buf = new ArrayBuffer(str.length ); // Uint16 -> 2 bytes for each char
     var bufView = new Uint8Array(buf);
     for (var i=0, strLen=str.length; i<strLen; i++) {
@@ -169,7 +167,7 @@ function firefox_getBytesInUse(keys,callback){
 //polyfill
 chrome.storage.local.getBytesInUse = chrome.storage.local.getBytesInUse || firefox_getBytesInUse;
 
-/*
+/* OBSOLETED prototype of multi recording. 
 function recorder(radio){
     let radioname = radio;
     let stopme = function();
@@ -230,9 +228,6 @@ let stopme = function(msg,sender,respCallback){
 
 //http://f-radiko.smartstream.ne.jp/JORF/_definst_/simul-stream.stream/media-u5qov5g4c_w376816114_646349.aac
 function streamListener(req){
-    //TODO  for firefox
-    // console.log(req.url);
-
     if(!chrome.runtime.onMessage.hasListener(stopme)){
         console.log("install stop-recording msg listener only once!");
         chrome.runtime.onMessage.addListener(stopme)
@@ -255,7 +250,6 @@ function streamListener(req){
         }
     });
     if(chrome.webRequest.filterResponseData){
-        console.log("firefox");
         let filter = chrome.webRequest.filterResponseData(req.requestId);
         let audio_uint8 = null// ;new Blob([],{type:"audio/aac"});
         filter.onstart = function(event){
@@ -274,12 +268,10 @@ function streamListener(req){
         }
         filter.onstop = function(event){
             filter.disconnect();
-            // console.log(filename,"stopped!!!");
             let audio_string =  ab2str(audio_uint8.buffer);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
             chrome.storage.local.get(radioname,function(data){ //what if storage is very large? read all and write all?
                 let storage_set ={};
                 if(data[radioname]){
-                    //old
                     data[radioname].push(audio_string)
                     storage_set[radioname] = data[radioname];
 
@@ -291,8 +283,6 @@ function streamListener(req){
                     })
 
                 }else{
-                    //new
-                    
                     storage_set[radioname] = [audio_string];
  
                     chrome.storage.local.set(storage_set,function(){
@@ -378,21 +368,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                 area_id = msg["update-area"];
             } else if (msg["start-recording"]) {
                 let radioname = msg["start-recording"];
-                //sample stream http://f-radiko.smartstream.ne.jp/BAYFM78/_definst_/simul-stream.stream/media-udk8kklma_w557577295_642414.aac
 
-                // if (chrome.webRequest.filterResponseData) {     //for firefox debug 
-                //     chrome.webRequest.onBeforeRequest.addListener( 
-                //         streamListener
-                //         , { urls: ["*://*.smartstream.ne.jp/*.aac"] } // may specific detailed FM name to avoid save other stream?
-                //         , ["blocking"]
-                //     );
-                // } else{ //for chrome debug
-                //     chrome.webRequest.onSendHeaders.addListener( 
-                //         streamListener
-                //         , { urls: ["*://*.smartstream.ne.jp/*.aac"] } // may specific detailed FM name to avoid save other stream?
-                //         , ["requestHeaders"]
-                //     );        
-                // }
                 console.log("Strart recording",radioname);
                 chrome.storage.local.set({"current_recording":{"radioname":radioname}},function(){
                     console.log("Add recording listener");
@@ -408,49 +384,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
 
 
             }
-            /*else if (msg["stop-recording"]) {
-                console.log("told to stop!");
-                //why i cant remove this listener?????
-                //see https://stackoverflow.com/questions/46253389/
-                chrome.webRequest.onBeforeRequest.removeListener(workingListener);
-                chrome.storage.local.get("current_recording",function(data){
-                    if(data["current_recording"]){
-                        let info = data["current_recording"]
-                        let radioname = info["radioname"];
-                        let filename = info["filename"]
-                        chrome.storage.local.get(radioname,function(data){
-                            if(data[radioname]){
-                                let audio_str_arr = data[radioname];
-                                let audio_buf = audio_str_arr.map(function(x){
-                                    return str2ab(x);
-                                });
-                                let audiodata = new Blob(audio_buf,{type:"audio/aac"});
-                                chrome.downloads.download({url:URL.createObjectURL(audiodata),filename:radioname+ "/" +filename},function(downloadId){
-                                    chrome.storage.local.remove(["current_recording",radioname],function(){
-                                        if(chrome.runtime.lastError){
-                                            console.log("cleanup error",chrome.runtime.lastError);
-                                        }
-                                    })
-                                });  
-                            }
-                        });
-
-                    }
-
-                })
-
-            } */
         });
-
-
-// debug only
-    // chrome.webRequest.onBeforeSendHeaders.addListener(  //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
-    //     streamListener
-    //     , { urls: ["*://*.smartstream.ne.jp/*.aac"] } // may specific detailed FM name to avoid save other stream?
-    //     , ["blocking","requestHeaders"]
-    // );
-// debug only
-
 
 
 
@@ -538,7 +472,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
             for (let i = 0; i < resp.responseHeaders.length; i++) {
                 if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
                     offset = parseInt(resp.responseHeaders[i].value);
-                    resp.responseHeaders[i].value = "0"; //to avoid too big offset cause js error
+                    resp.responseHeaders[i].value = "0"; //to avoid too big offset cause radiko's js error
                 }
                 if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keylength") {
                     length = parseInt(resp.responseHeaders[i].value);

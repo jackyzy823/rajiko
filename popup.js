@@ -97,7 +97,7 @@ window.onload = function () {
         //     console.log(chrome.runtime.lastError);
         // }
         let error = chrome.runtime.lastError;
-        console.log(results); //slice to remove #
+        // console.log(results); //slice to remove #
         // if ( ) {
         //     record_button.hidden = true; // TODO: could stop in any page ,could not start in other page
         //     return;
@@ -114,8 +114,6 @@ window.onload = function () {
                         let waitraido = res && res[1];
                         if(waitraido){
                             chrome.runtime.sendMessage({"start-recording":waitraido},function(){
-                                console.log("create task done!");
-                                //TODO: i18n
                                 window.alert(chrome.i18n.getMessage("record_prepare",waitraido));
                                 window.close();
                             });                            
