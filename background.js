@@ -100,7 +100,7 @@ let GENERATED_RANDOMINFO = function () {
     let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
     let appversion = function () {
-        let version = ["6.3.5", "6.3.4", "6.3.3", "6.3.2", "6.3.1"];
+        let version = ["6.3.5", "6.3.3", "6.3.2", "6.3.1"];
         return version[(Math.floor(Math.random() * version.length)) >> 0];
     }();
     let userid = function () {
@@ -358,6 +358,7 @@ chrome.storage.local.remove(["current_recording"],function(){
     console.log("clear up unfinished work while starting up.");
 });// clear up unfinished work while starting up.
 
+let modifier = null;
 
 chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not selected_area return default value:JP13
     let area_id = data["selected_area"];
@@ -403,8 +404,60 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
             for (let i = 0; i < req.requestHeaders.length; i++) {
                 if (req.requestHeaders[i].name.toLowerCase() == "user-agent") {
                     let ua = req.requestHeaders[i].value.toLowerCase();
-                    if (ua.indexOf("android") != -1 || ua.indexOf("mobile")) {
+                    if (ua.indexOf("android") != -1 || ua.indexOf("mobile") != -1) {
                         req.requestHeaders[i].value = req.requestHeaders[i].value.replace(/android.*?\;/gi, "").replace(/mobile/gi, ""); //ugly
+                        console.log(req.requestHeaders[i].value)
+                        console.log("test content script");
+                        if(browser && browser.contentScripts){
+                            // >= firefox 59 
+                            console.log("test content script1");
+                            let css_code = "body {width:100%} \
+                            .header__utility {display:none}\
+                            .header__nav-container {height:unset}\
+                            .header__nav-outer  {position: fixed; top: 0;left: 0;}\
+                            .header__inner {width:unset}\
+                            .header--not-login .header__nav .item__live { width:unset}\
+                            .header--not-login .header__nav .item__timeshift {width:unset}\
+                            .header--not-login .header__nav .item__areafree {width:unset}\
+                            .header__nav .item {width:33%}\
+                            .header__nav .item__link {width:unset;background:unset}\
+                            .header__station-list {display:none}\
+                            .content .content__inner {width:100%} \
+                            .top-main-slider {display:none}\
+                            .header__nav .item__outer :nth-child(4) {display:none} \
+                            .header__nav .item__outer :nth-child(5) {display:none} \
+                            .img-list__channel {display:inline;text-align :unset}\
+                            .img-list__item {float: unset; height: unset; width: unset ; padding:unset;margin-top: 4px;border-radius: unset} \
+                            .img-list__img {float:right; width:45%;line-height:unset}\
+                            .play {display:none}\
+                            .top-sns {display:none}\
+                            #top-info {display:none}\
+                            .footer {display:none}\
+                            .img-list {margin-top :unset}\
+                            .heading-lv02 {display:none}\
+                            .content {padding-top:40px}\
+                            .heading-area {display:none} /*for detail page*/\
+                            .live-detail__content {width:unset}\
+                            .live-detail__main {width:unset}\
+                            ";
+                            /*
+                            .header__station-list {display:none}\
+                            #header-nav nth-child(2) {display:none}\
+                            */
+
+                            let js_code = "var imglist = document.getElementsByClassName('img-list__item'); \
+                            for(var i=0;i< imglist.length;i++){ imglist[i].style = ''; }"//remove height
+                            //
+                            //#to-search should pop up when click search botton or ..
+                            if (!modifier){
+                                modifier = browser.contentScripts.register({
+                                    matches:["*://*.radiko.jp/*"],
+                                    css:[{code:css_code}],
+                                    runAt:"document_idle"
+                                });
+                            }
+                            
+                        }
                         //do not redirect to mobile app download page via change to pc useragents
                         //may be a feature because real android device does not send this request
                     }
