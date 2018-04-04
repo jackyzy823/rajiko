@@ -362,6 +362,7 @@ let modifier = [];
 
 chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not selected_area return default value:JP13
     let area_id = data["selected_area"];
+    chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id });
 
     chrome.runtime.onMessage.addListener(
         function (msg,sender,respCallback) {
@@ -391,9 +392,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
 
     chrome.webRequest.onBeforeRequest.addListener(
         function (req) {
-            chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id });
             return { cancel: true };
-
         },
         { urls: ["*://*.radiko.jp/area*"] },
         ["blocking"]
@@ -407,46 +406,16 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                     if (ua.indexOf("android") != -1 || ua.indexOf("mobile") != -1) {
                         req.requestHeaders[i].value = req.requestHeaders[i].value.replace(/android.*?\;/gi, "").replace(/mobile/gi, ""); //ugly
                         console.log(req.requestHeaders[i].value)
-                        console.log("test content script");
+
                         if(browser && browser.contentScripts){
                             // >= firefox 59 
-                            console.log("test content script1");
-            
-                            /*
-                            .header__station-list {display:none}\
-                            #header-nav nth-child(2) {display:none}\
-                            */
-
-                            let js_code = "var imglist = document.getElementsByClassName('img-list__item'); \
-                            for(var i=0;i< imglist.length;i++){ imglist[i].style = 'height:150px'; }"//remove height
-                            //
-                            //#to-search should pop up when click search botton or ..
-
-                            //<meta name="viewport" content="width = 384" >
-                            let meta_code = "\
-                            var meta = document.createElement('meta');\
-                            meta.name=\"viewport\";\
-                            meta.content=\"width=\"+screen.width;\
-                            document.head.appendChild(meta);\
-                            console.log(document);\
-                            "
-
                             if (modifier.length == 0){
                                 modifier.push(browser.contentScripts.register({
                                     matches:["*://*.radiko.jp/*"],
-                                    js:[{code:js_code}],
-                                    runAt:"document_idle"
-                                }));
-                                modifier.push(browser.contentScripts.register({
-                                    matches:["*://*.radiko.jp/*"],
-                                    js :[{code:meta_code}],
-                                    css:[{file:"modify_mobile.css"}],
+                                    js :[{file:"ui/mobile_start.js"}], //DOMContentLoaded
+                                    css:[{file:"ui/mobile.css"}],
                                     runAt:"document_start"
                                 }));
-                                //m3u8 content type unsupport application/vnd.apple.mpegurl
-                                // smartstream.ne.jp m3u8
-                                //onHeadersReceived  change?
-
                             }
                             
                         }
@@ -457,7 +426,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
             }
             return { requestHeaders: req.requestHeaders };
         }
-        , { urls: ["*://*.radiko.jp/"] }//,"*://*.radiko.jp/#*"
+        , { urls: ["*://*.radiko.jp/"] } // FIX : in android refresh page with #! will bypass this check?
         , ["blocking", "requestHeaders"]
     )
 

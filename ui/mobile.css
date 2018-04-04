@@ -1,4 +1,4 @@
-body {width:100%} 
+body {width:100%}  /*display: none*/
 .header__utility {display:none}
 .header__nav-container {height:unset}
 .header__nav-outer  {position: fixed; top: 0;left: 0;}
@@ -15,8 +15,9 @@ body {width:100%}
 .header__nav .item__outer :nth-child(5) {display:none} 
 .img-list__channel {display:inline;text-align :unset}
 .img-list__item {float: unset; height: unset; width: unset ; padding:unset;margin-top: 4px;border-radius: unset;margin-right:unset} 
-.img-list__img {float:right; width:45%;line-height:unset;margin:unset}
+.img-list__img {float:right; width:45%;line-height:unset;margin:unset;border-radius: unset;}
 .img-list__title {margin-top:unset}
+.img-list__link { max-height: 150px;height: 150px } /*to avoid heightline*/
 .play {display:none}
 .top-sns {display:none}
 #top-info {display:none}
@@ -24,15 +25,16 @@ body {width:100%}
 .img-list {margin-top :unset;margin-right:unset}
 .heading-lv02 {display:none}
 .content {padding-top:50px}
-.heading-area {display:none} /*for detail page*/
+/*for detail page*/
+.heading-area {display:none} 
 .live-detail__content {width:unset}
-.live-detail__main {width:unset}
+.live-detail__main {width:unset;padding-right:unset}
 #pr-image-slider {display:none}
-.live-detail__title {text-align:center}/*for detail page*/
-.live-detail__main {padding-right:unset}
+/*for detail page*/
+.live-detail__title {text-align:center}
 .live-detail__text {width:unset; float:unset}
 .live-detail__img {float:unset; margin-right :unset}
-.live-detail__img img {margin:0 auto;display:block}
+.live-detail__img img {margin:0 auto;display:block;width: 100%}
 #ad-history {display:none}
 .live-detail__description {padding-left:10px;padding-right:10px}
 .live-detail__cast {height:unset}
@@ -42,3 +44,16 @@ body {width:100%}
 .live-detail__sites {padding-left: 10px;padding-right: 10px}
 .topic-list {padding-left: 10px;padding-right: 10px}
 .live-detail__timeline .timeline-col {width: unset;}
+/*for search div*/
+#contents {padding-bottom: 50px}
+/* hide before loaded*/
+/*#to-search {display: none; } */
+/*hide other program in live page because it conflict with .img-list__link 's height*/
+#others-program {display: none;}
+#others-program .img-list__text {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
+
+.player-area__volume {display: none;}
+#player-detail {width: unset;position: unset;}
+#player-detail .tooltip {display: none;}
+#player-detail :nth-child(1) {display:none} 
+/*TODO #to-search should pop up when click search botton or ..*/
