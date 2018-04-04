@@ -421,6 +421,8 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                             for(var i=0;i< imglist.length;i++){ imglist[i].style = 'height:150px'; }"//remove height
                             //
                             //#to-search should pop up when click search botton or ..
+
+                            //<meta name="viewport" content="width = 384" >
                             let meta_code = "\
                             var meta = document.createElement('meta');\
                             meta.name=\"viewport\";\
@@ -441,6 +443,10 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                                     css:[{file:"modify_mobile.css"}],
                                     runAt:"document_start"
                                 }));
+                                //m3u8 content type unsupport application/vnd.apple.mpegurl
+                                // smartstream.ne.jp m3u8
+                                //onHeadersReceived  change?
+
                             }
                             
                         }
