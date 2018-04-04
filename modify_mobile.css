@@ -1,0 +1,44 @@
+body {width:100%} 
+.header__utility {display:none}
+.header__nav-container {height:unset}
+.header__nav-outer  {position: fixed; top: 0;left: 0;}
+.header__inner {width:unset}
+.header--not-login .header__nav .item__live { width:unset}
+.header--not-login .header__nav .item__timeshift {width:unset}
+.header--not-login .header__nav .item__areafree {width:unset}
+.header__nav .item {width:33%}
+.header__nav .item__link {width:unset;background:unset}
+.header__station-list {display:none}
+.content .content__inner {width:100%} 
+.top-main-slider {display:none}
+.header__nav .item__outer :nth-child(4) {display:none} 
+.header__nav .item__outer :nth-child(5) {display:none} 
+.img-list__channel {display:inline;text-align :unset}
+.img-list__item {float: unset; height: unset; width: unset ; padding:unset;margin-top: 4px;border-radius: unset;margin-right:unset} 
+.img-list__img {float:right; width:45%;line-height:unset;margin:unset}
+.img-list__title {margin-top:unset}
+.play {display:none}
+.top-sns {display:none}
+#top-info {display:none}
+.footer {display:none}
+.img-list {margin-top :unset;margin-right:unset}
+.heading-lv02 {display:none}
+.content {padding-top:50px}
+.heading-area {display:none} /*for detail page*/
+.live-detail__content {width:unset}
+.live-detail__main {width:unset}
+#pr-image-slider {display:none}
+.live-detail__title {text-align:center}/*for detail page*/
+.live-detail__main {padding-right:unset}
+.live-detail__text {width:unset; float:unset}
+.live-detail__img {float:unset; margin-right :unset}
+.live-detail__img img {margin:0 auto;display:block}
+#ad-history {display:none}
+.live-detail__description {padding-left:10px;padding-right:10px}
+.live-detail__cast {height:unset}
+.live-detail__cast-title {display:unset;float:unset;width:unset}
+.live-detail__cast-name {width:unset;float:unset}
+.tune-list {margin-right: unset}
+.live-detail__sites {padding-left: 10px;padding-right: 10px}
+.topic-list {padding-left: 10px;padding-right: 10px}
+.live-detail__timeline .timeline-col {width: unset;}

@@ -5,54 +5,54 @@ let partialkey = null;
 
 //https://kariruno.com/center-todoufuken/
 const coordinates = {
-    "北海道": [43.46722222, 142.8277778],
-    "青森": [40.78027778, 140.8319444],
-    "岩手": [39.59138889, 141.3625],
-    "宮城": [38.44555556, 140.9280556],
-    "秋田": [39.7475, 140.4086111],
-    "山形": [38.44638889, 140.1027778],
-    "福島": [37.37888889, 140.2252778],
-    "茨城": [36.30638889, 140.3186111],
-    "栃木": [36.68916667, 139.8191667],
-    "群馬": [36.50388889, 138.9852778],
-    "埼玉": [35.99666667, 139.3477778],
-    "千葉": [35.51277778, 140.2038889],
-    "東京": [35.01833333, 139.5986111],
-    "神奈川": [35.41416667, 139.3402778],
-    "新潟": [37.51888889, 138.9172222],
-    "富山": [36.63611111, 137.2680556],
-    "石川": [36.76583333, 136.7713889],
-    "福井": [35.84666667, 136.2272222],
-    "山梨": [35.61222222, 138.6116667],
-    "長野": [36.13, 138.0438889],
-    "岐阜": [35.7775, 137.055],
-    "静岡": [35.01694444, 138.33],
-    "愛知": [35.03444444, 137.215],
-    "三重": [34.51361111, 136.3813889],
-    "滋賀": [35.21527778, 136.1380556],
-    "京都": [35.25194444, 135.4458333],
-    "大阪": [34.62277778, 135.5111111],
-    "兵庫": [35.03694444, 134.8286111],
-    "奈良": [34.31555556, 135.8713889],
-    "和歌山": [33.90944444, 135.5133333],
-    "鳥取": [35.36055556, 133.8516667],
-    "島根": [35.07305556, 132.5594444],
-    "岡山": [34.90083333, 133.8152778],
-    "広島": [34.60361111, 132.7875],
-    "山口": [34.19861111, 131.575],
-    "徳島": [33.91805556, 134.2430556],
-    "香川": [34.24305556, 133.9966667],
-    "愛媛": [33.62194444, 132.8558333],
-    "高知": [33.42111111, 133.3666667],
-    "福岡": [33.5225, 130.6680556],
-    "佐賀": [33.28527778, 130.1169444],
-    "長崎": [33.2275, 129.6141667],
-    "熊本": [32.615, 130.7563889],
-    "大分": [33.19916667, 131.4341667],
-    "宮崎": [32.19083333, 131.3005556],
-    "鹿児島": [31.01277778, 130.4241667],
-    "沖縄": [25.77111111, 126.64]
-};
+    "北海道":[43.06417,141.34694],
+    "青森": [40.82444,140.74],
+    "岩手": [39.70361,141.1525],
+    "宮城": [38.26889,140.87194],
+    "秋田": [39.71861,140.1025],
+    "山形": [38.24056,140.36333],
+    "福島": [37.75,140.46778],
+    "茨城": [36.34139,140.44667],
+    "栃木": [36.56583,139.88361],
+    "群馬": [36.39111,139.06083],
+    "埼玉": [35.85694,139.64889],
+    "千葉": [35.60472,140.12333],
+    "東京": [35.68944,139.69167],
+    "神奈川":[35.44778,139.6425],
+    "新潟": [37.90222,139.02361],
+    "富山": [36.69528,137.21139],
+    "石川": [36.59444,136.62556],
+    "福井": [36.06528,136.22194],
+    "山梨": [35.66389,138.56833],
+    "長野": [36.65139,138.18111],
+    "岐阜": [35.39111,136.72222],
+    "静岡": [34.97694,138.38306],
+    "愛知": [35.18028,136.90667],
+    "三重": [34.73028,136.50861],
+    "滋賀": [35.00444,135.86833],
+    "京都": [35.02139,135.75556],
+    "大阪": [34.68639,135.52],
+    "兵庫": [34.69139,135.18306],
+    "奈良": [34.68528,135.83278],
+    "和歌山":[34.22611,135.1675],
+    "鳥取": [35.50361,134.23833],
+    "島根": [35.47222,133.05056],
+    "岡山": [34.66167,133.935],
+    "広島": [34.39639,132.45944],
+    "山口": [34.18583,131.47139],
+    "徳島": [34.06583,134.55944],
+    "香川": [34.34028,134.04333],
+    "愛媛": [33.84167,132.76611],
+    "高知": [33.55972,133.53111],
+    "福岡": [33.60639,130.41806],
+    "佐賀": [33.24944,130.29889],
+    "長崎": [32.74472,129.87361],
+    "熊本": [32.78972,130.74167],
+    "大分": [33.23806,131.6125],
+    "宮崎": [31.91111,131.42389],
+    "鹿児島":[31.56028,130.55806],
+    "沖縄": [26.2125,127.6811]
+ };
 //another data source (capital of prefectures): https://www.benricho.org/chimei/latlng_data.html  
 //range detail :http://www.gsi.go.jp/KOKUJYOHO/CENTER/zenken.htm
 
@@ -358,7 +358,7 @@ chrome.storage.local.remove(["current_recording"],function(){
     console.log("clear up unfinished work while starting up.");
 });// clear up unfinished work while starting up.
 
-let modifier = null;
+let modifier = [];
 
 chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not selected_area return default value:JP13
     let area_id = data["selected_area"];
@@ -411,50 +411,36 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                         if(browser && browser.contentScripts){
                             // >= firefox 59 
                             console.log("test content script1");
-                            let css_code = "body {width:100%} \
-                            .header__utility {display:none}\
-                            .header__nav-container {height:unset}\
-                            .header__nav-outer  {position: fixed; top: 0;left: 0;}\
-                            .header__inner {width:unset}\
-                            .header--not-login .header__nav .item__live { width:unset}\
-                            .header--not-login .header__nav .item__timeshift {width:unset}\
-                            .header--not-login .header__nav .item__areafree {width:unset}\
-                            .header__nav .item {width:33%}\
-                            .header__nav .item__link {width:unset;background:unset}\
-                            .header__station-list {display:none}\
-                            .content .content__inner {width:100%} \
-                            .top-main-slider {display:none}\
-                            .header__nav .item__outer :nth-child(4) {display:none} \
-                            .header__nav .item__outer :nth-child(5) {display:none} \
-                            .img-list__channel {display:inline;text-align :unset}\
-                            .img-list__item {float: unset; height: unset; width: unset ; padding:unset;margin-top: 4px;border-radius: unset} \
-                            .img-list__img {float:right; width:45%;line-height:unset}\
-                            .play {display:none}\
-                            .top-sns {display:none}\
-                            #top-info {display:none}\
-                            .footer {display:none}\
-                            .img-list {margin-top :unset}\
-                            .heading-lv02 {display:none}\
-                            .content {padding-top:40px}\
-                            .heading-area {display:none} /*for detail page*/\
-                            .live-detail__content {width:unset}\
-                            .live-detail__main {width:unset}\
-                            ";
+            
                             /*
                             .header__station-list {display:none}\
                             #header-nav nth-child(2) {display:none}\
                             */
 
                             let js_code = "var imglist = document.getElementsByClassName('img-list__item'); \
-                            for(var i=0;i< imglist.length;i++){ imglist[i].style = ''; }"//remove height
+                            for(var i=0;i< imglist.length;i++){ imglist[i].style = 'height:150px'; }"//remove height
                             //
                             //#to-search should pop up when click search botton or ..
-                            if (!modifier){
-                                modifier = browser.contentScripts.register({
+                            let meta_code = "\
+                            var meta = document.createElement('meta');\
+                            meta.name=\"viewport\";\
+                            meta.content=\"width=\"+screen.width;\
+                            document.head.appendChild(meta);\
+                            console.log(document);\
+                            "
+
+                            if (modifier.length == 0){
+                                modifier.push(browser.contentScripts.register({
                                     matches:["*://*.radiko.jp/*"],
-                                    css:[{code:css_code}],
+                                    js:[{code:js_code}],
                                     runAt:"document_idle"
-                                });
+                                }));
+                                modifier.push(browser.contentScripts.register({
+                                    matches:["*://*.radiko.jp/*"],
+                                    js :[{code:meta_code}],
+                                    css:[{file:"modify_mobile.css"}],
+                                    runAt:"document_start"
+                                }));
                             }
                             
                         }
@@ -465,7 +451,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
             }
             return { requestHeaders: req.requestHeaders };
         }
-        , { urls: ["*://*.radiko.jp/"] }
+        , { urls: ["*://*.radiko.jp/"] }//,"*://*.radiko.jp/#*"
         , ["blocking", "requestHeaders"]
     )
 
