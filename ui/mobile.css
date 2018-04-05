@@ -1,11 +1,51 @@
 body {width:100%}  /*display: none*/
-.header__utility {display:none}
+/*for login button*/
+/*.header__utility {display:none}*/
+.header__utility {padding: unset;}
+.header__utility .header__inner {height: unset;}
+.header__logo {display: none}
+.header__menu ul:nth-child(1) {display: none}
+.header__banner {display: none}
+.header__menu .btn--login {position: fixed; bottom: 75px; z-index: 1000 ;right: 20px;font-size: 0;border-radius: 200px;border: unset;
+
+height:45px;
+width: 45px;
+background-color: #f8f8f8;
+} 
+.header__menu .btn--setting .icon, .header__menu .btn--login .icon, .header__menu .btn--logout .icon {
+margin-right: 1px;
+vertical-align: -17px;
+    background-position: -314px -371px;
+    width: 15px;
+    height: 20px;
+}
+.header__menu .item--premium {display: none}
+/*
+.icon--login-02 {
+
+
+  .icon--visitor {
+    background-image: url(../images/sprite.png);
+    background-position: -473px -218px;
+    width: 30px;
+    height: 30px; }
+.icon -people {
+    background-position: -221px -126px;
+    width: 26px;
+    height: 35px;
+}
+
+
+*/
+
+
+/**/
 .header__nav-container {height:unset}
 .header__nav-outer  {position: fixed; top: 0;left: 0;}
 .header__inner {width:unset}
-.header--not-login .header__nav .item__live { width:unset}
-.header--not-login .header__nav .item__timeshift {width:unset}
-.header--not-login .header__nav .item__areafree {width:unset}
+.header .header__nav .item__live { width:unset}
+.header .header__nav .item__timeshift {width:unset}
+.header .header__nav .item__areafree {width:unset}
 .header__nav .item {width:33%}
 .header__nav .item__link {width:unset;background:unset}
 .header__station-list {display:none}
@@ -16,6 +56,7 @@ body {width:100%}  /*display: none*/
 .img-list__channel {display:inline;text-align :unset}
 .img-list__item {float: unset; height: unset; width: unset ; padding:unset;margin-top: 4px;border-radius: unset;margin-right:unset} 
 .img-list__img {float:right; width:45%;line-height:unset;margin:unset;border-radius: unset;}
+.img-list__img img {padding-top: 20px}
 .img-list__title {margin-top:unset}
 .img-list__link { max-height: 150px;height: 150px } /*to avoid heightline*/
 .play {display:none}
