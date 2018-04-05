@@ -33,7 +33,7 @@
   "content_scripts":[{
     "matches": ["*://*.radiko.jp/"],
     "js": ["ui/adjust-timezone.js"],
-    "runAt":"document_start"
+    "run_at":"document_start"
   }],
   "web_accessible_resources": ["ui/moment-timezone.js"],
 
