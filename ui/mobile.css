@@ -53,7 +53,10 @@ body {width:100%}  /*display: none*/
 #others-program .img-list__text {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
 
 .player-area__volume {display: none;}
-#player-detail {width: unset;position: unset;}
-#player-detail .tooltip {display: none;}
-#player-detail :nth-child(1) {display:none} 
+/*padding left for button click*/
+#player-detail {width: unset;position: unset;padding-left: 122px;}
+/*just make it out of screen*/
+#player-detail .tooltip {left: -100px} /*dose not work*/
 /*TODO #to-search should pop up when click search botton or ..*/
+
+.tune-list .tune-list__item {width: unset;float: unset;margin-left: 20px;}

@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Rajiko",
-  "version": "0.1.3",
+  "version": "0.1.4",
 
   "description": "__MSG_manifest_app_description__",
 
@@ -29,6 +29,14 @@
     "scripts": ["constants.js", "background.js"]
 
   },
+
+  "content_scripts":[{
+    "matches": ["*://*.radiko.jp/"],
+    "js": ["ui/adjust-timezone.js"],
+    "runAt":"document_start"
+  }],
+  "web_accessible_resources": ["ui/moment-timezone.js"],
+
   "browser_action": {
     "default_icon": "Circle-icons-radio.png",
     "default_popup": "popup.html",

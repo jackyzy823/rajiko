@@ -100,7 +100,7 @@ let GENERATED_RANDOMINFO = function () {
     let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
     let appversion = function () {
-        let version = ["6.3.5", "6.3.3", "6.3.2", "6.3.1"];
+        let version = ["6.3.6","6.3.5", "6.3.3", "6.3.2", "6.3.1"]; //new version 6.3.6 from 2018/04/03
         return version[(Math.floor(Math.random() * version.length)) >> 0];
     }();
     let userid = function () {
@@ -411,7 +411,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                             // >= firefox 59 
                             if (modifier.length == 0){
                                 modifier.push(browser.contentScripts.register({
-                                    matches:["*://*.radiko.jp/*"],
+                                    matches:["*://*.radiko.jp/*"], //asterisk necessary?
                                     js :[{file:"ui/mobile_start.js"}], //DOMContentLoaded
                                     css:[{file:"ui/mobile.css"}],
                                     runAt:"document_start"

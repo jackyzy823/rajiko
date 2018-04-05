@@ -16,6 +16,12 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.1.4
+    change to responsive ui in firefox android !
+
+    fix gps info mistake
+
+    adjust to correct japan timezone via moment-timezone
 
 + version 0.1.3
 
@@ -70,7 +76,7 @@ Technical Details:
 
 TODO
 ------------
-1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection (paritally done)
+1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection (partially done)
     due to the limitation of extension , cannot captialize some header's key 
 2. Automatic switch location , no need for manually choice.
 3. Add recording function? (find solution on firefox -> webRequest.filterResponseData() and localstorge/chrome.storage ->  downloads.download  URL.createObjectURL(BlobObject), chrome may use xhr to save data , double trafic?) 
@@ -85,4 +91,4 @@ TODO
 
     https://stackoverflow.com/questions/45911251/what-is-the-best-way-to-create-a-cross-browser-gmail-extension
     https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/
-6. modify firefox android page to responsive page.
+6. modify firefox android page to responsive page. (partially done)
