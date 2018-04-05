@@ -45,9 +45,25 @@ body {width:100%}  /*display: none*/
 .topic-list {padding-left: 10px;padding-right: 10px}
 .live-detail__timeline .timeline-col {width: unset;}
 /*for search div*/
-#contents {padding-bottom: 50px}
 /* hide before loaded*/
-/*#to-search {display: none; } */
+#to-search {padding-bottom: 380px } 
+.top-search__form .item__text {width: 100%;margin-right:unset;}
+.top-search__form .item__text .form__text {width: 100%;padding: unset;}
+
+.top-search__form .item__date {float: left;width: 50%;margin-right: unset;}
+.top-search__form .item__area {width:50%}
+.top-search__form .item__title {width: 35%}
+.top-search__form .item__date .ui-form-select, .top-search__form .item__date select {width:65%}
+.top-search__form .item__area .ui-form-select, .top-search__form .item__area select {width: 65%}
+.top-search__form .item__submit {width: 100%}
+.top-search__form .item__submit .btn {width: 100%}
+.top-search__form #search-form .suggest-dropdown {width:  100%}
+.search-result__list .img-list__text.separate {display: none}
+.search-result__list  a { height: 200px ; max-height: 200px } 
+/*.top-search__form .ui-form-select {width: 65%}*/
+.easy-select-box {width: 100%}
+#search-form  .esb-dropdown {padding:unset;}
+#search-form .icon--cross {display: none}
 /*hide other program in live page because it conflict with .img-list__link 's height*/
 #others-program {display: none;}
 #others-program .img-list__text {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
@@ -60,3 +76,14 @@ body {width:100%}  /*display: none*/
 /*TODO #to-search should pop up when click search botton or ..*/
 
 .tune-list .tune-list__item {width: unset;float: unset;margin-left: 20px;}
+
+
+.timeshift-detail__attention {display: none}
+
+/*area free*/
+.premium-area {padding: unset}
+.premium-area__text {display: none}
+.icon--attention-02 {display: none}
+.content__areafree-top .content__section .tab-list .item {margin-left: 35px}
+.content__areafree-top .content__section .tab-list .item:first-child {maring-left:35px;}
+.content__areafree-top .content__section .tab-list .item__selected {height:44px;border: unset;background-color: #00a7e9}

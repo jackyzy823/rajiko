@@ -406,9 +406,9 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                     if (ua.indexOf("android") != -1 || ua.indexOf("mobile") != -1) {
                         req.requestHeaders[i].value = req.requestHeaders[i].value.replace(/android.*?\;/gi, "").replace(/mobile/gi, ""); //ugly
                         console.log(req.requestHeaders[i].value)
-
                         if(browser && browser.contentScripts){
-                            // >= firefox 59 
+                            //chrome.runtime.getPlatformInfo(function(info) {info.os == chrome.runtime.PlatformOs.ANDROID} )
+                            // >= firefox android 59 
                             if (modifier.length == 0){
                                 modifier.push(browser.contentScripts.register({
                                     matches:["*://*.radiko.jp/*"], //asterisk necessary?
