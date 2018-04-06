@@ -118,7 +118,7 @@ vertical-align: -17px;
 
 .tune-list .tune-list__item {width: unset;float: unset;margin-left: 20px;}
 
-
+.page-timeshift .header__nav .item__link {background-image: unset}
 .timeshift-detail__attention {display: none}
 
 /*area free*/
@@ -128,3 +128,13 @@ vertical-align: -17px;
 .content__areafree-top .content__section .tab-list .item {margin-left: 35px}
 .content__areafree-top .content__section .tab-list .item:first-child {maring-left:35px;}
 .content__areafree-top .content__section .tab-list .item__selected {height:44px;border: unset;background-color: #00a7e9}
+
+/*share*/
+#cboxLoadedContent {max-width: 100%;padding :unset;overflow: unset}
+#cboxContent {max-width: 100%}
+#cboxWrapper {max-width: 98%;padding-left: 1%}
+#colorbox {max-width: 100%}
+
+.colorbox__play .btn-list li a.skip-btn {margin: 16px 6px 0 6px}
+
+.colorbox__share {margin-top: 0px ;padding-bottom: 10px;padding-top: 10px}

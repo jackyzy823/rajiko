@@ -39,6 +39,19 @@ What's new:
     
     initial version
     
+Suppport List:
+------------------
++ firefox latest
+
++ chrome latest
+
++ chromium latest
+
++ yandex browser latest
+
++ firefox for android latest
+
+
 
 Technical Details:
 ------------------

@@ -125,8 +125,9 @@ function genGPS(area_id) {
     let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
     let lat = latlong[0];
     let long = latlong[1];
-    lat = lat + Math.random() / 10000.0 * (Math.random() > 0.5 ? 1 : -1);
-    long = long + Math.random() / 10000.0 * (Math.random() > 0.5 ? 1 : -1);
+    // +/- 0~ 0.025 --> 0 ~ 1.5' ->  +/-  0~ 2.77/2.13km
+    lat = lat + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
+    long = long + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
     return lat.toFixed(6) + "," + long.toFixed(6) + ",gps";
 }
 
