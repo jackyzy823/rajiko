@@ -224,7 +224,7 @@ let stopme = function(msg,sender,respCallback){
             }
 
         })        //
-        chrome.browserAction.setIcon({path:'Circle-icons-radio.png'})
+        chrome.browserAction.setIcon({path:'Circle-icons-radio-blue-24.png'})
     }
 };
 
@@ -391,7 +391,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                     );
                     respCallback(); 
                 });
-                chrome.browserAction.setIcon({path:'Circle-icons-radio-red.png'})
+                chrome.browserAction.setIcon({path:'Circle-icons-radio-red-24.png'})
 
 
 

@@ -38,7 +38,7 @@
   "web_accessible_resources": ["ui/moment-timezone.js"],
 
   "browser_action": {
-    "default_icon": "Circle-icons-radio.png",
+    "default_icon": "Circle-icons-radio-blue-24.png",
     "default_popup": "popup.html",
     "default_title": "__MSG_popup_title__"
 
