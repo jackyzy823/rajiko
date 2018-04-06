@@ -19,6 +19,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
       },600);
       
     }
-
   });
+
+  //TODO: consider use store.js from radiko with limitationobserver 
+  window.localStorage['player-volume'] = 1; //because drag is impossbile .
+
 });

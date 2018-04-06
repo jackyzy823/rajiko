@@ -362,14 +362,21 @@ chrome.storage.local.remove(["current_recording"],function(){
 
 let modifier = [];
 
-chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not selected_area return default value:JP13
-    let area_id = data["selected_area"];
-    chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id });
+chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not selected_areaid return default value:JP13
+    let area_id = data["selected_areaid"];
+    // //cookie may not be set here?
+    // chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id },function(c){
+    //   console.log("set cookie",c);
+    // });
 
     chrome.runtime.onMessage.addListener(
         function (msg,sender,respCallback) {
             if (msg["update-area"]) {
                 area_id = msg["update-area"];
+                chrome.storage.local.set({ selected_areaid: area_id }, function () { });
+                chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id },function(c){
+                  console.log("set cookie",c);
+                });
             } else if (msg["start-recording"]) {
                 let radioname = msg["start-recording"];
 
@@ -395,6 +402,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
 
     chrome.webRequest.onBeforeRequest.addListener(
         function (req) {
+            chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id });
             return { cancel: true };
         },
         { urls: ["*://*.radiko.jp/area*"] },

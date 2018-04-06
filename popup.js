@@ -36,7 +36,6 @@ window.onload = function () {
                 window.close();
             }
             else {
-                chrome.storage.local.set({ selected_areaid: area.selectedOptions[0].id }, function () { });
                 chrome.runtime.sendMessage({ "update-area": area.selectedOptions[0].id });
                 chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
                     let tab = arrayOfTabs[0];
@@ -48,18 +47,14 @@ window.onload = function () {
                     }
                     window.close();
                 });
-
             }
         });
 
     };
 
     //load region and area
-    chrome.storage.local.get("selected_areaid", function (data) {
-        let area_id = "JP13"; //default for tokyo;
-        if (data["selected_areaid"]) {
-            area_id = data["selected_areaid"];
-        }
+    chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
+        let area_id = data["selected_areaid"];
         for (let i = 0; i < regions.length; i++) {
             let tmp = document.createElement("option");
             tmp.setAttribute("id", regions[i].id);

@@ -16,12 +16,17 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.1.4.1
+    
+    bug fix: fix cookie error caused by different storage.local key name.
+    continously improve mobile ui
+    improve extension icon ui when recording
+
+
 + version 0.1.4
 
     change to responsive ui in firefox android !
-
     fix gps info mistake
-
     adjust to correct japan timezone via moment-timezone
 
 + version 0.1.3
@@ -106,3 +111,4 @@ TODO
     https://stackoverflow.com/questions/45911251/what-is-the-best-way-to-create-a-cross-browser-gmail-extension
     https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/
 6. modify firefox android page to responsive page. (partially done)
+7. break the time limitation of timeshift and be able to download timeshift content

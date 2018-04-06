@@ -15,9 +15,6 @@
         factory(root.moment);                        // Browser
     }
 
-    moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0 1zB0 NX0|38e6");
-    moment.tz.link("Asia/Tokyo|Japan");
-    moment.tz.setDefault("Asia/Tokyo");
 }(this, function (moment) {
     "use strict";
 
@@ -606,3 +603,8 @@
 
     return moment;
 }));
+//! moment-timezone.js end
+
+moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0 1zB0 NX0|38e6");
+moment.tz.link("Asia/Tokyo|Japan");
+moment.tz.setDefault("Asia/Tokyo");
