@@ -17,6 +17,7 @@ Permission Details:
 What's new:
 -----------
 + version 0.1.4
+
     change to responsive ui in firefox android !
 
     fix gps info mistake
@@ -91,7 +92,7 @@ TODO
 ------------
 1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection (partially done)
     due to the limitation of extension , cannot captialize some header's key 
-2. Automatic switch location , no need for manually choice.
+2. Automatic switch location , no need for manually choice. (consider not supporting)
 3. Add recording function? (find solution on firefox -> webRequest.filterResponseData() and localstorge/chrome.storage ->  downloads.download  URL.createObjectURL(BlobObject), chrome may use xhr to save data , double trafic?) 
     the right way to download data uri 
     https://stackoverflow.com/questions/40269862/save-data-uri-as-file-using-downloads-download-api/40279050

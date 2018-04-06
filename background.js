@@ -139,9 +139,9 @@ function ab2str(buf) {
 }
 
 function str2ab(str) {
-    var buf = new ArrayBuffer(str.length ); // Uint16 -> 2 bytes for each char
-    var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=str.length; i<strLen; i++) {
+    let buf = new ArrayBuffer(str.length ); // Uint16 -> 2 bytes for each char
+    let bufView = new Uint8Array(buf);
+    for (let i=0, strLen=str.length; i<strLen; i++) {
       bufView[i] = str.charCodeAt(i);
     }
     return buf;
@@ -181,10 +181,10 @@ function timestamp2Filename(t){
     let d = new Date(t);
     let d_str = ''+d.getFullYear();
     d_str += (d.getMonth()+1).toString().length==1? '0'+(d.getMonth()+1).toString() : (d.getMonth()+1).toString();
-    d_str += d.getDate().length == 1? '0'+d.getDate():''+d.getDate();
-    d_str += d.getHours().length == 1? '0'+d.getHours():''+d.getHours();
-    d_str += d.getMinutes().length == 1? '0'+d.getMinutes():''+d.getMinutes();
-    d_str += d.getSeconds().length == 1? '0'+d.getSeconds():''+d.getSeconds();
+    d_str += d.getDate().toString().length == 1? '0'+d.getDate():''+d.getDate();
+    d_str += d.getHours().toString().length == 1? '0'+d.getHours():''+d.getHours();
+    d_str += d.getMinutes().toString().length == 1? '0'+d.getMinutes():''+d.getMinutes();
+    d_str += d.getSeconds().toString().length == 1? '0'+d.getSeconds():''+d.getSeconds();
     return d_str;
 }
 
@@ -224,6 +224,7 @@ let stopme = function(msg,sender,respCallback){
             }
 
         })        //
+        chrome.browserAction.setIcon({path:'Circle-icons-radio.png'})
     }
 };
 
@@ -383,6 +384,7 @@ chrome.storage.local.get({"selected_area":"JP13"}, function (data) { //if not se
                     );
                     respCallback(); 
                 });
+                chrome.browserAction.setIcon({path:'Circle-icons-radio-red.png'})
 
 
 
