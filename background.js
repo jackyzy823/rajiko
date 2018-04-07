@@ -2,6 +2,21 @@ const fullkey_b64 = "fAu/s1ySbQBAyfugPCOniGTrMcOu5XqKcup3tmrZUAvx3MGtIIZl7wHokm0
 
 let partialkey = null;
 
+//dont know if memleak?
+// JPX: { token: xx , requestTime: date.now }
+let authTokens = {};
+function ExpireObj(){
+}
+ExpireObj.prototype.add = function(area,token,ifExpire = true){
+  var me = this;
+  authTokens[area] = { token:token,requestTime: Date.now()};
+  if(ifExpire){
+    authTokens[area].obj = me;
+    setTimeout(function(){
+      delete authTokens[area];
+    }, 3 * 60 * 60 * 1000); //delete self after 3 hrs
+  }
+}
 
 //https://kariruno.com/center-todoufuken/
 const coordinates = {
@@ -88,7 +103,7 @@ const MODEL_LIST = ["SC-02H", "SCV33", "SM-G935F", "SM-G935X", "SM-G935W8", "SM-
     //fujitu arrows
 ];
 
-let GENERATED_RANDOMINFO = function () {
+function genRandomInfo() {
     let version = Object.keys(VERSION_MAP)[(Math.floor(Math.random() * Object.keys(VERSION_MAP).length)) >> 0];
     let sdk = VERSION_MAP[version].sdk;
     let build = VERSION_MAP[version].builds[(Math.floor(Math.random() * VERSION_MAP[version].builds.length)) >> 0];
@@ -114,7 +129,8 @@ let GENERATED_RANDOMINFO = function () {
 
     return { appversion: appversion, userid: userid, useragent: useragent, device: device }
 
-}();
+}
+let GENERATED_RANDOMINFO = genRandomInfo();
 
 //remove accept-language accept cookie   referer 
 //pragma accept Cache-Control and origin(for cors) cannot be removed
@@ -461,6 +477,11 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
             } else if (req.url.indexOf("auth2") != -1 && req.method.toLowerCase() == 'get') {
                 req.requestHeaders = req.requestHeaders.filter(function (x) {
+                    //save token here
+                    if(x.name.toLowerCase()=='x-radiko-authtoken'){
+                      let res = (new ExpireObj()).add(area_id,x.value,false);
+                      // authTokens[area_id] = { token: x.value , requestTime : Date.now()}
+                    }
                     return !IGNORELIST.includes(x.name.toLowerCase());
                 });
 
@@ -482,6 +503,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
                 req.requestHeaders.push({ name: "X-Radiko-Location", value: gps_info });
 
+                //save token
 
             }
             return { requestHeaders: req.requestHeaders };
@@ -516,6 +538,128 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         { urls: ["*://*.radiko.jp/v2/api/auth1"] },
         ["blocking", "responseHeaders"]
     );
+
+
+
+
+    //finish auth1 and auth2 in this req
+    chrome.webRequest.onBeforeRequest.addListener(
+      function(req){
+        let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_smh_multi\/(.*?)\.xml/g.exec(req.url);
+        if(regexpresult){
+          let radioname = regexpresult[1];
+          let availableArea = radioAreaId[radioname];
+          let hadTokenArea = availableArea.filter(function(a){
+            return !!authTokens[a];
+          })
+          let  pickArea;
+          if(hadTokenArea.length!=0){
+              return {}; //what if expire in a seconds? let user make request again will solve
+          }else{
+            pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
+          }
+
+          let info = genRandomInfo();
+          let auth1 = new XMLHttpRequest()
+          auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); //sync
+        
+          auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
+          auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
+          auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
+          auth1.setRequestHeader('X-Radiko-Device',info.device);
+          auth1.setRequestHeader('X-Radiko-User',info.userid);
+          //unset
+          // auth1.setRequestHeader('Accept',null);
+          // auth1.setRequestHeader('Cache-Control',null);
+          // auth1.setRequestHeader('Accept-Language',null);
+          // auth1.setRequestHeader('Pragma',null);
+
+          auth1.withCredentials = false;
+          auth1.send();
+          // case-insensitive
+          let token = auth1.getResponseHeader('x-radiko-authtoken')
+          let offset = parseInt(auth1.getResponseHeader('x-radiko-keyoffset'));
+          let length = parseInt(auth1.getResponseHeader('x-radiko-keylength'));
+          let partial = btoa(atob(fullkey_b64).slice(offset, offset + length));
+
+
+          let auth2 = new XMLHttpRequest()
+          auth2.open('GET','https://radiko.jp/v2/api/auth2',false);
+
+          auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
+          auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
+          auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
+          auth2.setRequestHeader('X-Radiko-AuthToken',token)
+          auth2.setRequestHeader('X-Radiko-Device',info.device);
+          auth2.setRequestHeader('X-Radiko-User',info.userid);
+
+          auth2.setRequestHeader('X-Radiko-Location',genGPS(pickArea));
+          auth2.setRequestHeader('X-Radiko-Connection',"wifi");
+          auth2.setRequestHeader('X-Radiko-Partialkey',partial);
+
+          // auth2.setRequestHeader('Accept',null);
+          // auth2.setRequestHeader('Cache-Control',null);
+          // auth2.setRequestHeader('Accept-Language',null);
+          // auth2.setRequestHeader('Pragma',null);
+
+          auth2.withCredentials = false;
+          auth2.send();
+
+          let res  = (new ExpireObj()).add(pickArea,token); 
+
+        }
+
+
+      },
+      {urls:["http://radiko.jp/v2/station/stream_smh_multi/*.xml"]}
+      ,["blocking"]
+    );
+
+    //simplely find token to use
+    chrome.webRequest.onBeforeSendHeaders.addListener(
+      function(req){
+        //choose avaiable
+        // if default then default
+        // else the latest expired one
+        let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
+        if(regexpresult){
+          let radioname = regexpresult[1];
+          let availableArea = radioAreaId[radioname];
+          let hadTokenArea = availableArea.filter(function(a){
+            return !!authTokens[a];
+          })
+          if(hadTokenArea.length==0){
+            //weired!!
+            return {};
+          }{
+            let use_token ;
+            if(hadTokenArea.includes(area_id)){
+              use_token = authTokens[area_id].token;
+            }else{
+              use_token = authTokens[hadTokenArea[0]].token;
+            }
+            req.requestHeaders = req.requestHeaders.filter(function (x) {
+              return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
+            }); 
+            req.requestHeaders.push({ name: "X-Radiko-AuthToken", value: use_token});
+            return { requestHeaders: req.requestHeaders };
+          }
+        }
+
+      }, {urls:["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8","*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"]}
+      ,["blocking", "requestHeaders"]
+    )
+
+/*
+    //TODO: add block statistics request filter
+    chrome.webRequest.onBeforeRequest.addListener(function(req){
+      //block statiats
+      //1.http://log2.radiko.jp/tstet*
+      //2.http://pp.d2-apps.net/v1/impressions/log*  https://pp.d2-apps.net/v1/sync  //in timeshift?
+      //3.http://penta.a.one.impact-ad.jp/dc
+      return {cancel:true}
+    }, {urls:["http://log2.radiko.jp/*","*://*.d2-apps.net/*"]})
+*/
 
 
 

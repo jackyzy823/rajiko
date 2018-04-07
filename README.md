@@ -8,25 +8,45 @@ Permission Details:
 3. storage : for storing your location configuration.
 4. webRequest : modify request to pass the authentication.
 5. webRequestBlocking : modify request to pass the authentication.
-6. \*://*.radiko.jp/\* : the only site we aimed at.
+6. \*://\*.radiko.jp/\* : the only site we aimed at.
 7. declartiveContent : [TODO] for showing icon only on radiko pages.But firefox does not support this api.When firefox supports this api,tab permission will not be required.
 8. downloads : for downloading recored audio.
-9. \*://*.smartstream.ne.jp/\* : the site where audio stored.
+9. \*://\*.smartstream.ne.jp/\* : the site where audio stored.
 10. unlimitedStorage : for recording radio.
+11. \*://\*.d2-apps.net/\*: disable radiko's statistics requests. [TODO]
+
+
 
 What's new:
 -----------
++ version 0.2.0
+    
+    Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
+
+    For using other area in timeshift(タイムシフト) page, please select area in areafree(エリアフリー) page first then switch back to timeshift(タイムシフト) page !
+
+    The "3 hours a day" limitation of timeshift(タイムシフト) has been unblocked.You can listen no matter how long now. 
+
+    "Choose Area" is only needed in displaying area in live(ライブ)
+
+    If there's any bug or problem ,please try to disable and then enable it.If this does not help , please tell me via review page or github issue.
+
+
 + version 0.1.4.1
     
     bug fix: fix cookie error caused by different storage.local key name.
+
     continously improve mobile ui
+
     improve extension icon ui when recording
 
 
 + version 0.1.4
 
     change to responsive ui in firefox android !
+
     fix gps info mistake
+
     adjust to correct japan timezone via moment-timezone
 
 + version 0.1.3

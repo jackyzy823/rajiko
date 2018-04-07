@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Rajiko",
-  "version": "0.1.4.1",
+  "version": "0.2.0",
 
   "description": "__MSG_manifest_app_description__",
 
@@ -18,7 +18,8 @@
       "*://*.radiko.jp/*",
       "downloads",
       "*://*.smartstream.ne.jp/*",
-      "unlimitedStorage"
+      "unlimitedStorage",
+      "*://*.d2-apps.net/*"
     ]
 
     ,
@@ -35,7 +36,7 @@
     "js": ["ui/common_start.js"],
     "run_at":"document_start"
   }],
-  "web_accessible_resources": ["ui/moment-timezone.js"],
+  "web_accessible_resources": ["ui/inspect_start.js"],
 
   "browser_action": {
     "default_icon": "Circle-icons-radio-blue-24.png",

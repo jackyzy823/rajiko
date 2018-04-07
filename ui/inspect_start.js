@@ -608,3 +608,26 @@
 moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0 1zB0 NX0|38e6");
 moment.tz.link("Asia/Tokyo|Japan");
 moment.tz.setDefault("Asia/Tokyo");
+
+//break timeshift 3hour limit
+store.watch('update',
+    function(key,val){
+        if( /[0-9]{14}/.test(key)){
+            if(val.listened_time == 0 && val.limit == 10000000000){ 
+                return
+            }
+            else{
+                val.limit = 10000000000 ;
+                val.listened_time = 0;
+                store.set(val)
+            }
+        }
+    });
+//to bypass check at 
+// to enfore select stream_smh_multi url areafree = 0 link (bypass containStation check)
+// to pass our generated token 
+// this may run after d2-app report premium?
+$.Radiko.login_status.areafree=1 ;
+$.Radiko.login_status.premium=1 ;
+window.isStationInArea = function(){return true;}
+

@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
   s.parentNode.insertBefore(beforeAllScript, s);
   */
 
-  let momentscript = document.createElement("script");
-  momentscript.src = chrome.extension.getURL('ui/moment-timezone.js');
-  document.head.appendChild(momentscript);
+  let inspect_script = document.createElement("script");
+  inspect_script.src = chrome.extension.getURL('ui/inspect_start.js');
+  document.head.appendChild(inspect_script);
 });
