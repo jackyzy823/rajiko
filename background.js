@@ -425,6 +425,9 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         ["blocking"]
     );
 
+
+
+
     chrome.webRequest.onBeforeSendHeaders.addListener(
         function (req) {
             for (let i = 0; i < req.requestHeaders.length; i++) {
@@ -444,10 +447,21 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                                     runAt:"document_start"
                                 }));
                             }
-                            
+
+                            //only add once!!!
+                            chrome.webRequest.onBeforeRequest.addListener(function(req){
+                              //"https://radiko.jp/mobile/#!/timeshift"  -> http://radiko.jp/#!/timeshift
+                              // let item = /\/#!\/(.*)/g.exec(req.url)[0]
+                              return {redirectUrl: "http://radiko.jp"};
+                            },{urls:["*://radiko.jp/mobile/#!/*"]},["blocking"]);   
+                            chrome.webRequest.handlerBehaviorChanged(function(){
+                              console.log("call handlerBehaviorChanged")
+                            }); //expensive !! for mobile reload correctly?                            
                         }
                         //do not redirect to mobile app download page via change to pc useragents
                         //may be a feature because real android device does not send this request
+                                             
+
                     }
                 }
             }

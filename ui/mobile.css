@@ -1,7 +1,7 @@
 body {width:100%}  /*display: none*/
 /*for login button*/
-/*.header__utility {display:none}*/
-.header__utility {padding: unset;}
+.header__utility {display:none}
+/*.header__utility {padding: unset;}
 .header__utility .header__inner {height: unset;}
 .header__logo {display: none}
 .header__menu ul:nth-child(1) {display: none}
@@ -20,7 +20,7 @@ vertical-align: -17px;
     height: 20px;
 }
 .header__menu .item--premium {display: none}
-/*
+*//*
 .icon--login-02 {
 
 
@@ -132,7 +132,7 @@ vertical-align: -17px;
 /*share*/
 #cboxLoadedContent {max-width: 100%;padding :unset;overflow: unset}
 #cboxContent {max-width: 100%}
-#cboxWrapper {max-width: 98%;padding-left: 1%}
+#cboxWrapper {max-width: 98%;padding-left: 1% ;min-width: 98%}
 #colorbox {max-width: 100%}
 
 .colorbox__play .btn-list li a.skip-btn {margin: 16px 6px 0 6px}
@@ -140,3 +140,25 @@ vertical-align: -17px;
 .colorbox__share {margin-top: 0px ;padding-bottom: 10px;padding-top: 10px}
 
 /*TODO: 1.timeshift page select from time or kyoku */
+.colorbox__area-list .colorbox-area-list__item {width: 33%}
+#colorbox--area-list {margin: 10px}
+
+.timeshift-page-nav {width: 100%;}
+
+.program-table-header__list  {overflow: unset;width: unset;height: unset;}
+.program-table-header__list .item:first-child {margin-left: 12px;}
+
+/*.program-table__pager .item--prev {position: absolute; left: 0px; z-index: 1;} 
+.program-table__pager .item--next {position: absolute; right: 0; z-index: 1; }
+*/
+.program-table__channel-outer {  width: 100%; display: inline-flex; } 
+.program-table__items {width: 100%}
+.program-table__outer {width: 100%;}
+.program-table__channel .name img {right: unset;width: 56%}
+.program-table__body--col8 .program-table__channel {width: 11%}
+
+.program-table__date-outer {width: 100%; display: block; } 
+.program-table__pager {display: none}
+.program-table__body--col8 .program-table__date {width: 10% ;padding: 2px}
+.program-table__body--col8 .program-table__items .item-outer {width: 11%}
+/*.program-table-header__list-outer  {overflow: scroll;}*/

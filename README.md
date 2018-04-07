@@ -23,7 +23,7 @@ What's new:
     
     Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
 
-    For using other area in timeshift(タイムシフト) page, please select area in areafree(エリアフリー) page first then switch back to timeshift(タイムシフト) page !
+    For switching to  other area in timeshift(タイムシフト) page, only click 地域変更 button in timeshift(タイムシフト) page.
 
     The "3 hours a day" limitation of timeshift(タイムシフト) has been unblocked.You can listen no matter how long now. 
 
