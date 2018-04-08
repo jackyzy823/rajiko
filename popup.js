@@ -145,6 +145,14 @@ window.onload = function () {
 
     });
 
+// TODO: choose when display
+    let download_button = document.getElementById("rajiko-download");
+    download_button.onclick = function(){
+        chrome.runtime.sendMessage({"download-timeshift":"<TEST_LINK>"},function(){
+            window.close();
+        });
+    }
+
 
 };
 

@@ -2,6 +2,8 @@ const fullkey_b64 = "fAu/s1ySbQBAyfugPCOniGTrMcOu5XqKcup3tmrZUAvx3MGtIIZl7wHokm0
 
 let partialkey = null;
 
+
+//multi token stuff
 //dont know if memleak?
 // JPX: { token: xx , requestTime: date.now }
 let authTokens = {};
@@ -17,15 +19,69 @@ ExpireObj.prototype.add = function(area,token,ifExpire = true){
     // authTokens[area].obj = me; // not necessary
     this.timer = setTimeout(function(){
       delete authTokens[area];
-    }, 42e5); 
-    /*delete self after 1.5 hrs default area one let radikojsplayer handle. 
-    [test show that the token only have 1.2 hrs life no matter active or not?]
+    }, 36e5); //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
+    /*delete self after 1 hr default area one let radikojsplayer handle. 
+    [test show that the token only have 1.1 hrs life no matter active or not?]
     see code at: radikoJSPlayer.js?_=20180330:formatted:14022
     setInterval(function() {s.authorization() }, 42e5) 
     */
   }
 }
 
+// NOTE: sync function!!
+function retTokenByRadioname(radioname,default_area_id){
+  let availableArea = radioAreaId[radioname];
+  let hadTokenArea = availableArea.filter(function(a){
+    return !!authTokens[a];
+  })
+
+  if(hadTokenArea.length!=0){
+    return authTokens[ hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0]  ].token;
+  }
+  let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
+  let info = genRandomInfo();
+  let auth1 = new XMLHttpRequest()
+  auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); //sync
+
+  auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
+  auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
+  auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
+  auth1.setRequestHeader('X-Radiko-Device',info.device);
+  auth1.setRequestHeader('X-Radiko-User',info.userid);
+
+  auth1.withCredentials = false;
+  auth1.send();
+  // case-insensitive
+  let token = auth1.getResponseHeader('x-radiko-authtoken')
+  let offset = parseInt(auth1.getResponseHeader('x-radiko-keyoffset'));
+  let length = parseInt(auth1.getResponseHeader('x-radiko-keylength'));
+  let partial = btoa(atob(fullkey_b64).slice(offset, offset + length));
+
+
+  let auth2 = new XMLHttpRequest()
+  auth2.open('GET','https://radiko.jp/v2/api/auth2',false);
+
+  auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
+  auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
+  auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
+  auth2.setRequestHeader('X-Radiko-AuthToken',token)
+  auth2.setRequestHeader('X-Radiko-Device',info.device);
+  auth2.setRequestHeader('X-Radiko-User',info.userid);
+
+  auth2.setRequestHeader('X-Radiko-Location',genGPS(pickArea));
+  auth2.setRequestHeader('X-Radiko-Connection',"wifi");
+  auth2.setRequestHeader('X-Radiko-Partialkey',partial);
+
+  auth2.withCredentials = false;
+  auth2.send();
+
+  let res  = (new ExpireObj()).add(pickArea,token); 
+  return token; 
+}
+
+
+
+//geo & device info stuff
 //https://kariruno.com/center-todoufuken/
 const coordinates = {
     "北海道":[43.06417,141.34694],
@@ -201,6 +257,7 @@ function recorder(radio){
 }
 */
 
+//download live stuff
 function timestamp2Filename(t){
     let d = new Date(t);
     let d_str = ''+d.getFullYear();
@@ -299,23 +356,15 @@ function streamListener(req){
                 if(data[radioname]){
                     data[radioname].push(audio_string)
                     storage_set[radioname] = data[radioname];
-
-
-                    chrome.storage.local.set(storage_set,function(){
-                        if(chrome.runtime.lastError){
-                            console.log("store error",chrome.runtime.lastError);
-                        }                        
-                    })
-
                 }else{
                     storage_set[radioname] = [audio_string];
- 
-                    chrome.storage.local.set(storage_set,function(){
-                        if(chrome.runtime.lastError){
-                            console.log("store error",chrome.runtime.lastError);
-                        }
-                    })
-                }
+                } 
+                chrome.storage.local.set(storage_set,function(){
+                    if(chrome.runtime.lastError){
+                        console.log("store error",chrome.runtime.lastError);
+                    }
+                });
+
                 firefox_getBytesInUse(radioname,function(bytes){
                     console.log("use ",bytes/1000.0 /1000.0 ,'mb');
                 })
@@ -342,29 +391,23 @@ function streamListener(req){
         xhr.responseType = 'arraybuffer';
         xhr.onload = function(xhrevent){
             //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Apppear only on chrome v22 linux.
-            let audio_string =  ab2str(xhr.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
+            let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
             chrome.storage.local.get(radioname,function(data){
                 let storage_set ={};
                 if(data[radioname]){
                     data[radioname].push(audio_string)
                     storage_set[radioname] =  data[radioname];
 
-
-                    chrome.storage.local.set(storage_set,function(){
-                        if(chrome.runtime.lastError){
-                            console.log("store error",chrome.runtime.lastError);
-                        }                        
-                    })
-
                 }else{
                     storage_set[radioname] = [audio_string];
- 
-                    chrome.storage.local.set(storage_set,function(){
-                        if(chrome.runtime.lastError){
-                            console.log("store error",chrome.runtime.lastError);
-                        }
-                    })
                 }
+
+                chrome.storage.local.set(storage_set,function(){
+                    if(chrome.runtime.lastError){
+                        console.log("store error",chrome.runtime.lastError);
+                    }
+                })
+
                 chrome.storage.local.getBytesInUse(radioname,function(bytes){
                     console.log("use ",bytes/1000.0 /1000.0 ,'mb');
                 })
@@ -377,15 +420,136 @@ function streamListener(req){
     return {};
 }
 
-
-
-chrome.storage.local.remove(["current_recording"],function(){
-    console.log("clear up unfinished work while starting up.");
-});// clear up unfinished work while starting up.
-
-let modifier = [];
+//download timeshift stuff
 let timeShiftQueue = {}; // "RAIDONAME_STARTTIME":
 
+function downAndsave(filename,links,index,finishCallback){
+  if(index >= links.length){
+  // if(links.length == 0){
+    return finishCallback(null);
+  }else{
+    let item = links[index];//links.shift();//pop one
+    let req = new XMLHttpRequest();
+    req.open('GET',item);
+    req.responseType = 'arraybuffer';
+    req.onload = function(xhrevent){
+      let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
+      // chrome.storage.local.get(filename,function(data){
+      let storage_set ={};
+      storage_set[filename+'_'+index] = audio_string;
+      // if(data[filename]){
+      //   data[filename].push(audio_string)
+      //   storage_set[filename] =  data[filename];
+
+      // }else{
+        
+      // }
+
+      chrome.storage.local.set(storage_set,function(){
+        if(chrome.runtime.lastError){
+          console.log("store error",chrome.runtime.lastError);
+          finishCallback(chrome.runtime.lastError)
+        }else{
+          downAndsave(filename,links,index+1, finishCallback);
+        }
+      });
+      // });
+    }
+
+    req.onerror = function(){
+      console.log("errrrrrrrrrrrrrrrrr!!!!!")
+      finishCallback(1); //error
+    }
+    req.send();
+
+  }
+}
+
+// NOTE: do in async
+function downloadtimeShift(m3u8link,default_area_id){
+  let radioname,from,to;
+  (new URL(m3u8link)).search.slice(1).split('&').map(function(kv){
+    let s = kv.split('=');
+    switch(s[0]){
+      case 'station_id':
+        radioname = s[1];
+        break;
+      case 'ft':
+        from  = s[1];
+        break
+      case 'to':
+        to = s[1];
+        break
+    }
+  });
+  let filename = radioname+'_'+from+'_'+to+'.aac'; 
+  console.log("timeshift file",filename);
+  let token = retTokenByRadioname(radioname,default_area_id); //NOTE: may sync function
+  let q1 = new XMLHttpRequest();
+  q1.open('GET',m3u8link); //will this be capture??
+  q1.setRequestHeader('X-Radiko-AuthToken',token);
+  q1.onload = function(xhrevent){
+    let resp = this.responseText;
+    let detailLink = resp.split('\n').filter(function(d){ return d[0]!='#' && d.trim()!=''})[0]
+    let q2 = new XMLHttpRequest();
+    q2.open('GET',detailLink);
+    q2.setRequestHeader('X-Radiko-AuthToken',token);
+    q2.onload = function(xhrevent){
+      let resp = this.responseText;
+      let links = resp.split('\n').filter(function(d){return d[0]!='#' && d.trim()!=''});
+      downAndsave(filename,links,0,function(error){
+        let prepareList = [];
+        for(let i=0;i< links.length;i++){ prepareList.push(filename+'_'+i); }
+        if(error){ 
+          chrome.storage.local.remove(prepareList,function(){
+
+          });
+        }else{
+          
+          chrome.storage.local.get(prepareList,function(data){
+            if(data){
+              let audio_buf = prepareList.map(function(x){
+                return str2ab(data[x]);
+              })
+              // let audio_str_arr = data[filename];
+              // let audio_buf = audio_str_arr.map(function(x){
+              //   return str2ab(x);
+              // });
+              let audiodata = new Blob(audio_buf,{type:"audio/aac"});
+              chrome.downloads.download({url:URL.createObjectURL(audiodata),filename:  filename},function(downloadId){
+                console.log("download done!");
+                chrome.storage.local.remove(prepareList,function(){
+                  console.log("clean done!");
+                  if(chrome.runtime.lastError){
+                    console.log("cleanup error",chrome.runtime.lastError);
+                  }
+                })
+              });  
+            }
+          });
+        }
+      })
+
+    }
+    q2.send();
+
+  };
+  q1.send()
+
+
+
+}
+
+
+// clear up unfinished work while starting up.
+//TODO: how to clean up unfinished timeshift task?
+chrome.storage.local.remove(["current_recording"],function(){
+    console.log("clear up unfinished work while starting up.");
+});
+
+let modifier = [];
+
+//main stuff
 chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not selected_areaid return default value:JP13
     let area_id = data["selected_areaid"];
     // //cookie may not be set here?
@@ -421,7 +585,8 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
             } else if(msg["download-timeshift"]){
               //TODO
-
+              console.log("start donwload timeshift");
+              downloadtimeShift(msg["download-timeshift"],area_id)
             }
         });
 
@@ -450,7 +615,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                         if(browser && browser.contentScripts){
                             //chrome.runtime.getPlatformInfo(function(info) {info.os == chrome.runtime.PlatformOs.ANDROID} )
                             // >= firefox android 59 
-                            if (modifier.length == 0){
+                            if (modifier.length == 0){ //and unregister?
                                 modifier.push(browser.contentScripts.register({
                                     matches:["*://*.radiko.jp/*"], //asterisk necessary?
                                     js :[{file:"ui/mobile_start.js"}], //DOMContentLoaded
@@ -459,7 +624,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                                 }));
                             }
 
-                            //only add once!!!
+                            //only add once!!! and need removeListener?
                             chrome.webRequest.onBeforeRequest.addListener(function(req){
                               //"https://radiko.jp/mobile/#!/timeshift"  -> http://radiko.jp/#!/timeshift
                               // let item = /\/#!\/(.*)/g.exec(req.url)[0]
@@ -478,7 +643,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
             }
             return { requestHeaders: req.requestHeaders };
         }
-        , { urls: ["*://*.radiko.jp/"] } // FIX : in android refresh page with #! will bypass this check?
+        , { urls: ["*://*.radiko.jp/"] }
         , ["blocking", "requestHeaders"]
     )
 
@@ -573,68 +738,8 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_smh_multi\/(.*?)\.xml/g.exec(req.url);
         if(regexpresult){
           let radioname = regexpresult[1];
-          let availableArea = radioAreaId[radioname];
-          let hadTokenArea = availableArea.filter(function(a){
-            return !!authTokens[a];
-          })
-          let  pickArea;
-          if(hadTokenArea.length!=0){
-              return {}; //what if expire in a seconds? let user make request again will solve
-          }else{
-            pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
-          }
-
-          let info = genRandomInfo();
-          let auth1 = new XMLHttpRequest()
-          auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); //sync
-        
-          auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
-          auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
-          auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
-          auth1.setRequestHeader('X-Radiko-Device',info.device);
-          auth1.setRequestHeader('X-Radiko-User',info.userid);
-          //unset
-          // auth1.setRequestHeader('Accept',null);
-          // auth1.setRequestHeader('Cache-Control',null);
-          // auth1.setRequestHeader('Accept-Language',null);
-          // auth1.setRequestHeader('Pragma',null);
-
-          auth1.withCredentials = false;
-          auth1.send();
-          // case-insensitive
-          let token = auth1.getResponseHeader('x-radiko-authtoken')
-          let offset = parseInt(auth1.getResponseHeader('x-radiko-keyoffset'));
-          let length = parseInt(auth1.getResponseHeader('x-radiko-keylength'));
-          let partial = btoa(atob(fullkey_b64).slice(offset, offset + length));
-
-
-          let auth2 = new XMLHttpRequest()
-          auth2.open('GET','https://radiko.jp/v2/api/auth2',false);
-
-          auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
-          auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
-          auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
-          auth2.setRequestHeader('X-Radiko-AuthToken',token)
-          auth2.setRequestHeader('X-Radiko-Device',info.device);
-          auth2.setRequestHeader('X-Radiko-User',info.userid);
-
-          auth2.setRequestHeader('X-Radiko-Location',genGPS(pickArea));
-          auth2.setRequestHeader('X-Radiko-Connection',"wifi");
-          auth2.setRequestHeader('X-Radiko-Partialkey',partial);
-
-          // auth2.setRequestHeader('Accept',null);
-          // auth2.setRequestHeader('Cache-Control',null);
-          // auth2.setRequestHeader('Accept-Language',null);
-          // auth2.setRequestHeader('Pragma',null);
-
-          auth2.withCredentials = false;
-          auth2.send();
-
-          let res  = (new ExpireObj()).add(pickArea,token); 
-
+          retTokenByRadioname(radioname,area_id);
         }
-
-
       },
       {urls:["http://radiko.jp/v2/station/stream_smh_multi/*.xml"]}
       ,["blocking"]
@@ -649,27 +754,13 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
         if(regexpresult){
           let radioname = regexpresult[1];
-          let availableArea = radioAreaId[radioname];
-          let hadTokenArea = availableArea.filter(function(a){
-            return !!authTokens[a];
-          })
-          if(hadTokenArea.length==0){
-            //TODO :should reauth it!
-            //weired!!
-            return {};
-          }{
-            let use_token ;
-            if(hadTokenArea.includes(area_id)){
-              use_token = authTokens[area_id].token;
-            }else{
-              use_token = authTokens[hadTokenArea[0]].token;
-            }
-            req.requestHeaders = req.requestHeaders.filter(function (x) {
-              return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
-            }); 
-            req.requestHeaders.push({ name: "X-Radiko-AuthToken", value: use_token});
-            return { requestHeaders: req.requestHeaders };
-          }
+          let use_token = retTokenByRadioname(radioname) ;
+
+          req.requestHeaders = req.requestHeaders.filter(function (x) {
+            return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
+          }); 
+          req.requestHeaders.push({ name: "X-Radiko-AuthToken", value: use_token});
+          return { requestHeaders: req.requestHeaders };
         }
 
       }, {urls:["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8","*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"]}

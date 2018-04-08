@@ -1,5 +1,11 @@
 Rajiko
 ====================
+How to use:
+-------------------
+1. Install it from Chrome webstore or Firefox addons
+2. Do nothing or change default area by clicking icon which only affects live area
+3. Recording live or download timeshift by clicking icon
+
 
 Permission Details:
 -------------------
