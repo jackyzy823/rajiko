@@ -86,6 +86,11 @@ window.onload = function () {
     // if playing        
     //<i class="icon icon--play-02 on"></i>
     //<i class="icon icon--play-02"></i>
+    // tmpUrl is the page you view
+    // the url is really playing ,but no url when no playing .
+    // <input id="url" value="https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=RADIONAME&amp;l=15&amp;ft=FROMTTIME&amp;to=TOTIME&amp;seek=SEEK" type="hidden">
+    // <input id="tmpUrl" value="https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=ANOTHERORSAME&amp;l=15&amp;ft=FROMTTIME&amp;to=TOTIME" type="hidden">
+    //
     let record_button = document.getElementById("rajiko-record");
     chrome.tabs.executeScript({code:"var tmpdata = {url : window.location.href,radioname:document.getElementById('url') && document.getElementById('url').value.slice(1) };tmpdata",runAt:"document_start"},function(results){
         // if(chrome.runtime.lastError){

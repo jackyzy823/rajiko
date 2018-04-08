@@ -13,21 +13,17 @@ ExpireObj.prototype.add = function(area,token,ifExpire = true){
   var me = this;
   this.area = area;
   authTokens[area] = { token:token,requestTime: Date.now()};
-  authTokens[area].obj = me;
   if(ifExpire){
+    // authTokens[area].obj = me; // not necessary
     this.timer = setTimeout(function(){
       delete authTokens[area];
-    }, 3 * 60 * 60 * 1000); //delete self after 3 hrs
+    }, 42e5); 
+    /*delete self after 1.5 hrs default area one let radikojsplayer handle. 
+    [test show that the token only have 1.2 hrs life no matter active or not?]
+    see code at: radikoJSPlayer.js?_=20180330:formatted:14022
+    setInterval(function() {s.authorization() }, 42e5) 
+    */
   }
-}
-ExpireObj.prototype.resetTimer = function(){
-  let me = this;
-  if(this.timer){
-    clearTimeout(this.timer);
-    this.timer = setTimeout(function(){
-      delete authTokens[me.area];
-    }, 3 * 60 * 60 * 1000);
-  }   
 }
 
 //https://kariruno.com/center-todoufuken/
@@ -255,7 +251,7 @@ let stopme = function(msg,sender,respCallback){
     }
 };
 
-//http://f-radiko.smartstream.ne.jp/JORF/_definst_/simul-stream.stream/media-u5qov5g4c_w376816114_646349.aac
+
 function streamListener(req){
     if(!chrome.runtime.onMessage.hasListener(stopme)){
         console.log("install stop-recording msg listener only once!");
@@ -388,6 +384,7 @@ chrome.storage.local.remove(["current_recording"],function(){
 });// clear up unfinished work while starting up.
 
 let modifier = [];
+let timeShiftQueue = {}; // "RAIDONAME_STARTTIME":
 
 chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not selected_areaid return default value:JP13
     let area_id = data["selected_areaid"];
@@ -421,6 +418,9 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                 chrome.browserAction.setIcon({path:'Circle-icons-radio-red-24.png'})
 
 
+
+            } else if(msg["download-timeshift"]){
+              //TODO
 
             }
         });
@@ -654,16 +654,15 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
             return !!authTokens[a];
           })
           if(hadTokenArea.length==0){
+            //TODO :should reauth it!
             //weired!!
             return {};
           }{
             let use_token ;
             if(hadTokenArea.includes(area_id)){
               use_token = authTokens[area_id].token;
-              authTokens[area_id].obj.resetTimer();//active this token
             }else{
               use_token = authTokens[hadTokenArea[0]].token;
-              authTokens[hadTokenArea[0]].obj.resetTimer(); //active this token
             }
             req.requestHeaders = req.requestHeaders.filter(function (x) {
               return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token

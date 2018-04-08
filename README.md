@@ -19,7 +19,7 @@ Permission Details:
 
 What's new:
 -----------
-+ version 0.2.0
++ version 0.2.0 [pre-release]
     
     Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
 
