@@ -6,16 +6,28 @@ let partialkey = null;
 // JPX: { token: xx , requestTime: date.now }
 let authTokens = {};
 function ExpireObj(){
+    this.area = null;
+    this.timer = null;
 }
 ExpireObj.prototype.add = function(area,token,ifExpire = true){
   var me = this;
+  this.area = area;
   authTokens[area] = { token:token,requestTime: Date.now()};
+  authTokens[area].obj = me;
   if(ifExpire){
-    authTokens[area].obj = me;
-    setTimeout(function(){
+    this.timer = setTimeout(function(){
       delete authTokens[area];
     }, 3 * 60 * 60 * 1000); //delete self after 3 hrs
   }
+}
+ExpireObj.prototype.resetTimer = function(){
+  let me = this;
+  if(this.timer){
+    clearTimeout(this.timer);
+    this.timer = setTimeout(function(){
+      delete authTokens[me.area];
+    }, 3 * 60 * 60 * 1000);
+  }   
 }
 
 //https://kariruno.com/center-todoufuken/
@@ -216,7 +228,6 @@ let stopme = function(msg,sender,respCallback){
                 let info = data["current_recording"]
                 let radioname = info["radioname"];
                 // let filename = info["filename"];
-                console.log("typeof start_time",typeof info["start_time"]);
                 let filename = timestamp2Filename(info["start_time"])+"_"+timestamp2Filename(info["end_time"])+".aac";
                 chrome.storage.local.get(radioname,function(data){
                     if(data[radioname]){
@@ -649,8 +660,10 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
             let use_token ;
             if(hadTokenArea.includes(area_id)){
               use_token = authTokens[area_id].token;
+              authTokens[area_id].obj.resetTimer();//active this token
             }else{
               use_token = authTokens[hadTokenArea[0]].token;
+              authTokens[hadTokenArea[0]].obj.resetTimer(); //active this token
             }
             req.requestHeaders = req.requestHeaders.filter(function (x) {
               return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
