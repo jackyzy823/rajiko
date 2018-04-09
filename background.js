@@ -11,21 +11,21 @@ function ExpireObj(){
     this.area = null;
     this.timer = null;
 }
-ExpireObj.prototype.add = function(area,token,ifExpire = true){
+ExpireObj.prototype.add = function(area,token){
   var me = this;
   this.area = area;
   authTokens[area] = { token:token,requestTime: Date.now()};
-  if(ifExpire){
     // authTokens[area].obj = me; // not necessary
-    this.timer = setTimeout(function(){
-      delete authTokens[area];
-    }, 36e5); //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
+  this.timer = setTimeout(function(){
+    delete authTokens[area];
+  }, 42e5); 
+  //default expire too
+  //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
     /*delete self after 1 hr default area one let radikojsplayer handle. 
     [test show that the token only have 1.1 hrs life no matter active or not?]
     see code at: radikoJSPlayer.js?_=20180330:formatted:14022
     setInterval(function() {s.authorization() }, 42e5) 
     */
-  }
 }
 
 // NOTE: sync function!!
@@ -79,6 +79,58 @@ function retTokenByRadioname(radioname,default_area_id){
   return token; 
 }
 
+function retTokenByRadioname_async(radioname,default_area_id, callback){
+  let availableArea = radioAreaId[radioname];
+  let hadTokenArea = availableArea.filter(function(a){
+    return !!authTokens[a];
+  })
+
+  if(hadTokenArea.length!=0){
+    return callback(authTokens[ hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0]  ].token);
+  }
+  let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
+  let info = genRandomInfo();
+  let auth1 = new XMLHttpRequest()
+  auth1.open('GET',"https://radiko.jp/v2/api/auth1"); //sync
+
+  auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
+  auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
+  auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
+  auth1.setRequestHeader('X-Radiko-Device',info.device);
+  auth1.setRequestHeader('X-Radiko-User',info.userid);
+  auth1.withCredentials = false;
+
+  auth1.onload = function(xhrevent){
+    // case-insensitive
+    let token = this.getResponseHeader('x-radiko-authtoken')
+    let offset = parseInt(this.getResponseHeader('x-radiko-keyoffset'));
+    let length = parseInt(this.getResponseHeader('x-radiko-keylength'));
+    let partial = btoa(atob(fullkey_b64).slice(offset, offset + length));
+
+    let auth2 = new XMLHttpRequest()
+    auth2.open('GET','https://radiko.jp/v2/api/auth2');
+
+    auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
+    auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
+    auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
+    auth2.setRequestHeader('X-Radiko-AuthToken',token)
+    auth2.setRequestHeader('X-Radiko-Device',info.device);
+    auth2.setRequestHeader('X-Radiko-User',info.userid);
+
+    auth2.setRequestHeader('X-Radiko-Location',genGPS(pickArea));
+    auth2.setRequestHeader('X-Radiko-Connection',"wifi");
+    auth2.setRequestHeader('X-Radiko-Partialkey',partial);
+
+    auth2.withCredentials = false;
+
+    auth2.onload = function(xhrevent){
+      let res  = (new ExpireObj()).add(pickArea,token); 
+      return callback(token); 
+    }
+    auth2.send();    
+  }
+  auth1.send();
+}
 
 
 //geo & device info stuff
@@ -289,8 +341,10 @@ let stopme = function(msg,sender,respCallback){
                             return str2ab(x);
                         });
                         let audiodata = new Blob(audio_buf,{type:"audio/aac"});
-                        chrome.downloads.download({url:URL.createObjectURL(audiodata),filename:radioname+ "/" +filename},function(downloadId){
+                        let audiourl = URL.createObjectURL(audiodata); //you shall free this
+                        chrome.downloads.download({url:audiourl,filename:radioname+ "/" +filename},function(downloadId){
                             console.log("download done!");
+                            URL.revokeObjectURL(audiourl);
                             chrome.storage.local.remove(["current_recording",radioname],function(){
                                 console.log("clean done!");
                                 if(chrome.runtime.lastError){
@@ -423,48 +477,6 @@ function streamListener(req){
 //download timeshift stuff
 let timeShiftQueue = {}; // "RAIDONAME_STARTTIME":
 
-function downAndsave(filename,links,index,finishCallback){
-  if(index >= links.length){
-  // if(links.length == 0){
-    return finishCallback(null);
-  }else{
-    let item = links[index];//links.shift();//pop one
-    let req = new XMLHttpRequest();
-    req.open('GET',item);
-    req.responseType = 'arraybuffer';
-    req.onload = function(xhrevent){
-      let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
-      // chrome.storage.local.get(filename,function(data){
-      let storage_set ={};
-      storage_set[filename+'_'+index] = audio_string;
-      // if(data[filename]){
-      //   data[filename].push(audio_string)
-      //   storage_set[filename] =  data[filename];
-
-      // }else{
-        
-      // }
-
-      chrome.storage.local.set(storage_set,function(){
-        if(chrome.runtime.lastError){
-          console.log("store error",chrome.runtime.lastError);
-          finishCallback(chrome.runtime.lastError)
-        }else{
-          downAndsave(filename,links,index+1, finishCallback);
-        }
-      });
-      // });
-    }
-
-    req.onerror = function(){
-      console.log("errrrrrrrrrrrrrrrrr!!!!!")
-      finishCallback(1); //error
-    }
-    req.send();
-
-  }
-}
-
 // NOTE: do in async
 function downloadtimeShift(m3u8link,default_area_id){
   let radioname,from,to;
@@ -484,57 +496,95 @@ function downloadtimeShift(m3u8link,default_area_id){
   });
   let filename = radioname+'_'+from+'_'+to+'.aac'; 
   console.log("timeshift file",filename);
-  let token = retTokenByRadioname(radioname,default_area_id); //NOTE: may sync function
-  let q1 = new XMLHttpRequest();
-  q1.open('GET',m3u8link); //will this be capture??
-  q1.setRequestHeader('X-Radiko-AuthToken',token);
-  q1.onload = function(xhrevent){
-    let resp = this.responseText;
-    let detailLink = resp.split('\n').filter(function(d){ return d[0]!='#' && d.trim()!=''})[0]
-    let q2 = new XMLHttpRequest();
-    q2.open('GET',detailLink);
-    q2.setRequestHeader('X-Radiko-AuthToken',token);
-    q2.onload = function(xhrevent){
+
+  retTokenByRadioname_async(radioname,default_area_id,function(token){
+    let q1 = new XMLHttpRequest();
+    q1.open('GET',m3u8link); //will this be capture??
+    q1.setRequestHeader('X-Radiko-AuthToken',token);
+    q1.onload = function(xhrevent){
       let resp = this.responseText;
-      let links = resp.split('\n').filter(function(d){return d[0]!='#' && d.trim()!=''});
-      downAndsave(filename,links,0,function(error){
-        let prepareList = [];
-        for(let i=0;i< links.length;i++){ prepareList.push(filename+'_'+i); }
-        if(error){ 
-          chrome.storage.local.remove(prepareList,function(){
+      let detailLink = resp.split('\n').filter(function(d){ return d[0]!='#' && d.trim()!=''})[0]
+      let q2 = new XMLHttpRequest();
+      q2.open('GET',detailLink);
+      q2.setRequestHeader('X-Radiko-AuthToken',token);
 
-          });
-        }else{
-          
-          chrome.storage.local.get(prepareList,function(data){
-            if(data){
-              let audio_buf = prepareList.map(function(x){
-                return str2ab(data[x]);
-              })
-              // let audio_str_arr = data[filename];
-              // let audio_buf = audio_str_arr.map(function(x){
-              //   return str2ab(x);
-              // });
-              let audiodata = new Blob(audio_buf,{type:"audio/aac"});
-              chrome.downloads.download({url:URL.createObjectURL(audiodata),filename:  filename},function(downloadId){
-                console.log("download done!");
-                chrome.storage.local.remove(prepareList,function(){
-                  console.log("clean done!");
+      q2.onload = function(xhrevent){
+        let resp = this.responseText;
+        let links = resp.split('\n').filter(function(d){return d[0]!='#' && d.trim()!=''});
+
+        let returned = false;
+        let keyList  = new Array(links.length);
+        let count = 0 ,linksCount = links.length;
+
+        //TODO: 1. parallel limit  (ConnectionsPerHostname = 6) 2. use webworker/parallel.js ?
+        for(let i = 0 ; i< linksCount ; i++){
+          let storekey = filename+'_'+i ,item = links[i] ;
+          (function(storekey,item,index){
+            if(returned) return;
+            let req = new XMLHttpRequest();
+              req.open('GET',item);
+              req.responseType = 'arraybuffer';
+              req.onload = function(xhrevent){
+                let audio_string =  ab2str(this.response);
+                let storage_set ={};
+                storage_set[storekey] = audio_string;
+
+                chrome.storage.local.set(storage_set,function(){
                   if(chrome.runtime.lastError){
-                    console.log("cleanup error",chrome.runtime.lastError);
+                    returned = true;
+                    chrome.storage.local.remove(keyList.filter(function(val){return !val}),function(){
+
+                    });
+
+                  }else{
+                    keyList[index] = storekey;
+                    count+=1;
+                    if(count == linksCount){
+                      chrome.storage.local.get(keyList,function(data){
+                        if(data){
+                          let audio_buf = keyList.map(function(x){
+                            return str2ab(data[x]);
+                          })
+                          // let audio_str_arr = data[filename];
+                          // let audio_buf = audio_str_arr.map(function(x){
+                          //   return str2ab(x);
+                          // });
+                          let audiodata = new Blob(audio_buf,{type:"audio/aac"});
+                          let audiourl = URL.createObjectURL(audiodata) ; //you shall free this via URL.revokeObjectURL
+                          chrome.downloads.download({url:audiourl,filename:  filename},function(downloadId){
+                            console.log("download done!");
+                            URL.revokeObjectURL(audiourl);
+                            chrome.storage.local.remove(keyList,function(){
+                              console.log("clean done!");
+                              if(chrome.runtime.lastError){
+                                console.log("cleanup error",chrome.runtime.lastError);
+                              }
+                            })
+                          });  
+                        }
+                      });                      
+                    }
                   }
-                })
-              });  
-            }
-          });
+                });
+              }
+
+              req.onerror = function(){
+                returned = true;
+                chrome.storage.local.remove(keyList.filter(function(val){return !val}),function(){
+
+                });
+              }
+              req.send();
+            })(storekey,item,i);
         }
-      })
 
-    }
-    q2.send();
+      }
+      q2.send();
 
-  };
-  q1.send()
+    };
+    q1.send()
+  });
+
 
 
 
@@ -548,6 +598,7 @@ chrome.storage.local.remove(["current_recording"],function(){
 });
 
 let modifier = [];
+// chrome.runtime.onInstalled.addListener() ==> cleanup previous version data by 1.get area 2. clean all 3 set area
 
 //main stuff
 chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not selected_areaid return default value:JP13
@@ -669,7 +720,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                 req.requestHeaders = req.requestHeaders.filter(function (x) {
                     //save token here
                     if(x.name.toLowerCase()=='x-radiko-authtoken'){
-                      let res = (new ExpireObj()).add(area_id,x.value,false);
+                      let res = (new ExpireObj()).add(area_id,x.value);
                       // authTokens[area_id] = { token: x.value , requestTime : Date.now()}
                     }
                     return !IGNORELIST.includes(x.name.toLowerCase());
