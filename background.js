@@ -4,28 +4,29 @@ let partialkey = null;
 
 
 //multi token stuff
-//dont know if memleak?
 // JPX: { token: xx , requestTime: date.now }
 let authTokens = {};
 function ExpireObj(){
-    this.area = null;
-    this.timer = null;
+  this.area = null;
+  this.timer = null;
 }
-ExpireObj.prototype.add = function(area,token){
-  var me = this;
+ExpireObj.prototype.add = function(area, token) {
+  let me = this;
   this.area = area;
-  authTokens[area] = { token:token,requestTime: Date.now()};
-    // authTokens[area].obj = me; // not necessary
-  this.timer = setTimeout(function(){
+  authTokens[area] = {
+    token: token,
+    requestTime: Date.now()
+  };
+  this.timer = setTimeout(function() {
     delete authTokens[area];
-  }, 42e5); 
+  }, 42e5);
   //default expire too
   //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
-    /*delete self after 1 hr default area one let radikojsplayer handle. 
-    [test show that the token only have 1.1 hrs life no matter active or not?]
-    see code at: radikoJSPlayer.js?_=20180330:formatted:14022
-    setInterval(function() {s.authorization() }, 42e5) 
-    */
+  /*delete self after 1 hr default area one let radikojsplayer handle. 
+  [test show that the token only have 1.1 hrs life no matter active or not?]
+  see code at: radikoJSPlayer.js?_=20180330:formatted:14022
+  setInterval(function() {s.authorization() }, 42e5) 
+  */
 }
 
 // NOTE: sync function!!
@@ -134,117 +135,121 @@ function retTokenByRadioname_async(radioname,default_area_id, callback){
 
 
 //geo & device info stuff
-//https://kariruno.com/center-todoufuken/
+//data source (capital of prefectures): https://www.benricho.org/chimei/latlng_data.html  
 const coordinates = {
-    "北海道":[43.06417,141.34694],
-    "青森": [40.82444,140.74],
-    "岩手": [39.70361,141.1525],
-    "宮城": [38.26889,140.87194],
-    "秋田": [39.71861,140.1025],
-    "山形": [38.24056,140.36333],
-    "福島": [37.75,140.46778],
-    "茨城": [36.34139,140.44667],
-    "栃木": [36.56583,139.88361],
-    "群馬": [36.39111,139.06083],
-    "埼玉": [35.85694,139.64889],
-    "千葉": [35.60472,140.12333],
-    "東京": [35.68944,139.69167],
-    "神奈川":[35.44778,139.6425],
-    "新潟": [37.90222,139.02361],
-    "富山": [36.69528,137.21139],
-    "石川": [36.59444,136.62556],
-    "福井": [36.06528,136.22194],
-    "山梨": [35.66389,138.56833],
-    "長野": [36.65139,138.18111],
-    "岐阜": [35.39111,136.72222],
-    "静岡": [34.97694,138.38306],
-    "愛知": [35.18028,136.90667],
-    "三重": [34.73028,136.50861],
-    "滋賀": [35.00444,135.86833],
-    "京都": [35.02139,135.75556],
-    "大阪": [34.68639,135.52],
-    "兵庫": [34.69139,135.18306],
-    "奈良": [34.68528,135.83278],
-    "和歌山":[34.22611,135.1675],
-    "鳥取": [35.50361,134.23833],
-    "島根": [35.47222,133.05056],
-    "岡山": [34.66167,133.935],
-    "広島": [34.39639,132.45944],
-    "山口": [34.18583,131.47139],
-    "徳島": [34.06583,134.55944],
-    "香川": [34.34028,134.04333],
-    "愛媛": [33.84167,132.76611],
-    "高知": [33.55972,133.53111],
-    "福岡": [33.60639,130.41806],
-    "佐賀": [33.24944,130.29889],
-    "長崎": [32.74472,129.87361],
-    "熊本": [32.78972,130.74167],
-    "大分": [33.23806,131.6125],
-    "宮崎": [31.91111,131.42389],
-    "鹿児島":[31.56028,130.55806],
-    "沖縄": [26.2125,127.6811]
- };
-//another data source (capital of prefectures): https://www.benricho.org/chimei/latlng_data.html  
+  "北海道": [43.06417, 141.34694],
+  "青森": [40.82444, 140.74],
+  "岩手": [39.70361, 141.1525],
+  "宮城": [38.26889, 140.87194],
+  "秋田": [39.71861, 140.1025],
+  "山形": [38.24056, 140.36333],
+  "福島": [37.75, 140.46778],
+  "茨城": [36.34139, 140.44667],
+  "栃木": [36.56583, 139.88361],
+  "群馬": [36.39111, 139.06083],
+  "埼玉": [35.85694, 139.64889],
+  "千葉": [35.60472, 140.12333],
+  "東京": [35.68944, 139.69167],
+  "神奈川": [35.44778, 139.6425],
+  "新潟": [37.90222, 139.02361],
+  "富山": [36.69528, 137.21139],
+  "石川": [36.59444, 136.62556],
+  "福井": [36.06528, 136.22194],
+  "山梨": [35.66389, 138.56833],
+  "長野": [36.65139, 138.18111],
+  "岐阜": [35.39111, 136.72222],
+  "静岡": [34.97694, 138.38306],
+  "愛知": [35.18028, 136.90667],
+  "三重": [34.73028, 136.50861],
+  "滋賀": [35.00444, 135.86833],
+  "京都": [35.02139, 135.75556],
+  "大阪": [34.68639, 135.52],
+  "兵庫": [34.69139, 135.18306],
+  "奈良": [34.68528, 135.83278],
+  "和歌山": [34.22611, 135.1675],
+  "鳥取": [35.50361, 134.23833],
+  "島根": [35.47222, 133.05056],
+  "岡山": [34.66167, 133.935],
+  "広島": [34.39639, 132.45944],
+  "山口": [34.18583, 131.47139],
+  "徳島": [34.06583, 134.55944],
+  "香川": [34.34028, 134.04333],
+  "愛媛": [33.84167, 132.76611],
+  "高知": [33.55972, 133.53111],
+  "福岡": [33.60639, 130.41806],
+  "佐賀": [33.24944, 130.29889],
+  "長崎": [32.74472, 129.87361],
+  "熊本": [32.78972, 130.74167],
+  "大分": [33.23806, 131.6125],
+  "宮崎": [31.91111, 131.42389],
+  "鹿児島": [31.56028, 130.55806],
+  "沖縄": [26.2125, 127.6811]
+};
+
 //range detail :http://www.gsi.go.jp/KOKUJYOHO/CENTER/zenken.htm
 
 //build number :https://www.androidpolice.com/android-build-number-date-calculator/
 //https://source.android.com/setup/build-numbers
 
 const VERSION_MAP = {
-    "5.0.0": { sdk: "21", builds: ["LRX21V", "LRX21T", "LRX21R", "LRX21Q", "LRX21P", "LRX21O", "LRX21M", "LRX21L"] },
-    "5.0.1": { sdk: "21", builds: ["LRX22C"] },
-    "5.0.2": { sdk: "21", builds: ["LRX22L", "LRX22G"] },
-    "5.1.0": { sdk: "22", builds: ["LMY47O", "LMY47M", "LMY47I", "LMY47E", "LMY47D"] },
-    "5.1.1": { sdk: "22", builds: ["LMY49M", "LMY49J", "LMY49I", "LMY49H", "LMY49G", "LMY49F", "LMY48Z", "LYZ28N", "LMY48Y", "LMY48X", "LMY48W", "LVY48H", "LYZ28M", "LMY48U", "LMY48T", "LVY48F", "LYZ28K", "LMY48P", "LMY48N", "LMY48M", "LVY48E", "LYZ28J", "LMY48J", "LMY48I", "LVY48C", "LMY48G", "LYZ28E", "LMY47Z", "LMY48B", "LMY47X", "LMY47V"] },
-    "6.0.0": { sdk: "23", builds: ["MMB29N", "MDB08M", "MDB08L", "MDB08K", "MDB08I", "MDA89E", "MDA89D", "MRA59B", "MRA58X", "MRA58V", "MRA58U", "MRA58N", "MRA58K"] },
-    "6.0.1": { sdk: "23", builds: ["MOI10E", "MOB31Z", "MOB31T", "MOB31S", "M4B30Z", "MOB31K", "MMB31C", "M4B30X", "MOB31H", "MMB30Y", "MTC20K", "MOB31E", "MMB30W", "MXC89L", "MTC20F", "MOB30Y", "MOB30X", "MOB30W", "MMB30S", "MMB30R", "MXC89K", "MTC19Z", "MTC19X", "MOB30P", "MOB30O", "MMB30M", "MMB30K", "MOB30M", "MTC19V", "MOB30J", "MOB30I", "MOB30H", "MOB30G", "MXC89H", "MXC89F", "MMB30J", "MTC19T", "M5C14J", "MOB30D", "MHC19Q", "MHC19J", "MHC19I", "MMB29X", "MXC14G", "MMB29V", "MXB48T", "MMB29U", "MMB29R", "MMB29Q", "MMB29T", "MMB29S", "MMB29P", "MMB29O", "MXB48K", "MXB48J", "MMB29M", "MMB29K"] },
-    "7.0.0": { sdk: "24", builds: ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"] },
-    "7.1.0": { sdk: "25", builds: ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"] },
-    "7.1.1": { sdk: "25", builds: ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"] },
-    "7.1.2": { sdk: "25", builds: ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"] }
+  "5.0.0": { sdk: "21", builds: ["LRX21V", "LRX21T", "LRX21R", "LRX21Q", "LRX21P", "LRX21O", "LRX21M", "LRX21L"] },
+  "5.0.1": { sdk: "21", builds: ["LRX22C"] },
+  "5.0.2": { sdk: "21", builds: ["LRX22L", "LRX22G"] },
+  "5.1.0": { sdk: "22", builds: ["LMY47O", "LMY47M", "LMY47I", "LMY47E", "LMY47D"] },
+  "5.1.1": { sdk: "22", builds: ["LMY49M", "LMY49J", "LMY49I", "LMY49H", "LMY49G", "LMY49F", "LMY48Z", "LYZ28N", "LMY48Y", "LMY48X", "LMY48W", "LVY48H", "LYZ28M", "LMY48U", "LMY48T", "LVY48F", "LYZ28K", "LMY48P", "LMY48N", "LMY48M", "LVY48E", "LYZ28J", "LMY48J", "LMY48I", "LVY48C", "LMY48G", "LYZ28E", "LMY47Z", "LMY48B", "LMY47X", "LMY47V"] },
+  "6.0.0": { sdk: "23", builds: ["MMB29N", "MDB08M", "MDB08L", "MDB08K", "MDB08I", "MDA89E", "MDA89D", "MRA59B", "MRA58X", "MRA58V", "MRA58U", "MRA58N", "MRA58K"] },
+  "6.0.1": { sdk: "23", builds: ["MOI10E", "MOB31Z", "MOB31T", "MOB31S", "M4B30Z", "MOB31K", "MMB31C", "M4B30X", "MOB31H", "MMB30Y", "MTC20K", "MOB31E", "MMB30W", "MXC89L", "MTC20F", "MOB30Y", "MOB30X", "MOB30W", "MMB30S", "MMB30R", "MXC89K", "MTC19Z", "MTC19X", "MOB30P", "MOB30O", "MMB30M", "MMB30K", "MOB30M", "MTC19V", "MOB30J", "MOB30I", "MOB30H", "MOB30G", "MXC89H", "MXC89F", "MMB30J", "MTC19T", "M5C14J", "MOB30D", "MHC19Q", "MHC19J", "MHC19I", "MMB29X", "MXC14G", "MMB29V", "MXB48T", "MMB29U", "MMB29R", "MMB29Q", "MMB29T", "MMB29S", "MMB29P", "MMB29O", "MXB48K", "MXB48J", "MMB29M", "MMB29K"] },
+  "7.0.0": { sdk: "24", builds: ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"] },
+  "7.1.0": { sdk: "25", builds: ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"] },
+  "7.1.1": { sdk: "25", builds: ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"] },
+  "7.1.2": { sdk: "25", builds: ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"] }
 };
 
 
 const MODEL_LIST = ["SC-02H", "SCV33", "SM-G935F", "SM-G935X", "SM-G935W8", "SM-G935K", "SM-G935L", "SM-G935S", "SAMSUNG-SM-G935A", "SM-G935VC", "SM-G9350", "SM-G935P", "SM-G935T", "SM-G935U", "SM-G935R4", "SM-G935V", "SC-02J", "SCV36", "SM-G950F", "SM-G950N", "SM-G950W", "SM-G9500", "SM-G9508", "SM-G950U", "SM-G950U1", "SM-G892A", "SM-G892U", "SC-03J", "SCV35", "SM-G955F", "SM-G955N", "SM-G955W", "SM-G9550", "SM-G955U", "SM-G955U1", "SM-G960F", "SM-G960N", "SM-G9600", "SM-G9608", "SM-G960W", "SM-G960U", "SM-G960U1", "SM-G965F", "SM-G965N", "SM-G9650", "SM-G965W", "SM-G965U", "SM-G965U1"
-    //Samsung galaxy s7+
-    , "SC-01J", "SCV34", "SM-N930F", "SM-N930X", "SM-N930K", "SM-N930L", "SM-N930S", "SM-N930R7", "SAMSUNG-SM-N930A", "SM-N930W8", "SM-N9300", "SGH-N037", "SM-N930R6", "SM-N930P", "SM-N930VL", "SM-N930T", "SM-N930U", "SM-N930R4", "SM-N930V", "SC-01K", "SCV37", "SM-N950F", "SM-N950N", "SM-N950XN", "SM-N950U", "SM-N9500", "SM-N9508", "SM-N950W", "SM-N950U1"
-    //samsung galaxy note
-    , "WX06K", "404KC", "503KC", "602KC", "KYV32", "E6782", "KYL22", "WX04K", "KYV36", "KYL21", "302KC", "KYV36", "KYV42", "KYV37", "C5155", "SKT01", "KYY24", "KYV35", "KYV41", "E6715", "KYY21", "KYY22", "KYY23", "KYV31", "KYV34", "KYV38", "WX10K", "KYL23", "KYV39", "KYV40"
-    //KYOCERA
-    , "C6902", "C6903", "C6906", "C6916", "C6943", "L39h", "L39t", "L39u", "SO-01F", "SOL23", "D5503", "M51w", "SO-02F", "D6502", "D6503", "D6543", "SO-03F", "SGP511", "SGP512", "SGP521", "SGP551", "SGP561", "SO-05F", "SOT21", "D6563", "401SO", "D6603", "D6616", "D6643", "D6646", "D6653", "SO-01G", "SOL26", "D6603", "D5803", "D5833", "SO-02G", "D5803", "D6633", "D6683", "SGP611", "SGP612", "SGP621", "SGP641", "E6553", "E6533", "D6708", "402SO", "SO-03G", "SOV31", "SGP712", "SGP771", "SO-05G", "SOT31", "E6508", "501SO", "E6603", "E6653", "SO-01H", "SOV32", "E5803", "E5823", "SO-02H", "E6853", "E6883", "SO-03H", "E6833", "E6633", "E6683", "C6502", "C6503", "C6506", "L35h", "SOL25", "C5306", "C5502", "C5503", "601SO", "F8331", "F8332", "SO-01J", "SOV34", "G8141", "G8142", "G8188", "SO-04J", "701SO", "G8341", "G8342", "G8343", "SO-01K", "SOV36", "G8441", "SO-02K", "602SO", "G8231", "G8232", "SO-03J", "SOV35"
-    //sony xperia z series
-    , "605SH", "SH-03J", "SHV39", "701SH", "SH-M06"
-    //sharp
-    , "101F", "201F", "202F", "301F", "IS12F", "F-03D", "F-03E", "M01", "M305", "M357", "M555", "M555", "F-11D", "F-06E", "EM01F", "F-05E", "FJT21", "F-01D", "FAR70B", "FAR7", "F-04E", "F-02E", "F-10D", "F-05D", "FJL22", "ISW11F", "ISW13F", "FJL21", "F-074", "F-07D"
-    //fujitu arrows
+  //Samsung galaxy s7+
+  , "SC-01J", "SCV34", "SM-N930F", "SM-N930X", "SM-N930K", "SM-N930L", "SM-N930S", "SM-N930R7", "SAMSUNG-SM-N930A", "SM-N930W8", "SM-N9300", "SGH-N037", "SM-N930R6", "SM-N930P", "SM-N930VL", "SM-N930T", "SM-N930U", "SM-N930R4", "SM-N930V", "SC-01K", "SCV37", "SM-N950F", "SM-N950N", "SM-N950XN", "SM-N950U", "SM-N9500", "SM-N9508", "SM-N950W", "SM-N950U1"
+  //samsung galaxy note
+  , "WX06K", "404KC", "503KC", "602KC", "KYV32", "E6782", "KYL22", "WX04K", "KYV36", "KYL21", "302KC", "KYV36", "KYV42", "KYV37", "C5155", "SKT01", "KYY24", "KYV35", "KYV41", "E6715", "KYY21", "KYY22", "KYY23", "KYV31", "KYV34", "KYV38", "WX10K", "KYL23", "KYV39", "KYV40"
+  //KYOCERA
+  , "C6902", "C6903", "C6906", "C6916", "C6943", "L39h", "L39t", "L39u", "SO-01F", "SOL23", "D5503", "M51w", "SO-02F", "D6502", "D6503", "D6543", "SO-03F", "SGP511", "SGP512", "SGP521", "SGP551", "SGP561", "SO-05F", "SOT21", "D6563", "401SO", "D6603", "D6616", "D6643", "D6646", "D6653", "SO-01G", "SOL26", "D6603", "D5803", "D5833", "SO-02G", "D5803", "D6633", "D6683", "SGP611", "SGP612", "SGP621", "SGP641", "E6553", "E6533", "D6708", "402SO", "SO-03G", "SOV31", "SGP712", "SGP771", "SO-05G", "SOT31", "E6508", "501SO", "E6603", "E6653", "SO-01H", "SOV32", "E5803", "E5823", "SO-02H", "E6853", "E6883", "SO-03H", "E6833", "E6633", "E6683", "C6502", "C6503", "C6506", "L35h", "SOL25", "C5306", "C5502", "C5503", "601SO", "F8331", "F8332", "SO-01J", "SOV34", "G8141", "G8142", "G8188", "SO-04J", "701SO", "G8341", "G8342", "G8343", "SO-01K", "SOV36", "G8441", "SO-02K", "602SO", "G8231", "G8232", "SO-03J", "SOV35"
+  //sony xperia z series
+  , "605SH", "SH-03J", "SHV39", "701SH", "SH-M06"
+  //sharp
+  , "101F", "201F", "202F", "301F", "IS12F", "F-03D", "F-03E", "M01", "M305", "M357", "M555", "M555", "F-11D", "F-06E", "EM01F", "F-05E", "FJT21", "F-01D", "FAR70B", "FAR7", "F-04E", "F-02E", "F-10D", "F-05D", "FJL22", "ISW11F", "ISW13F", "FJL21", "F-074", "F-07D"
+  //fujitu arrows
 ];
 
 function genRandomInfo() {
-    let version = Object.keys(VERSION_MAP)[(Math.floor(Math.random() * Object.keys(VERSION_MAP).length)) >> 0];
-    let sdk = VERSION_MAP[version].sdk;
-    let build = VERSION_MAP[version].builds[(Math.floor(Math.random() * VERSION_MAP[version].builds.length)) >> 0];
-    //Dalvik/2.1.0 (Linux; U; Android %VERSION%; %MODEL%/%BUILD%)
-    //X-Radiko-Device: %SDKVERSION%.%NORMALIZEMODEL%
-    let model = MODEL_LIST[(Math.floor(Math.random() * MODEL_LIST.length)) >> 0];
+  let version = Object.keys(VERSION_MAP)[(Math.floor(Math.random() * Object.keys(VERSION_MAP).length)) >> 0];
+  let sdk = VERSION_MAP[version].sdk;
+  let build = VERSION_MAP[version].builds[(Math.floor(Math.random() * VERSION_MAP[version].builds.length)) >> 0];
+  //Dalvik/2.1.0 (Linux; U; Android %VERSION%; %MODEL%/%BUILD%)
+  //X-Radiko-Device: %SDKVERSION%.%NORMALIZEMODEL%
+  let model = MODEL_LIST[(Math.floor(Math.random() * MODEL_LIST.length)) >> 0];
+  let device = sdk + "." + model;
+  let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
-    let device = sdk + "." + model;
-    let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
+  let appversion = function() {
+    let version = ["6.3.6", "6.3.5", "6.3.3", "6.3.2", "6.3.1"]; //new version 6.3.6 from 2018/04/03
+    return version[(Math.floor(Math.random() * version.length)) >> 0];
+  }();
 
-    let appversion = function () {
-        let version = ["6.3.6","6.3.5", "6.3.3", "6.3.2", "6.3.1"]; //new version 6.3.6 from 2018/04/03
-        return version[(Math.floor(Math.random() * version.length)) >> 0];
-    }();
-    let userid = function () {
-        let hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
-        let s = '';
-        for (let i = 0; i < 32; i++) {
-            s += hex[(Math.floor(Math.random() * hex.length)) >> 0];
-        }
-        return s;
-    }();
+  let userid = function() {
+    let hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+    let s = '';
+    for (let i = 0; i < 32; i++) {
+      s += hex[(Math.floor(Math.random() * hex.length)) >> 0];
+    }
+    return s;
+  }();
 
-    return { appversion: appversion, userid: userid, useragent: useragent, device: device }
-
+  return {
+    appversion: appversion,
+    userid: userid,
+    useragent: useragent,
+    device: device
+  }
 }
 let GENERATED_RANDOMINFO = genRandomInfo();
 
@@ -254,118 +259,125 @@ const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-
 const XHRREFUSELIST = ["origin" , "user-agent" , "referer" ,"accept-encoding", /*For using xhr in firefox*/"host","connection"];
 
 function genGPS(area_id) {
-    let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
-    let lat = latlong[0];
-    let long = latlong[1];
-    // +/- 0~ 0.025 --> 0 ~ 1.5' ->  +/-  0~ 2.77/2.13km
-    lat = lat + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
-    long = long + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
-    return lat.toFixed(6) + "," + long.toFixed(6) + ",gps";
+  let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
+  let lat = latlong[0];
+  let long = latlong[1];
+  // +/- 0 ~ 0.025 --> 0 ~ 1.5' ->  +/-  0 ~ 2.77/2.13km
+  lat = lat + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
+  long = long + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
+  return lat.toFixed(6) + "," + long.toFixed(6) + ",gps";
 }
 
 console.log("GENERATED_RANDOMINFO", GENERATED_RANDOMINFO);
 
-
+//TODO: optimize this to avoid high cpu usage 
 function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
+  return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
 }
 
+//TODO: optimize this to avoid high cpu usage 
 function str2ab(str) {
-    let buf = new ArrayBuffer(str.length ); // Uint16 -> 2 bytes for each char
-    let bufView = new Uint8Array(buf);
-    for (let i=0, strLen=str.length; i<strLen; i++) {
-      bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
+  let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char
+  let bufView = new Uint8Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
 }
 
 //see https://github.com/kiefferbp/webext-getBytesInUse-polyfill/blob/master/index.js
-function firefox_getBytesInUse(keys,callback){
-    let size = 0;
-    if(typeof keys === 'string'){
-        keys = [keys];
+function firefox_getBytesInUse(keys, callback) {
+  let size = 0;
+  if (typeof keys === 'string') {
+    keys = [keys];
+  }
+  chrome.storage.local.get(keys, function(results) {
+    let lastError = chrome.runtime.lastError;
+    if (lastError) {
+      callback(-1);
+      return;
     }
-    chrome.storage.local.get(keys,function(results){
-        let lastError = chrome.runtime.lastError;
-        if(lastError){
-            callback(-1);
-            return;
-        }
-        keys.forEach(function(key){
-            size+= (key+JSON.stringify(results[key])).length;
-        });
-        callback(size);
-    })
-} 
+    keys.forEach(function(key) {
+      size += (key + JSON.stringify(results[key])).length;
+    });
+    callback(size);
+  });
+}
 //polyfill
 chrome.storage.local.getBytesInUse = chrome.storage.local.getBytesInUse || firefox_getBytesInUse;
 
 /* OBSOLETED prototype of multi recording. 
 function recorder(radio){
-    let radioname = radio;
-    let stopme = function();
-    let worker = function();
-    return worker
+  let radioname = radio;
+  let stopme = function();
+  let worker = function();
+  return worker
 }
 */
 
 //download live stuff
-function timestamp2Filename(t){
-    let d = new Date(t);
-    let d_str = ''+d.getFullYear();
-    d_str += (d.getMonth()+1).toString().length==1? '0'+(d.getMonth()+1).toString() : (d.getMonth()+1).toString();
-    d_str += d.getDate().toString().length == 1? '0'+d.getDate():''+d.getDate();
-    d_str += d.getHours().toString().length == 1? '0'+d.getHours():''+d.getHours();
-    d_str += d.getMinutes().toString().length == 1? '0'+d.getMinutes():''+d.getMinutes();
-    d_str += d.getSeconds().toString().length == 1? '0'+d.getSeconds():''+d.getSeconds();
-    return d_str;
+function timestamp2Filename(t) {
+  let d = new Date(t);
+  let d_str = '' + d.getFullYear();
+  d_str += (d.getMonth() + 1).toString().length == 1 ? '0' + (d.getMonth() + 1).toString() : (d.getMonth() + 1).toString();
+  d_str += d.getDate().toString().length == 1 ? '0' + d.getDate() : '' + d.getDate();
+  d_str += d.getHours().toString().length == 1 ? '0' + d.getHours() : '' + d.getHours();
+  d_str += d.getMinutes().toString().length == 1 ? '0' + d.getMinutes() : '' + d.getMinutes();
+  d_str += d.getSeconds().toString().length == 1 ? '0' + d.getSeconds() : '' + d.getSeconds();
+  return d_str;
 }
 // {current_recording: {radioname: xxx , start_time : xxx , end_time: xxx , count:0}}
-let stopme = function(msg,sender,respCallback){
-    if(msg["stop-recording"]){
-        respCallback();
-        console.log("they force me to stop!");
-        chrome.runtime.onMessage.removeListener(stopme);
-        chrome.webRequest.onBeforeSendHeaders.removeListener(streamListener);
-        console.log("ready to download!");
-        chrome.storage.local.get("current_recording",function(data){
-            if(data["current_recording"]){
-                let info = data["current_recording"]
-                let radioname = info["radioname"];
-                // let filename = info["filename"];
-                let filename = timestamp2Filename(info["start_time"])+"_"+timestamp2Filename(info["end_time"])+".aac";
-                let keyList = new Array(info["count"]);
-                for(let i=0;i< info["count"];i++){
-                  keyList[i] = radioname+'_'+ info["start_time"] + '_' + i;
+let stopme = function(msg, sender, respCallback) {
+  if (msg["stop-recording"]) {
+    respCallback();
+    chrome.runtime.onMessage.removeListener(stopme);
+    chrome.webRequest.onBeforeSendHeaders.removeListener(streamListener);
+    console.log("ready to download!");
+    chrome.storage.local.get("current_recording", function(data) {
+      if (data["current_recording"]) {
+        let info = data["current_recording"]
+        let radioname = info["radioname"];
+        let filename = timestamp2Filename(info["start_time"]) + "_" + timestamp2Filename(info["end_time"]) + ".aac";
+        let keyList = new Array(info["count"]);
+
+        for (let i = 0; i < info["count"]; i++) {
+          keyList[i] = radioname + '_' + info["start_time"] + '_' + i;
+        }
+
+        chrome.storage.local.get(keyList, function(data) {
+          if (data) {
+            let audio_buf = keyList.map(function(x) {
+              return str2ab(data[x]);
+            });
+
+            let audiodata = new Blob(audio_buf, {
+              type: "audio/aac"
+            });
+            let audiourl = URL.createObjectURL(audiodata); //you shall free this
+            chrome.downloads.download({
+              url: audiourl,
+              filename: radioname + "/" + filename
+            }, function(downloadId) {
+              console.log("download done!");
+              URL.revokeObjectURL(audiourl);
+              keyList.push("current_recording") // also remove current_recording
+              chrome.storage.local.remove(keyList, function() {
+                console.log("clean done!");
+                if (chrome.runtime.lastError) {
+                  console.log("cleanup error", chrome.runtime.lastError);
                 }
+              })
+            });
+          }
+        });
 
-                chrome.storage.local.get(keyList,function(data){
-                    if(data){
-                        let audio_buf = keyList.map(function(x){
-                            return str2ab(data[x]);
-                        });
+      }
 
-                        let audiodata = new Blob(audio_buf,{type:"audio/aac"});
-                        let audiourl = URL.createObjectURL(audiodata); //you shall free this
-                        chrome.downloads.download({url:audiourl,filename:radioname+ "/" +filename},function(downloadId){
-                            console.log("download done!");
-                            URL.revokeObjectURL(audiourl);
-                            keyList.push("current_recording") // also remove current_recording
-                            chrome.storage.local.remove(keyList,function(){
-                                console.log("clean done!");
-                                if(chrome.runtime.lastError){
-                                    console.log("cleanup error",chrome.runtime.lastError);
-                                }
-                            })
-                        });  
-                    }
-                });
-
-            }
-
-        })        //
-        chrome.browserAction.setIcon({path:'Circle-icons-radio-blue-24.png'})
-    }
+    }) //
+    chrome.browserAction.setIcon({
+      path: 'Circle-icons-radio-blue-24.png'
+    })
+  }
 };
 
 
@@ -476,106 +488,120 @@ function streamListener(req){
 //download timeshift stuff
 let timeShiftQueue = {}; // "RAIDONAME_STARTTIME":
 
-// NOTE: do in async
-function downloadtimeShift(m3u8link,default_area_id){
-  let radioname,from,to;
-  (new URL(m3u8link)).search.slice(1).split('&').map(function(kv){
+// NOTE: do in async or move to worker?
+function downloadtimeShift(m3u8link, default_area_id) {
+  let radioname, from, to;
+  (new URL(m3u8link)).search.slice(1).split('&').map(function(kv) {
     let s = kv.split('=');
-    switch(s[0]){
+    switch (s[0]) {
       case 'station_id':
         radioname = s[1];
         break;
       case 'ft':
-        from  = s[1];
-        break
+        from = s[1];
+        break;
       case 'to':
         to = s[1];
-        break
+        break;
     }
   });
-  let filename = radioname+'_'+from+'_'+to+'.aac'; 
-  console.log("timeshift file",filename);
+  let filename = radioname + '_' + from + '_' + to + '.aac';
+  console.log("timeshift file", filename);
 
-  retTokenByRadioname_async(radioname,default_area_id,function(token){
+  retTokenByRadioname_async(radioname, default_area_id, function(token) {
     let q1 = new XMLHttpRequest();
-    q1.open('GET',m3u8link); //will this be capture??
-    q1.setRequestHeader('X-Radiko-AuthToken',token);
-    q1.onload = function(xhrevent){
+    q1.open('GET', m3u8link); //will this be capture??
+    q1.setRequestHeader('X-Radiko-AuthToken', token);
+    q1.onload = function(xhrevent) {
       let resp = this.responseText;
-      let detailLink = resp.split('\n').filter(function(d){ return d[0]!='#' && d.trim()!=''})[0]
+      let detailLink = resp.split('\n').filter(function(d) {
+        return d[0] != '#' && d.trim() != '';
+      })[0];
       let q2 = new XMLHttpRequest();
-      q2.open('GET',detailLink);
-      q2.setRequestHeader('X-Radiko-AuthToken',token);
+      q2.open('GET', detailLink);
+      q2.setRequestHeader('X-Radiko-AuthToken', token);
 
-      q2.onload = function(xhrevent){
+      q2.onload = function(xhrevent) {
         let resp = this.responseText;
-        let links = resp.split('\n').filter(function(d){return d[0]!='#' && d.trim()!=''});
+        let links = resp.split('\n').filter(function(d) {
+          return d[0] != '#' && d.trim() != '';
+        });
 
         let returned = false;
-        let keyList  = new Array(links.length);
-        let count = 0 ,linksCount = links.length;
+        let linksCount = links.length;
+        let keyList = new Array(linksCount);
+        let count = 0;
 
         //TODO: 1. parallel limit  (ConnectionsPerHostname = 6) 2. use webworker/parallel.js ?
-        for(let i = 0 ; i< linksCount ; i++){
-          let storekey = filename+'_'+i ,item = links[i] ;
-          (function(storekey,item,index){
-            if(returned) return;
+        for (let i = 0; i < linksCount; i++) {
+          let storekey = filename + '_' + i;
+          let item = links[i];
+          (function(storekey, item, index) {
+            if (returned) {return;}
             let req = new XMLHttpRequest();
-              req.open('GET',item);
-              req.responseType = 'arraybuffer';
-              req.onload = function(xhrevent){
-                let audio_string =  ab2str(this.response);
-                let storage_set ={};
-                storage_set[storekey] = audio_string;
+            req.open('GET', item);
+            req.responseType = 'arraybuffer';
+            req.onload = function(xhrevent) {
+              let audio_string = ab2str(this.response);
+              let storage_set = {};
+              storage_set[storekey] = audio_string;
 
-                chrome.storage.local.set(storage_set,function(){
-                  if(chrome.runtime.lastError){
-                    returned = true;
-                    chrome.storage.local.remove(keyList.filter(function(val){return !val}),function(){
+              chrome.storage.local.set(storage_set, function() {
+                if (chrome.runtime.lastError) {
+                  returned = true;
+                  chrome.storage.local.remove(keyList.filter(function(val) {
+                    return !val
+                  }), function() {
 
-                    });
+                  });
 
-                  }else{
-                    keyList[index] = storekey;
-                    count+=1;
-                    if(count == linksCount){
-                      chrome.storage.local.get(keyList,function(data){
-                        if(data){
-                          let audio_buf = keyList.map(function(x){
-                            return str2ab(data[x]);
+                } else {
+                  keyList[index] = storekey;
+                  count += 1;
+                  if (count == linksCount) {
+                    chrome.storage.local.get(keyList, function(data) {
+                      if (data) {
+                        let audio_buf = keyList.map(function(x) {
+                          return str2ab(data[x]);
+                        })
+                        let audiodata = new Blob(audio_buf, {
+                          type: "audio/aac"
+                        });
+                        let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
+                        chrome.downloads.download({
+                          url: audiourl,
+                          filename: filename
+                        }, function(downloadId) {
+                          console.log("download done!");
+                          URL.revokeObjectURL(audiourl);
+                          chrome.storage.local.remove(keyList, function() {
+                            console.log("clean done!");
+                            if (chrome.runtime.lastError) {
+                              console.log("cleanup error", chrome.runtime.lastError);
+                            }
                           })
-                          // let audio_str_arr = data[filename];
-                          // let audio_buf = audio_str_arr.map(function(x){
-                          //   return str2ab(x);
-                          // });
-                          let audiodata = new Blob(audio_buf,{type:"audio/aac"});
-                          let audiourl = URL.createObjectURL(audiodata) ; //you shall free this via URL.revokeObjectURL
-                          chrome.downloads.download({url:audiourl,filename:  filename},function(downloadId){
-                            console.log("download done!");
-                            URL.revokeObjectURL(audiourl);
-                            chrome.storage.local.remove(keyList,function(){
-                              console.log("clean done!");
-                              if(chrome.runtime.lastError){
-                                console.log("cleanup error",chrome.runtime.lastError);
-                              }
-                            })
-                          });  
-                        }
-                      });                      
-                    }
+                        });
+                      }
+                    });
                   }
-                });
-              }
+                }
+              });
+            }
 
-              req.onerror = function(){
-                returned = true;
-                chrome.storage.local.remove(keyList.filter(function(val){return !val}),function(){
+            req.onerror = function() {
+              returned = true;
+              chrome.storage.local.remove(keyList.filter(function(val) {
+                return !val
+              }), function() {
 
-                });
-              }
-              //TODO: setTimeout() to make parallel
+              });
+            }
+            //TODO: setTimeout() to make parallel
+            setTimeout(function() {
               req.send();
-            })(storekey,item,i);
+            }, Math.floor(index / 6) * 100);
+            // req.send();
+          })(storekey, item, i);
         }
 
       }
@@ -587,232 +613,304 @@ function downloadtimeShift(m3u8link,default_area_id){
 }
 
 
-// clear up unfinished work while starting up.
-//TODO: how to clean up unfinished timeshift task?
-chrome.storage.local.remove(["current_recording"],function(){
-    console.log("clear up unfinished work while starting up.");
-});
-
 let modifier = [];
-// chrome.runtime.onInstalled.addListener() ==> cleanup previous version data by 1.get area 2. clean all 3 set area
-
 //main stuff
 chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not selected_areaid return default value:JP13
-    let area_id = data["selected_areaid"];
+  let area_id = data["selected_areaid"];
+
+    //clean previous unfinshed recording or downloading content if exists.
+  chrome.storage.local.clear(function() {
+    chrome.storage.local.set({
+      "selected_areaid": area_id
+    }, function() {});
+  })
     // //cookie may not be set here?
     // chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id },function(c){
     //   console.log("set cookie",c);
     // });
 
-    chrome.runtime.onMessage.addListener(
-        function (msg,sender,respCallback) {
-            if (msg["update-area"]) {
-                area_id = msg["update-area"];
-                chrome.storage.local.set({ selected_areaid: area_id }, function () { });
-                chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id },function(c){
-                  console.log("set cookie",c);
-                });
-            } else if (msg["start-recording"]) {
-                let radioname = msg["start-recording"];
+  chrome.runtime.onMessage.addListener(
+    function(msg, sender, respCallback) {
+      if (msg["update-area"]) {
+        area_id = msg["update-area"];
+        chrome.storage.local.set({
+          selected_areaid: area_id
+        }, function() {});
+        chrome.cookies.set({
+          url: "http://radiko.jp/",
+          name: "default_area_id",
+          value: area_id
+        }, function(c) {
+          console.log("set cookie", c);
+        });
+      } else if (msg["start-recording"]) {
+        let radioname = msg["start-recording"];
 
-                console.log("Strart recording",radioname);
-                chrome.storage.local.set({"current_recording":{"radioname":radioname,count:0}},function(){
-                    console.log("Add recording listener");
-                    chrome.webRequest.onBeforeSendHeaders.addListener(  //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
-                        streamListener
-                        , { urls: ["*://*.smartstream.ne.jp/"+radioname+"/*.aac"] } // may specific detailed FM name to avoid save other stream? 
-                                                                                    // is filter case sensitive??? yes path is case sensitive but domain is not
-                        , ["blocking","requestHeaders"]
-                    );
-                    respCallback(); 
-                });
-                chrome.browserAction.setIcon({path:'Circle-icons-radio-red-24.png'})
+        console.log("Strart recording", radioname);
+        chrome.storage.local.set({
+          "current_recording": {
+            "radioname": radioname,
+            count: 0
+          }
+        }, function() {
+          console.log("Add recording listener");
+          chrome.webRequest.onBeforeSendHeaders.addListener( //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
+            streamListener, {
+              urls: ["*://*.smartstream.ne.jp/" + radioname + "/*.aac"]
+            } // may specific detailed FM name to avoid save other stream? 
+            // is filter case sensitive??? yes path is case sensitive but domain is not
+            , ["blocking", "requestHeaders"]
+          );
+          respCallback();
+        });
+        chrome.browserAction.setIcon({
+          path: 'Circle-icons-radio-red-24.png'
+        })
 
 
 
-            } else if(msg["download-timeshift"]){
-              //TODO
-              console.log("start donwload timeshift");
-              downloadtimeShift(msg["download-timeshift"],area_id)
+      } else if (msg["download-timeshift"]) {
+        //TODO
+        console.log("start donwload timeshift");
+        downloadtimeShift(msg["download-timeshift"], area_id)
+      }
+    });
+
+
+  chrome.webRequest.onBeforeRequest.addListener(
+    function(req) {
+      chrome.cookies.set({
+        url: "http://radiko.jp/",
+        name: "default_area_id",
+        value: area_id
+      });
+      return {
+        cancel: true
+      };
+    }, {
+      urls: ["*://*.radiko.jp/area*"]
+    }, ["blocking"]
+  );
+
+
+
+
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+    function(req) {
+      for (let i = 0; i < req.requestHeaders.length; i++) {
+        if (req.requestHeaders[i].name.toLowerCase() == "user-agent") {
+          let ua = req.requestHeaders[i].value.toLowerCase();
+          if (ua.indexOf("android") != -1 || ua.indexOf("mobile") != -1) {
+            req.requestHeaders[i].value = req.requestHeaders[i].value.replace(/android.*?\;/gi, "").replace(/mobile/gi, ""); //ugly
+            console.log(req.requestHeaders[i].value)
+            if (browser && browser.contentScripts) {
+              //chrome.runtime.getPlatformInfo(function(info) {info.os == chrome.runtime.PlatformOs.ANDROID} )
+              // >= firefox android 59 
+              if (modifier.length == 0) { //and unregister?
+                modifier.push(browser.contentScripts.register({
+                  matches: ["*://*.radiko.jp/*"], //asterisk necessary?
+                  js: [{
+                    file: "ui/mobile_start.js"
+                  }], //DOMContentLoaded
+                  css: [{
+                    file: "ui/mobile.css"
+                  }],
+                  runAt: "document_start"
+                }));
+              }
+
+              //only add once!!! and need removeListener?
+              chrome.webRequest.onBeforeRequest.addListener(function(req) {
+                //"https://radiko.jp/mobile/#!/timeshift"  -> http://radiko.jp/#!/timeshift
+                // let item = /\/#!\/(.*)/g.exec(req.url)[0]
+                return {
+                  redirectUrl: "http://radiko.jp"
+                };
+              }, {
+                urls: ["*://radiko.jp/mobile/#!/*"]
+              }, ["blocking"]);
+              chrome.webRequest.handlerBehaviorChanged(function() {
+                console.log("call handlerBehaviorChanged")
+              }); //expensive !! for mobile reload correctly?                            
             }
+            //do not redirect to mobile app download page via change to pc useragents
+            //may be a feature because real android device does not send this request
+          }
+        }
+      }
+      return {
+        requestHeaders: req.requestHeaders
+      };
+    }, {
+      urls: ["*://*.radiko.jp/"]
+    }, ["blocking", "requestHeaders"]
+  );
+
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+    function(req) {
+
+      if (req.url.indexOf("auth1") != -1 && req.method.toLowerCase() == 'get') {
+
+        //some x-radiko cannot captialize .because it exists before modification.
+        //may be another feature
+        req.requestHeaders = req.requestHeaders.filter(function(x) {
+          return !IGNORELIST.includes(x.name.toLowerCase());
+        });
+
+        req.requestHeaders.push({
+          name: "X-Radiko-User",
+          value: GENERATED_RANDOMINFO.userid
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-App-Version",
+          value: GENERATED_RANDOMINFO.appversion
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-App",
+          value: "aSmartPhone7a"
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-Device",
+          value: GENERATED_RANDOMINFO.device
+        });
+        req.requestHeaders.push({
+          name: "User-Agent",
+          value: GENERATED_RANDOMINFO.useragent
         });
 
 
-
-    chrome.webRequest.onBeforeRequest.addListener(
-        function (req) {
-            chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id });
-            return { cancel: true };
-        },
-        { urls: ["*://*.radiko.jp/area*"] },
-        ["blocking"]
-    );
-
-
+      } else if (req.url.indexOf("auth2") != -1 && req.method.toLowerCase() == 'get') {
+        req.requestHeaders = req.requestHeaders.filter(function(x) {
+          //save token here
+          if (x.name.toLowerCase() == 'x-radiko-authtoken') {
+            let res = (new ExpireObj()).add(area_id, x.value);
+            // authTokens[area_id] = { token: x.value , requestTime : Date.now()}
+          }
+          return !IGNORELIST.includes(x.name.toLowerCase());
+        });
 
 
-    chrome.webRequest.onBeforeSendHeaders.addListener(
-        function (req) {
-            for (let i = 0; i < req.requestHeaders.length; i++) {
-                if (req.requestHeaders[i].name.toLowerCase() == "user-agent") {
-                    let ua = req.requestHeaders[i].value.toLowerCase();
-                    if (ua.indexOf("android") != -1 || ua.indexOf("mobile") != -1) {
-                        req.requestHeaders[i].value = req.requestHeaders[i].value.replace(/android.*?\;/gi, "").replace(/mobile/gi, ""); //ugly
-                        console.log(req.requestHeaders[i].value)
-                        if(browser && browser.contentScripts){
-                            //chrome.runtime.getPlatformInfo(function(info) {info.os == chrome.runtime.PlatformOs.ANDROID} )
-                            // >= firefox android 59 
-                            if (modifier.length == 0){ //and unregister?
-                                modifier.push(browser.contentScripts.register({
-                                    matches:["*://*.radiko.jp/*"], //asterisk necessary?
-                                    js :[{file:"ui/mobile_start.js"}], //DOMContentLoaded
-                                    css:[{file:"ui/mobile.css"}],
-                                    runAt:"document_start"
-                                }));
-                            }
+        req.requestHeaders.push({
+          name: "X-Radiko-User",
+          value: GENERATED_RANDOMINFO.userid
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-App-Version",
+          value: GENERATED_RANDOMINFO.appversion
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-App",
+          value: "aSmartPhone7a"
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-Device",
+          value: GENERATED_RANDOMINFO.device
+        });
+        req.requestHeaders.push({
+          name: "User-Agent",
+          value: GENERATED_RANDOMINFO.useragent
+        });
 
-                            //only add once!!! and need removeListener?
-                            chrome.webRequest.onBeforeRequest.addListener(function(req){
-                              //"https://radiko.jp/mobile/#!/timeshift"  -> http://radiko.jp/#!/timeshift
-                              // let item = /\/#!\/(.*)/g.exec(req.url)[0]
-                              return {redirectUrl: "http://radiko.jp"};
-                            },{urls:["*://radiko.jp/mobile/#!/*"]},["blocking"]);   
-                            chrome.webRequest.handlerBehaviorChanged(function(){
-                              console.log("call handlerBehaviorChanged")
-                            }); //expensive !! for mobile reload correctly?                            
-                        }
-                        //do not redirect to mobile app download page via change to pc useragents
-                        //may be a feature because real android device does not send this request
-                                             
+        req.requestHeaders.push({
+          name: "X-Radiko-Partialkey",
+          value: partialkey
+        });
+        partialkey = null;
 
-                    }
-                }
-            }
-            return { requestHeaders: req.requestHeaders };
+
+        req.requestHeaders.push({
+          name: "X-Radiko-Connection",
+          value: "wifi"
+        });
+
+        let gps_info = genGPS(area_id);
+        console.log("use gps:", gps_info);
+
+        req.requestHeaders.push({
+          name: "X-Radiko-Location",
+          value: gps_info
+        });
+
+        //save token
+
+      }
+      return {
+        requestHeaders: req.requestHeaders
+      };
+    }, {
+      urls: ["*://*.radiko.jp/v2/api/auth*"]
+    }, ["blocking", "requestHeaders"]
+  );
+
+  chrome.webRequest.onHeadersReceived.addListener(
+    function(resp) {
+      let offset = 0;
+      let length = 0;
+      for (let i = 0; i < resp.responseHeaders.length; i++) {
+        if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
+          offset = parseInt(resp.responseHeaders[i].value);
+          resp.responseHeaders[i].value = "0"; //to avoid too big offset cause radiko's js error
         }
-        , { urls: ["*://*.radiko.jp/"] }
-        , ["blocking", "requestHeaders"]
-    )
-
-    chrome.webRequest.onBeforeSendHeaders.addListener(
-        function (req) {
-
-            if (req.url.indexOf("auth1") != -1 && req.method.toLowerCase() == 'get') {
-
-                //some x-radiko cannot captialize .because it exists before modification.
-                //may be another feature
-                req.requestHeaders = req.requestHeaders.filter(function (x) {
-                    return !IGNORELIST.includes(x.name.toLowerCase());
-                });
-
-                req.requestHeaders.push({ name: "X-Radiko-User", value: GENERATED_RANDOMINFO.userid });
-                req.requestHeaders.push({ name: "X-Radiko-App-Version", value: GENERATED_RANDOMINFO.appversion });
-                req.requestHeaders.push({ name: "X-Radiko-App", value: "aSmartPhone7a" });
-                req.requestHeaders.push({ name: "X-Radiko-Device", value: GENERATED_RANDOMINFO.device });
-                req.requestHeaders.push({ name: "User-Agent", value: GENERATED_RANDOMINFO.useragent });
-
-
-            } else if (req.url.indexOf("auth2") != -1 && req.method.toLowerCase() == 'get') {
-                req.requestHeaders = req.requestHeaders.filter(function (x) {
-                    //save token here
-                    if(x.name.toLowerCase()=='x-radiko-authtoken'){
-                      let res = (new ExpireObj()).add(area_id,x.value);
-                      // authTokens[area_id] = { token: x.value , requestTime : Date.now()}
-                    }
-                    return !IGNORELIST.includes(x.name.toLowerCase());
-                });
-
-
-                req.requestHeaders.push({ name: "X-Radiko-User", value: GENERATED_RANDOMINFO.userid });
-                req.requestHeaders.push({ name: "X-Radiko-App-Version", value: GENERATED_RANDOMINFO.appversion });
-                req.requestHeaders.push({ name: "X-Radiko-App", value: "aSmartPhone7a" });
-                req.requestHeaders.push({ name: "X-Radiko-Device", value: GENERATED_RANDOMINFO.device });
-                req.requestHeaders.push({ name: "User-Agent", value: GENERATED_RANDOMINFO.useragent });
-
-                req.requestHeaders.push({ name: "X-Radiko-Partialkey", value: partialkey });
-                partialkey = null;
-
-
-                req.requestHeaders.push({ name: "X-Radiko-Connection", value: "wifi" });
-
-                let gps_info = genGPS(area_id);
-                console.log("use gps:", gps_info);
-
-                req.requestHeaders.push({ name: "X-Radiko-Location", value: gps_info });
-
-                //save token
-
-            }
-            return { requestHeaders: req.requestHeaders };
-        },
-        { urls: ["*://*.radiko.jp/v2/api/auth*"] },
-        ["blocking", "requestHeaders"]
-    )
-
-    chrome.webRequest.onHeadersReceived.addListener(
-        function (resp) {
-            let offset = 0;
-            let length = 0;
-            for (let i = 0; i < resp.responseHeaders.length; i++) {
-                if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
-                    offset = parseInt(resp.responseHeaders[i].value);
-                    resp.responseHeaders[i].value = "0"; //to avoid too big offset cause radiko's js error
-                }
-                if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keylength") {
-                    length = parseInt(resp.responseHeaders[i].value);
-                }
-
-            }
-
-            partialkey = btoa(atob(fullkey_b64).slice(offset, offset + length));
-            console.log("offset", offset, "length", length, "partial", partialkey);
-
-
-            return { responseHeaders: resp.responseHeaders };
-
-
-        },
-        { urls: ["*://*.radiko.jp/v2/api/auth1"] },
-        ["blocking", "responseHeaders"]
-    );
-
-
-
-
-    //finish auth1 and auth2 in this req
-    chrome.webRequest.onBeforeRequest.addListener(
-      function(req){
-        let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_smh_multi\/(.*?)\.xml/g.exec(req.url);
-        if(regexpresult){
-          let radioname = regexpresult[1];
-          retTokenByRadioname(radioname,area_id);
-        }
-      },
-      {urls:["http://radiko.jp/v2/station/stream_smh_multi/*.xml"]}
-      ,["blocking"]
-    );
-
-    //simplely find token to use
-    chrome.webRequest.onBeforeSendHeaders.addListener(
-      function(req){
-        //choose avaiable
-        // if default then default
-        // else the latest expired one
-        let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
-        if(regexpresult){
-          let radioname = regexpresult[1];
-          let use_token = retTokenByRadioname(radioname) ;
-
-          req.requestHeaders = req.requestHeaders.filter(function (x) {
-            return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
-          }); 
-          req.requestHeaders.push({ name: "X-Radiko-AuthToken", value: use_token});
-          return { requestHeaders: req.requestHeaders };
+        if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keylength") {
+          length = parseInt(resp.responseHeaders[i].value);
         }
 
-      }, {urls:["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8","*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"]}
-      ,["blocking", "requestHeaders"]
-    )
+      }
+
+      partialkey = btoa(atob(fullkey_b64).slice(offset, offset + length));
+      console.log("offset", offset, "length", length, "partial", partialkey);
+
+
+      return {
+        responseHeaders: resp.responseHeaders
+      };
+
+
+    }, {
+      urls: ["*://*.radiko.jp/v2/api/auth1"]
+    }, ["blocking", "responseHeaders"]
+  );
+
+
+
+
+  //finish auth1 and auth2 in this req
+  chrome.webRequest.onBeforeRequest.addListener(
+    function(req) {
+      let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_smh_multi\/(.*?)\.xml/g.exec(req.url);
+      if (regexpresult) {
+        let radioname = regexpresult[1];
+        retTokenByRadioname(radioname, area_id);
+      }
+    }, {
+      urls: ["http://radiko.jp/v2/station/stream_smh_multi/*.xml"]
+    }, ["blocking"]
+  );
+
+  //simplely find token to use
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+    function(req) {
+      let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
+      if (regexpresult) {
+        let radioname = regexpresult[1];
+        let use_token = retTokenByRadioname(radioname);
+
+        req.requestHeaders = req.requestHeaders.filter(function(x) {
+          return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
+        });
+        req.requestHeaders.push({
+          name: "X-Radiko-AuthToken",
+          value: use_token
+        });
+        return {
+          requestHeaders: req.requestHeaders
+        };
+      }
+
+    }, {
+      urls: ["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8", "*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"]
+    }, ["blocking", "requestHeaders"]
+  )
 
 /*
     //TODO: add block statistics request filter
