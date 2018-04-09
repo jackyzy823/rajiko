@@ -320,7 +320,7 @@ function timestamp2Filename(t){
     d_str += d.getSeconds().toString().length == 1? '0'+d.getSeconds():''+d.getSeconds();
     return d_str;
 }
-
+// {current_recording: {radioname: xxx , start_time : xxx , end_time: xxx , count:0}}
 let stopme = function(msg,sender,respCallback){
     if(msg["stop-recording"]){
         respCallback();
@@ -334,18 +334,24 @@ let stopme = function(msg,sender,respCallback){
                 let radioname = info["radioname"];
                 // let filename = info["filename"];
                 let filename = timestamp2Filename(info["start_time"])+"_"+timestamp2Filename(info["end_time"])+".aac";
-                chrome.storage.local.get(radioname,function(data){
-                    if(data[radioname]){
-                        let audio_str_arr = data[radioname];
-                        let audio_buf = audio_str_arr.map(function(x){
-                            return str2ab(x);
+                let keyList = new Array(info["count"]);
+                for(let i=0;i< info["count"];i++){
+                  keyList[i] = radioname+'_'+ info["start_time"] + '_' + i;
+                }
+
+                chrome.storage.local.get(keyList,function(data){
+                    if(data){
+                        let audio_buf = keyList.map(function(x){
+                            return str2ab(data[x]);
                         });
+
                         let audiodata = new Blob(audio_buf,{type:"audio/aac"});
                         let audiourl = URL.createObjectURL(audiodata); //you shall free this
                         chrome.downloads.download({url:audiourl,filename:radioname+ "/" +filename},function(downloadId){
                             console.log("download done!");
                             URL.revokeObjectURL(audiourl);
-                            chrome.storage.local.remove(["current_recording",radioname],function(){
+                            keyList.push("current_recording") // also remove current_recording
+                            chrome.storage.local.remove(keyList,function(){
                                 console.log("clean done!");
                                 if(chrome.runtime.lastError){
                                     console.log("cleanup error",chrome.runtime.lastError);
@@ -368,109 +374,102 @@ function streamListener(req){
         console.log("install stop-recording msg listener only once!");
         chrome.runtime.onMessage.addListener(stopme)
     }
-    let radioname = req.url.split('/').splice(-4)[0]; //shoud i get this from url (validated by filter) or should i get this from storage (may slow)
+    // let radioname = req.url.split('/').splice(-4)[0]; //shoud i get this from url (validated by filter) or should i get this from storage (may slow)
     // let filename = req.url.split('/').splice(-1)[0];
+
     chrome.storage.local.get("current_recording",function(data){ //FIX: recording ui and worker is not sync. move part of this to onmessage
         if(data["current_recording"]){ 
             let info = data["current_recording"];
+            let radioname = info["radioname"];
             info["end_time"] = (new Date()).getTime();
             if(!info["start_time"]){
                 info["start_time"] =info["end_time"]
             }
-            data["current_recording"] = info;
-            chrome.storage.local.set(data,function(){
-                //
-            });
+            
+
+            if(chrome.webRequest.filterResponseData){
+                let filter = chrome.webRequest.filterResponseData(req.requestId);
+                let audio_uint8 = null// ;new Blob([],{type:"audio/aac"});
+                filter.onstart = function(event){
+                    // console.log(filename,"start!!!!",event);
+                }
+                filter.ondata = function(event){
+                    filter.write(event.data);//pass through
+                    if(audio_uint8 == null){
+                        audio_uint8 = new Uint8Array(event.data);
+                    }else{
+                        let tmp = new Uint8Array(audio_uint8.byteLength + event.data.byteLength);
+                        tmp.set(audio_uint8,0);
+                        tmp.set(new Uint8Array(event.data),audio_uint8.byteLength);
+                        audio_uint8 = tmp;
+                    }
+                }
+                filter.onstop = function(event){
+                    filter.disconnect();
+                    let audio_string =  ab2str(audio_uint8.buffer);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
+                    // chrome.storage.local.get(radioname,function(data){ //what if storage is very large? read all and write all?
+                    let storage_set ={};
+                    storage[radioname+'_'+ info["start_time"] + '_' + info["count"] ] = audio_string;
+                    info["count"] = info["count"]+1 ; 
+                    storage_set["current_recording"] = info;
+
+                    chrome.storage.local.set(storage_set,function(){
+                        if(chrome.runtime.lastError){
+                            console.log("store error",chrome.runtime.lastError);
+                        }
+                    });
+
+                    firefox_getBytesInUse(null,function(bytes){
+                        console.log("use ",bytes/1000.0 /1000.0 ,'mb');
+                    })
+                    // });            
+                }        
+            }
+            else{
+                let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+                let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+                
+                //be careful !!! the request would inetercept itself!!!
+                if(ifInit || ifTabId){ 
+                    //to avoid recursion
+                    return;
+                }
+                
+                let xhr = new XMLHttpRequest();
+                xhr.open('GET',req.url); 
+                req.requestHeaders.map(function(x){ //set token and other headers
+                    if(!XHRREFUSELIST.includes(x.name.toLowerCase())){
+                        xhr.setRequestHeader(x.name,x.value);  
+                    }
+                });
+                xhr.responseType = 'arraybuffer';
+                xhr.onload = function(xhrevent){
+                    //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Apppear only on chrome v22 linux.
+                    let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
+                    let storage_set ={};
+                    storage_set[radioname+'_'+ info["start_time"] + '_' + info["count"] ] = audio_string;
+                    info["count"] = info["count"]+1 ; 
+                    storage_set["current_recording"] = info;
+
+                    chrome.storage.local.set(storage_set,function(){
+                        if(chrome.runtime.lastError){
+                            console.log("store error",chrome.runtime.lastError);
+                        }
+                    })
+
+                    chrome.storage.local.getBytesInUse(null,function(bytes){
+                        console.log("use ",bytes/1000.0 /1000.0 ,'mb');
+                    })
+                    
+                }
+                xhr.send();
+
+            }
         }else{
             console.log("should not go here!!");
         }
     });
-    if(chrome.webRequest.filterResponseData){
-        let filter = chrome.webRequest.filterResponseData(req.requestId);
-        let audio_uint8 = null// ;new Blob([],{type:"audio/aac"});
-        filter.onstart = function(event){
-            // console.log(filename,"start!!!!",event);
-        }
-        filter.ondata = function(event){
-            filter.write(event.data);//pass through
-            if(audio_uint8 == null){
-                audio_uint8 = new Uint8Array(event.data);
-            }else{
-                let tmp = new Uint8Array(audio_uint8.byteLength + event.data.byteLength);
-                tmp.set(audio_uint8,0);
-                tmp.set(new Uint8Array(event.data),audio_uint8.byteLength);
-                audio_uint8 = tmp;
-            }
-        }
-        filter.onstop = function(event){
-            filter.disconnect();
-            let audio_string =  ab2str(audio_uint8.buffer);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
-            chrome.storage.local.get(radioname,function(data){ //what if storage is very large? read all and write all?
-                let storage_set ={};
-                if(data[radioname]){
-                    data[radioname].push(audio_string)
-                    storage_set[radioname] = data[radioname];
-                }else{
-                    storage_set[radioname] = [audio_string];
-                } 
-                chrome.storage.local.set(storage_set,function(){
-                    if(chrome.runtime.lastError){
-                        console.log("store error",chrome.runtime.lastError);
-                    }
-                });
 
-                firefox_getBytesInUse(radioname,function(bytes){
-                    console.log("use ",bytes/1000.0 /1000.0 ,'mb');
-                })
-            });            
-        }        
-    }
-    else{
-        let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-        let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
-        
-        //be careful !!! the request would inetercept itself!!!
-        if(ifInit || ifTabId){ 
-            //to avoid recursion
-            return;
-        }
-        
-        let xhr = new XMLHttpRequest();
-        xhr.open('GET',req.url); 
-        req.requestHeaders.map(function(x){ //set token and other headers
-            if(!XHRREFUSELIST.includes(x.name.toLowerCase())){
-                xhr.setRequestHeader(x.name,x.value);  
-            }
-        });
-        xhr.responseType = 'arraybuffer';
-        xhr.onload = function(xhrevent){
-            //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Apppear only on chrome v22 linux.
-            let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
-            chrome.storage.local.get(radioname,function(data){
-                let storage_set ={};
-                if(data[radioname]){
-                    data[radioname].push(audio_string)
-                    storage_set[radioname] =  data[radioname];
-
-                }else{
-                    storage_set[radioname] = [audio_string];
-                }
-
-                chrome.storage.local.set(storage_set,function(){
-                    if(chrome.runtime.lastError){
-                        console.log("store error",chrome.runtime.lastError);
-                    }
-                })
-
-                chrome.storage.local.getBytesInUse(radioname,function(bytes){
-                    console.log("use ",bytes/1000.0 /1000.0 ,'mb');
-                })
-            });
-            
-        }
-        xhr.send();
-
-    }
     return {};
 }
 
@@ -574,6 +573,7 @@ function downloadtimeShift(m3u8link,default_area_id){
 
                 });
               }
+              //TODO: setTimeout() to make parallel
               req.send();
             })(storekey,item,i);
         }
@@ -584,10 +584,6 @@ function downloadtimeShift(m3u8link,default_area_id){
     };
     q1.send()
   });
-
-
-
-
 }
 
 
@@ -620,7 +616,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                 let radioname = msg["start-recording"];
 
                 console.log("Strart recording",radioname);
-                chrome.storage.local.set({"current_recording":{"radioname":radioname}},function(){
+                chrome.storage.local.set({"current_recording":{"radioname":radioname,count:0}},function(){
                     console.log("Add recording listener");
                     chrome.webRequest.onBeforeSendHeaders.addListener(  //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
                         streamListener
