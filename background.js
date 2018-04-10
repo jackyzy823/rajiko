@@ -897,13 +897,13 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
   chrome.webRequest.onHeadersReceived.addListener(
     function(resp) {
-      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+      let ifInit = resp.initiator && resp.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+      let ifTabId = resp.tabId && resp.tabId ==-1; //mean this resp is not from tab
       if(ifInit || ifTabId){ 
           return {};
       }
 
-      
+
       let offset = 0;
       let length = 0;
       for (let i = 0; i < resp.responseHeaders.length; i++) {
