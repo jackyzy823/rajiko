@@ -6,18 +6,15 @@ let partialkey = null;
 //multi token stuff
 // JPX: { token: xx , requestTime: date.now }
 let authTokens = {};
-function ExpireObj(){
-  this.area = null;
-  this.timer = null;
+function ExpireToken(){
 }
-ExpireObj.prototype.add = function(area, token) {
+ExpireToken.prototype.add = function(area, token) {
   let me = this;
-  this.area = area;
   authTokens[area] = {
     token: token,
     requestTime: Date.now()
   };
-  this.timer = setTimeout(function() {
+  setTimeout(function() {
     delete authTokens[area];
   }, 42e5);
   //default expire too
@@ -356,10 +353,9 @@ function timestamp2Filename(t) {
   return d_str;
 }
 // {current_recording: {radioname: xxx , start_time : xxx , end_time: xxx , count:0}}
-// TODO : why do i need to store this in storage.local???
-let stopme = function(msg, sender, respCallback) {
+// TODO : why do i need to store this in storage.local??? popup needs ,but can pass by msg
+function stopme(msg, sender, respCallback) {
   if (msg["stop-recording"]) {
-    respCallback();
     chrome.runtime.onMessage.removeListener(stopme);
     chrome.webRequest.onBeforeSendHeaders.removeListener(streamListener);
     console.log("ready to download!");
@@ -368,8 +364,12 @@ let stopme = function(msg, sender, respCallback) {
         let info = data["current_recording"]
         let radioname = info["radioname"];
         let filename = timestamp2Filename(info["start_time"]) + "_" + timestamp2Filename(info["end_time"]) + ".aac";
-        let keyList = new Array(info["count"]);
+        if(info["count"] == 0){
+          chrome.storage.local.remove("current_recording", function() {});
+          return;
+        }
 
+        let keyList = new Array(info["count"]);
         for (let i = 0; i < info["count"]; i++) {
           keyList[i] = radioname + '_' + info["start_time"] + '_' + i;
         }
@@ -412,10 +412,7 @@ let stopme = function(msg, sender, respCallback) {
 
 
 function streamListener(req){
-    if(!chrome.runtime.onMessage.hasListener(stopme)){
-        console.log("install stop-recording msg listener only once!");
-        chrome.runtime.onMessage.addListener(stopme)
-    }
+
     // let radioname = req.url.split('/').splice(-4)[0]; //shoud i get this from url (validated by filter) or should i get this from storage (may slow)
     // let filename = req.url.split('/').splice(-1)[0];
 
@@ -569,69 +566,73 @@ function downloadtimeShift(m3u8link, default_area_id) {
           let item = links[i];
           (function(storekey, item, index) {
             if (returned) {return;}
-            setTimeout(function() {
-              let req = new XMLHttpRequest();
-              req.open('GET', item);
-              req.responseType = 'arraybuffer';
-              req.onload = function(xhrevent) {
-                let audio_string = ab2str(this.response);
-                let storage_set = {};
-                storage_set[storekey] = audio_string;
+            // setTimeout(function() {
+            let req = new XMLHttpRequest();
+            req.open('GET', item);
+            req.responseType = 'arraybuffer';
+            req.onload = function(xhrevent) {
+              let audio_string = ab2str(this.response);
+              let storage_set = {};
+              storage_set[storekey] = audio_string;
 
-                chrome.storage.local.set(storage_set, function() {
-                  if (chrome.runtime.lastError) {
-                    returned = true;
-                    chrome.storage.local.remove(keyList.filter(function(val) {
-                      return !val
-                    }), function() {
+              chrome.storage.local.set(storage_set, function() {
+                if (chrome.runtime.lastError) {
+                  returned = true;
+                  chrome.storage.local.remove(keyList.filter(function(val) {
+                    return !val
+                  }), function() {
 
+                  });
+
+                } else {
+                  keyList[index] = storekey;
+                  count += 1;
+                  if (count == linksCount) {
+                    chrome.storage.local.get(keyList, function(data) {
+                      if (data) {
+                        let audio_buf = keyList.map(function(x) {
+                          return str2ab(data[x]);
+                        })
+                        let audiodata = new Blob(audio_buf, {
+                          type: "audio/aac"
+                        });
+                        let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
+                        chrome.downloads.download({
+                          url: audiourl,
+                          filename: filename
+                        }, function(downloadId) {
+                          console.log("download done!");
+                          URL.revokeObjectURL(audiourl);
+                          chrome.storage.local.remove(keyList, function() {
+                            console.log("clean done!");
+                            if (chrome.runtime.lastError) {
+                              console.log("cleanup error", chrome.runtime.lastError);
+                            }
+                          });
+                          chrome.browserAction.getBadgeText({},function(text){
+                            let cnt = parseInt(text) - 1;
+
+                            chrome.browserAction.setBadgeText({text: cnt > 0?cnt:""});
+                          });
+                        });
+                      }
                     });
-
-                  } else {
-                    keyList[index] = storekey;
-                    count += 1;
-                    if (count == linksCount) {
-                      chrome.storage.local.get(keyList, function(data) {
-                        if (data) {
-                          let audio_buf = keyList.map(function(x) {
-                            return str2ab(data[x]);
-                          })
-                          let audiodata = new Blob(audio_buf, {
-                            type: "audio/aac"
-                          });
-                          let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
-                          chrome.downloads.download({
-                            url: audiourl,
-                            filename: filename
-                          }, function(downloadId) {
-                            console.log("download done!");
-                            URL.revokeObjectURL(audiourl);
-                            chrome.storage.local.remove(keyList, function() {
-                              console.log("clean done!");
-                              if (chrome.runtime.lastError) {
-                                console.log("cleanup error", chrome.runtime.lastError);
-                              }
-                            })
-                          });
-                        }
-                      });
-                    }
                   }
-                });
-              }
+                }
+              });
+            }
+            //TODO: dont know why MISMATCH cannot handle in here
+            req.addEventListener('error',function(){
+              returned = true;
+              chrome.storage.local.remove(keyList.filter(function(val) {
+                return !val
+              }), function() {
 
-              req.onerror = function() {
-                returned = true;
-                chrome.storage.local.remove(keyList.filter(function(val) {
-                  return !val
-                }), function() {
-
-                });
-              }
-              //TODO: setTimeout() to make parallel
-
-              req.send();
-            }, Math.floor(index / 6) * 300 ); //do not too fast
+              });               
+            })
+            req.send();
+            
+            // }, 0 ); //Math.floor(index / 6) * 400 //whatever
             // req.send();
           })(storekey, item, i);
         }
@@ -693,6 +694,10 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
             // is filter case sensitive??? yes path is case sensitive but domain is not
             , ["blocking", "requestHeaders"]
           );
+          if(!chrome.runtime.onMessage.hasListener(stopme)){
+            console.log("install stop-recording msg listener only once!");
+            chrome.runtime.onMessage.addListener(stopme)
+          }
           respCallback();
         });
         chrome.browserAction.setIcon({
@@ -704,8 +709,16 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
       } else if (msg["download-timeshift"]) {
         console.log("start donwload timeshift");
         let link = msg["download-timeshift"];
+        chrome.storage.local.get({"timeshift_list":[]},function(data){
+          let list = data["timeshift_list"];
+          list.push(link);
+          chrome.storage.local.set({"timeshift_list":list},function(){
+            chrome.browserAction.setBadgeBackgroundColor({color: "#e73c64"});
+            chrome.browserAction.setBadgeText({text:list.length.toString()});
+            downloadtimeShift(msg["download-timeshift"], area_id);
+          })
+        });
         //TOFO: check duplicate here
-        downloadtimeShift(msg["download-timeshift"], area_id)
       }
     });
 
@@ -916,11 +929,11 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         retTokenByRadioname(radioname, area_id);
       }
     }, {
-      urls: ["http://radiko.jp/v2/station/stream_smh_multi/*.xml"]
+      urls: ["http://radiko.jp/v2/station/stream_smh_multi/*.xml" /*for areafree*/ ] 
     }, ["blocking"]
   );
 
-  //simplely find token to use
+  //simplely find token to use for areafree and live  
   chrome.webRequest.onBeforeSendHeaders.addListener(
     function(req) {
       let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
@@ -945,6 +958,45 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
     }, ["blocking", "requestHeaders"]
   )
 
+  // for timeshift listen
+  chrome.webRequest.onBeforeSendHeaders.addListener(
+      function(req) {
+
+      //let downloadTimeshift handle itself
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+      if(ifInit || ifTabId){ 
+          return {};
+      }
+      
+
+      console.log("modify timeshift token!!!!!!");
+      let radioname;
+      (new URL(req.url)).search.slice(1).split('&').map(function(kv) {
+        let s = kv.split('=');
+        switch (s[0]) {
+          case 'station_id':
+            radioname = s[1];
+            break;
+        }
+      });
+
+      let use_token = retTokenByRadioname(radioname);
+
+      req.requestHeaders = req.requestHeaders.filter(function(x) {
+        return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
+      });
+      req.requestHeaders.push({
+        name: "X-Radiko-AuthToken",
+        value: use_token
+      });
+      return {
+        requestHeaders: req.requestHeaders
+      };
+    }, {
+      urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/ ]
+    }, ["blocking", "requestHeaders"]
+  )
 /*
     //TODO: add block statistics request filter
     chrome.webRequest.onBeforeRequest.addListener(function(req){
