@@ -792,9 +792,16 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
     }, ["blocking", "requestHeaders"]
   );
 
+  // affect self xhr tooooooooo
   chrome.webRequest.onBeforeSendHeaders.addListener(
     function(req) {
 
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+      if(ifInit || ifTabId){ 
+          return {};
+      }
+      
       if (req.url.indexOf("auth1") != -1 && req.method.toLowerCase() == 'get') {
 
         //some x-radiko cannot captialize .because it exists before modification.
@@ -890,6 +897,13 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
   chrome.webRequest.onHeadersReceived.addListener(
     function(resp) {
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+      if(ifInit || ifTabId){ 
+          return {};
+      }
+
+      
       let offset = 0;
       let length = 0;
       for (let i = 0; i < resp.responseHeaders.length; i++) {
