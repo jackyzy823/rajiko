@@ -42,7 +42,7 @@ function retTokenByRadioname(radioname,default_area_id){
   let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
   let info = genRandomInfo();
   let auth1 = new XMLHttpRequest()
-  auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); //sync
+  auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); 
 
   auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
   auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
@@ -271,68 +271,69 @@ function genGPS(area_id) {
 console.log("GENERATED_RANDOMINFO", GENERATED_RANDOMINFO);
 
 //TODO: optimize this to avoid high cpu usage 
-function ab2str16(buf) {
-  let len = buf.byteLength;
-  let padding = len %8 ==0 ? 8:len %8;
-  let crafted = new Uint8Array(len + padding );
-  let p = new Array(padding);
-  for(let i =0;i<padding;i++){
-    p[i] = padding;
+if( typeof browser === "undefined"){  //see webextension-polyfill
+  // for chrome
+  //see chroumium bug:  https://bugs.chromium.org/p/chromium/issues/detail?id=831062
+  function ab2str(buf){
+    return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
   }
-  crafted.set(new Uint8Array(buf),0);
-  crafted.set(p,len);
-  return String.fromCharCode.apply(null, new Uint16Array(crafted.buffer)); //uint16 will raise must multiple of 2  error 
+  function str2ab(str) {
+    let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char  *2
+    let bufView = new Uint8Array(buf); // U16
 
-}
-
-function ab2str(buf){
-  return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
-
-}
-
-//TODO: optimize this to avoid high cpu usage 
-function str162ab(str) {
-  let buf = new ArrayBuffer(str.length * 2); // Uint16 -> 2 bytes for each char  *2
-  let bufView = new Uint16Array(buf); // U16
-  let paddingView = new Uint8Array(buf);
-  for (let i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  let padding = paddingView[str.length*2 - 1];
-  return buf.slice(0,str.length*2 - padding);
-}
-
-function str2ab(str) {
-  let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char  *2
-  let bufView = new Uint8Array(buf); // U16
-
-  for (let i = 0, strLen = str.length; i < strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
-
-
-//see https://github.com/kiefferbp/webext-getBytesInUse-polyfill/blob/master/index.js
-function firefox_getBytesInUse(keys, callback) {
-  let size = 0;
-  if (typeof keys === 'string') {
-    keys = [keys];
-  }
-  chrome.storage.local.get(keys, function(results) {
-    let lastError = chrome.runtime.lastError;
-    if (lastError) {
-      callback(-1);
-      return;
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
     }
-    Object.keys(results).forEach(function(key) {
-      size += (key + JSON.stringify(results[key])).length;
+    return buf;
+  }
+}else{
+  //for firefox save memory via Uint16Array , use pkcs5 for padding.
+  function ab2str(buf) {
+    let len = buf.byteLength;
+    let padding = len %8 ==0 ? 8:len %8;
+    let crafted = new Uint8Array(len + padding );
+    let p = new Array(padding);
+    for(let i =0;i<padding;i++){
+      p[i] = padding;
+    }
+    crafted.set(new Uint8Array(buf),0);
+    crafted.set(p,len);
+    return String.fromCharCode.apply(null, new Uint16Array(crafted.buffer));
+  }
+  function str2ab(str) {
+    let buf = new ArrayBuffer(str.length * 2); 
+    let bufView = new Uint16Array(buf);
+    let paddingView = new Uint8Array(buf);
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    let padding = paddingView[str.length*2 - 1];
+    return buf.slice(0,str.length*2 - padding);
+  }
+
+  //polyfill
+  //see https://github.com/kiefferbp/webext-getBytesInUse-polyfill/blob/master/index.js
+  chrome.storage.local.getBytesInUse = function(keys, callback) {
+    let size = 0;
+    if (typeof keys === 'string') {
+      keys = [keys];
+    }
+    chrome.storage.local.get(keys, function(results) {
+      let lastError = chrome.runtime.lastError;
+      if (lastError) {
+        callback(-1);
+        return;
+      }
+      Object.keys(results).forEach(function(key) {
+        size += (key + JSON.stringify(results[key])).length;
+      });
+      callback(size);
     });
-    callback(size);
-  });
+  }
+
 }
-//polyfill
-chrome.storage.local.getBytesInUse = chrome.storage.local.getBytesInUse || firefox_getBytesInUse;
+
+
 
 /* OBSOLETED prototype of multi recording. 
 function recorder(radio){
@@ -748,7 +749,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
                     file: "ui/mobile.css"
                   }],
                   runAt: "document_start"
-                }));
+                })); //must keep a reference ,otherwise it will not work.
               }
 
               //only add once!!! and need removeListener?
