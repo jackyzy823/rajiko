@@ -12,7 +12,7 @@
         "message":"选择地区 - Rajiko"
     }
     ,"record_button_to_start":{
-        "message":"开始录音"
+        "message":"ライブ录音"
     }
     ,"record_button_to_stop":{
         "message":"停止录音"
@@ -25,5 +25,8 @@
                 "example" : "BAYFM"
             }
         }
+    },"timeshift_button":{
+        "message":"下载タイムシフト"
     }
+
 }

@@ -83,75 +83,91 @@ window.onload = function () {
     //// html <div id="player-area" class="player-default">
     //// <input type="hidden" id="url" value="#BAYFM78">
     //// <input type="hidden" id="tmpUrl" value="#LFR">
-    // if playing        
-    //<i class="icon icon--play-02 on"></i>
-    //<i class="icon icon--play-02"></i>
     // tmpUrl is the page you view
     // the url is really playing ,but no url when no playing .
     // <input id="url" value="https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=RADIONAME&amp;l=15&amp;ft=FROMTTIME&amp;to=TOTIME&amp;seek=SEEK" type="hidden">
     // <input id="tmpUrl" value="https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=ANOTHERORSAME&amp;l=15&amp;ft=FROMTTIME&amp;to=TOTIME" type="hidden">
     //
     let record_button = document.getElementById("rajiko-record");
-    chrome.tabs.executeScript({code:"var tmpdata = {url : window.location.href,radioname:document.getElementById('url') && document.getElementById('url').value.slice(1) };tmpdata",runAt:"document_start"},function(results){
-        // if(chrome.runtime.lastError){
-        //     console.log(chrome.runtime.lastError);
-        // }
-        let error = chrome.runtime.lastError;
-        // console.log(results); //slice to remove #
-        // if ( ) {
-        //     record_button.hidden = true; // TODO: could stop in any page ,could not start in other page
-        //     return;
-        // }
-        chrome.storage.local.get({"current_recording":false},function(data){
-            let shouldhidden  =  error || ! /radiko\.jp/.test(results[0].url) ;
-            if(!data["current_recording"]  &&  !shouldhidden ){
-                //start to
-                record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
-                record_button.onclick = function(data){
-                    // let radioname = results[0].radioname 
-                    if(!results[0].radioname || results[0].radioname == ""  ){
-                        let res = /radiko\.jp\/#!\/live\/(.*)/i.exec(results[0].url);
-                        let waitraido = res && res[1];
-                        if(waitraido){
-                            chrome.runtime.sendMessage({"start-recording":waitraido},function(){
-                                window.alert(chrome.i18n.getMessage("record_prepare",waitraido));
-                                window.close();
-                            });                            
-                        }else{
-                            window.alert("No playing radio!");
-                            window.close();
-                        }
+    let download_button = document.getElementById("rajiko-download");
+    // download_button.onclick = function(){
+    //     chrome.runtime.sendMessage({"download-timeshift":"<TEST_LINK>"},function(){
+    //         window.close();
+    //     });
+    // }
+    // only download viewing timeshift not playing 
+    // recording playing first ,if not exisit recording viewing.
+    chrome.tabs.executeScript({code:"var tmpdata = {href : window.location.href,tmpUrl : document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value, url :document.getElementById('url') && document.getElementById('url').value };tmpdata",runAt:"document_start"},function(results){
+        let error = chrome.runtime.lastError; // chrome:// --> will cause error but stop-recording should display whatever
+        
+        let href = results && results[0].href||'';
+        let url = results && results[0].url ||''; // #RAIDO or http://m3u8list
+        let tmpUrl = results && results[0].tmpUrl || '';  // #RAIDO or http://m3u8list
 
+
+        //consider pass current_recording and timeshift list by message if not store in storage.local (slow)
+        chrome.storage.local.get({"current_recording":false,"timeshift_list":[]},function(data){
+            let shouldhidden  =  error || ! /radiko\.jp/.test(results[0].href) ;
+
+            //display stop whatever page
+            if(data["current_recording"]){
+                record_button.hidden = false;
+                record_button.innerText = chrome.i18n.getMessage("record_button_to_stop"); 
+                record_button.onclick = function(data){
+                    chrome.runtime.sendMessage({"stop-recording":true},function(){ 
+                        window.close();
+                    });
+                }               
+            }else{
+                if(shouldhidden){
+                    record_button.hidden = true;
+                    download_button.hidden = true;
+                }else{
+                    //not recording
+                    if(url[0]=='#'){
+                        //playing live
+                        record_button.hidden = false;
+                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
+                        record_button.onclick = function(data){
+                            chrome.runtime.sendMessage({"start-recording":url.slice(1)},function(){
+                                window.close();
+                            });
+                        }
+                    } else if (tmpUrl[0]=='#'  && /\/live\//.test(results[0].href)){
+                        //viewing live
+                        record_button.hidden = false;
+                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
+                        record_button.onclick = function(data){
+                            chrome.runtime.sendMessage({"start-recording":tmpUrl.slice(1)},function(){
+                                window.alert(chrome.i18n.getMessage("record_prepare",tmpUrl.slice(1)));
+                                window.close();
+                            });
+                        }
+                    }
+
+                    if(tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8")!=-1 && /\/ts\//.test(results[0].href)  && !data["timeshift_list"].includes(tmpUrl)){
+                        //viewing timeshift
+                        download_button.hidden=false;
+                        download_button.innerText = chrome.i18n.getMessage("timeshift_button");
+                        download_button.onclick = function(){
+                            chrome.runtime.sendMessage({"download-timeshift":tmpUrl},function(){
+                                window.close();
+                            });
+                        }
                     }else{
-                        chrome.runtime.sendMessage({"start-recording":results[0].radioname},function(){
-                            window.close();
-                        });
+                        download_button.hidden = true;
                     }
 
                 }
-            }else if(data["current_recording"]){
-                //stop doing
-                record_button.innerText = chrome.i18n.getMessage("record_button_to_stop"); // pass radioname to text via placeholders and substitutions
-                record_button.onclick = function(data){
-                    chrome.runtime.sendMessage({"stop-recording":true},function(){ //stop's raioname --> from executescript / from storage.get current_recording?
-                        window.close();
-                    });
-                }
-            }else{
-                record_button.hidden = true;
             }
+
         
         });
 
     });
 
 // TODO: choose when display
-    let download_button = document.getElementById("rajiko-download");
-    download_button.onclick = function(){
-        chrome.runtime.sendMessage({"download-timeshift":"<TEST_LINK>"},function(){
-            window.close();
-        });
-    }
+
 
 
 };

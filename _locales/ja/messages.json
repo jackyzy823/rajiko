@@ -12,7 +12,7 @@
         "message":"エリアを選択してください - Rajiko"
     }
     ,"record_button_to_start":{
-        "message":"録音を開始する"
+        "message":"ライブを録音する"
     }
     ,"record_button_to_stop":{
         "message":"録音を停止する"
@@ -25,5 +25,7 @@
                 "example" : "BAYFM"
             }
         }
+    },"timeshift_button":{
+        "message":"タイムシフト ダウンロード"
     }
 }
