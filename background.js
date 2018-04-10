@@ -459,7 +459,7 @@ function streamListener(req){
                         }
                     });
 
-                    firefox_getBytesInUse(null,function(bytes){
+                    chrome.storage.local.getBytesInUse(null,function(bytes){
                         console.log("use ",bytes/1000.0 /1000.0 ,'mb');
                     })
                     // });            
