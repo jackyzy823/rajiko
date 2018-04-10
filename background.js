@@ -73,7 +73,7 @@ function retTokenByRadioname(radioname,default_area_id){
   auth2.withCredentials = false;
   auth2.send();
 
-  let res  = (new ExpireObj()).add(pickArea,token); 
+  let res  = (new ExpireToken()).add(pickArea,token); 
   return token; 
 }
 
@@ -122,7 +122,7 @@ function retTokenByRadioname_async(radioname,default_area_id, callback){
     auth2.withCredentials = false;
 
     auth2.onload = function(xhrevent){
-      let res  = (new ExpireObj()).add(pickArea,token); 
+      let res  = (new ExpireToken()).add(pickArea,token); 
       return callback(token); 
     }
     auth2.send();    
@@ -829,7 +829,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         req.requestHeaders = req.requestHeaders.filter(function(x) {
           //save token here
           if (x.name.toLowerCase() == 'x-radiko-authtoken') {
-            let res = (new ExpireObj()).add(area_id, x.value);
+            let res = (new ExpireToken()).add(area_id, x.value);
             // authTokens[area_id] = { token: x.value , requestTime : Date.now()}
           }
           return !IGNORELIST.includes(x.name.toLowerCase());
