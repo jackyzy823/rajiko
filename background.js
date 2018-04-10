@@ -937,11 +937,18 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
   //finish auth1 and auth2 in this req
   chrome.webRequest.onBeforeRequest.addListener(
     function(req) {
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+      if(ifInit || ifTabId){ 
+          return {};
+      }
+
       let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_smh_multi\/(.*?)\.xml/g.exec(req.url);
       if (regexpresult) {
         let radioname = regexpresult[1];
         retTokenByRadioname(radioname, area_id);
       }
+      return {};
     }, {
       urls: ["http://radiko.jp/v2/station/stream_smh_multi/*.xml" /*for areafree*/ ] 
     }, ["blocking"]
