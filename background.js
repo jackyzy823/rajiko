@@ -271,19 +271,47 @@ function genGPS(area_id) {
 console.log("GENERATED_RANDOMINFO", GENERATED_RANDOMINFO);
 
 //TODO: optimize this to avoid high cpu usage 
-function ab2str(buf) {
+function ab2str16(buf) {
+  let len = buf.byteLength;
+  let padding = len %8 ==0 ? 8:len %8;
+  let crafted = new Uint8Array(len + padding );
+  let p = new Array(padding);
+  for(let i =0;i<padding;i++){
+    p[i] = padding;
+  }
+  crafted.set(new Uint8Array(buf),0);
+  crafted.set(p,len);
+  return String.fromCharCode.apply(null, new Uint16Array(crafted.buffer)); //uint16 will raise must multiple of 2  error 
+
+}
+
+function ab2str(buf){
   return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
+
 }
 
 //TODO: optimize this to avoid high cpu usage 
+function str162ab(str) {
+  let buf = new ArrayBuffer(str.length * 2); // Uint16 -> 2 bytes for each char  *2
+  let bufView = new Uint16Array(buf); // U16
+  let paddingView = new Uint8Array(buf);
+  for (let i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  let padding = paddingView[str.length*2 - 1];
+  return buf.slice(0,str.length*2 - padding);
+}
+
 function str2ab(str) {
-  let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char
-  let bufView = new Uint8Array(buf);
+  let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char  *2
+  let bufView = new Uint8Array(buf); // U16
+
   for (let i = 0, strLen = str.length; i < strLen; i++) {
     bufView[i] = str.charCodeAt(i);
   }
   return buf;
 }
+
 
 //see https://github.com/kiefferbp/webext-getBytesInUse-polyfill/blob/master/index.js
 function firefox_getBytesInUse(keys, callback) {
@@ -297,7 +325,7 @@ function firefox_getBytesInUse(keys, callback) {
       callback(-1);
       return;
     }
-    keys.forEach(function(key) {
+    Object.keys(results).forEach(function(key) {
       size += (key + JSON.stringify(results[key])).length;
     });
     callback(size);
@@ -327,6 +355,7 @@ function timestamp2Filename(t) {
   return d_str;
 }
 // {current_recording: {radioname: xxx , start_time : xxx , end_time: xxx , count:0}}
+// TODO : why do i need to store this in storage.local???
 let stopme = function(msg, sender, respCallback) {
   if (msg["stop-recording"]) {
     respCallback();
@@ -421,7 +450,8 @@ function streamListener(req){
                     let audio_string =  ab2str(audio_uint8.buffer);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
                     // chrome.storage.local.get(radioname,function(data){ //what if storage is very large? read all and write all?
                     let storage_set ={};
-                    storage[radioname+'_'+ info["start_time"] + '_' + info["count"] ] = audio_string;
+
+                    storage_set[radioname+'_'+ info["start_time"] + '_' + info["count"] ] = audio_string;
                     info["count"] = info["count"]+1 ; 
                     storage_set["current_recording"] = info;
 
@@ -538,68 +568,69 @@ function downloadtimeShift(m3u8link, default_area_id) {
           let item = links[i];
           (function(storekey, item, index) {
             if (returned) {return;}
-            let req = new XMLHttpRequest();
-            req.open('GET', item);
-            req.responseType = 'arraybuffer';
-            req.onload = function(xhrevent) {
-              let audio_string = ab2str(this.response);
-              let storage_set = {};
-              storage_set[storekey] = audio_string;
-
-              chrome.storage.local.set(storage_set, function() {
-                if (chrome.runtime.lastError) {
-                  returned = true;
-                  chrome.storage.local.remove(keyList.filter(function(val) {
-                    return !val
-                  }), function() {
-
-                  });
-
-                } else {
-                  keyList[index] = storekey;
-                  count += 1;
-                  if (count == linksCount) {
-                    chrome.storage.local.get(keyList, function(data) {
-                      if (data) {
-                        let audio_buf = keyList.map(function(x) {
-                          return str2ab(data[x]);
-                        })
-                        let audiodata = new Blob(audio_buf, {
-                          type: "audio/aac"
-                        });
-                        let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
-                        chrome.downloads.download({
-                          url: audiourl,
-                          filename: filename
-                        }, function(downloadId) {
-                          console.log("download done!");
-                          URL.revokeObjectURL(audiourl);
-                          chrome.storage.local.remove(keyList, function() {
-                            console.log("clean done!");
-                            if (chrome.runtime.lastError) {
-                              console.log("cleanup error", chrome.runtime.lastError);
-                            }
-                          })
-                        });
-                      }
-                    });
-                  }
-                }
-              });
-            }
-
-            req.onerror = function() {
-              returned = true;
-              chrome.storage.local.remove(keyList.filter(function(val) {
-                return !val
-              }), function() {
-
-              });
-            }
-            //TODO: setTimeout() to make parallel
             setTimeout(function() {
+              let req = new XMLHttpRequest();
+              req.open('GET', item);
+              req.responseType = 'arraybuffer';
+              req.onload = function(xhrevent) {
+                let audio_string = ab2str(this.response);
+                let storage_set = {};
+                storage_set[storekey] = audio_string;
+
+                chrome.storage.local.set(storage_set, function() {
+                  if (chrome.runtime.lastError) {
+                    returned = true;
+                    chrome.storage.local.remove(keyList.filter(function(val) {
+                      return !val
+                    }), function() {
+
+                    });
+
+                  } else {
+                    keyList[index] = storekey;
+                    count += 1;
+                    if (count == linksCount) {
+                      chrome.storage.local.get(keyList, function(data) {
+                        if (data) {
+                          let audio_buf = keyList.map(function(x) {
+                            return str2ab(data[x]);
+                          })
+                          let audiodata = new Blob(audio_buf, {
+                            type: "audio/aac"
+                          });
+                          let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
+                          chrome.downloads.download({
+                            url: audiourl,
+                            filename: filename
+                          }, function(downloadId) {
+                            console.log("download done!");
+                            URL.revokeObjectURL(audiourl);
+                            chrome.storage.local.remove(keyList, function() {
+                              console.log("clean done!");
+                              if (chrome.runtime.lastError) {
+                                console.log("cleanup error", chrome.runtime.lastError);
+                              }
+                            })
+                          });
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+
+              req.onerror = function() {
+                returned = true;
+                chrome.storage.local.remove(keyList.filter(function(val) {
+                  return !val
+                }), function() {
+
+                });
+              }
+              //TODO: setTimeout() to make parallel
+
               req.send();
-            }, Math.floor(index / 6) * 100);
+            }, Math.floor(index / 6) * 300 ); //do not too fast
             // req.send();
           })(storekey, item, i);
         }
@@ -670,8 +701,9 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
 
       } else if (msg["download-timeshift"]) {
-        //TODO
         console.log("start donwload timeshift");
+        let link = msg["download-timeshift"];
+        //TOFO: check duplicate here
         downloadtimeShift(msg["download-timeshift"], area_id)
       }
     });
