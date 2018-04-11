@@ -10,13 +10,17 @@ function ExpireToken(){
 }
 ExpireToken.prototype.add = function(area, token) {
   let me = this;
-  authTokens[area] = {
-    token: token,
-    requestTime: Date.now()
-  };
-  setTimeout(function() {
+  if(authTokens[area]){ //avoid delete after update 
+    clearTimeout(authTokens[area].timer);
+  }
+  let timer = setTimeout(function() {
     delete authTokens[area];
   }, 42e5);
+  authTokens[area] = {
+    token: token,
+    requestTime: Date.now(),
+    timer : timer 
+  };
   //default expire too
   //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
   /*delete self after 1 hr default area one let radikojsplayer handle. 
