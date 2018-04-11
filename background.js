@@ -21,7 +21,7 @@ ExpireToken.prototype.add = function(area, token) {
     requestTime: Date.now(),
     timer : timer 
   };
-  //default expire too
+  //radiko will reactive  default area token by auth1/2 , not to get new on.
   //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
   /*delete self after 1 hr default area one let radikojsplayer handle. 
   [test show that the token only have 1.1 hrs life no matter active or not?]
@@ -45,6 +45,7 @@ function retTokenByRadioname(radioname,default_area_id){
   let auth1 = new XMLHttpRequest()
   auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); 
 
+  //TODO: for chrome : let webrequest listener modify useragent ?
   auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
   auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
   auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
@@ -112,6 +113,7 @@ function retTokenByRadioname_async(radioname,default_area_id, callback){
     let auth2 = new XMLHttpRequest()
     auth2.open('GET','https://radiko.jp/v2/api/auth2');
 
+    //TODO: for chrome : let webrequest listener modify useragent ?
     auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
     auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
     auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
@@ -570,73 +572,108 @@ function downloadtimeShift(m3u8link, default_area_id) {
           let item = links[i];
           (function(storekey, item, index) {
             if (returned) {return;}
-            // setTimeout(function() {
-            let req = new XMLHttpRequest();
-            req.open('GET', item);
-            req.responseType = 'arraybuffer';
-            req.onload = function(xhrevent) {
-              let audio_string = ab2str(this.response);
-              let storage_set = {};
-              storage_set[storekey] = audio_string;
+            setTimeout(function() {
+              let req = new XMLHttpRequest();
+              req.open('GET', item);
+              req.responseType = 'arraybuffer';
+              req.onload = function(xhrevent) {
+                let audio_string = ab2str(this.response);
+                let storage_set = {};
+                storage_set[storekey] = audio_string;
 
-              chrome.storage.local.set(storage_set, function() {
-                if (chrome.runtime.lastError) {
-                  returned = true;
-                  chrome.storage.local.remove(keyList.filter(function(val) {
-                    return !val
-                  }), function() {
-
-                  });
-
-                } else {
-                  keyList[index] = storekey;
-                  count += 1;
-                  if (count == linksCount) {
-                    chrome.storage.local.get(keyList, function(data) {
-                      if (data) {
-                        let audio_buf = keyList.map(function(x) {
-                          return str2ab(data[x]);
-                        })
-                        let audiodata = new Blob(audio_buf, {
-                          type: "audio/aac"
-                        });
-                        let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
-                        chrome.downloads.download({
-                          url: audiourl,
-                          filename: filename
-                        }, function(downloadId) {
-                          console.log("download done!");
-                          URL.revokeObjectURL(audiourl);
-                          chrome.storage.local.remove(keyList, function() {
-                            console.log("clean done!");
-                            if (chrome.runtime.lastError) {
-                              console.log("cleanup error", chrome.runtime.lastError);
-                            }
-                          });
-                          chrome.browserAction.getBadgeText({},function(text){
-                            let cnt = parseInt(text) - 1;
-
-                            chrome.browserAction.setBadgeText({text: cnt > 0?cnt:""});
-                          });
-                        });
-                      }
+                chrome.storage.local.set(storage_set, function() {
+                  if (chrome.runtime.lastError) {
+                    returned = true;
+                    chrome.storage.local.get({"timeshift_list":[]},function(data){
+                      let list = data["timeshift_list"];
+                      list = list.filter(function(l){
+                        return l !==m3u8link;
+                      });
+                      chrome.storage.local.set({"timeshift_list":list},function(){
+                        chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+                      });
                     });
-                  }
-                }
-              });
-            }
-            //TODO: dont know why MISMATCH cannot handle in here
-            req.addEventListener('error',function(){
-              returned = true;
-              chrome.storage.local.remove(keyList.filter(function(val) {
-                return !val
-              }), function() {
+                    chrome.storage.local.remove(keyList.filter(function(val) {
+                      return !val
+                    }), function() {
 
-              });               
-            })
-            req.send();
+                    });
+
+                  } else {
+                    keyList[index] = storekey;
+                    count += 1;
+                    if (count == linksCount) {
+                      chrome.storage.local.get(keyList, function(data) {
+                        if (data) {
+                          let audio_buf = keyList.map(function(x) {
+                            return str2ab(data[x]);
+                          })
+                          let audiodata = new Blob(audio_buf, {
+                            type: "audio/aac"
+                          });
+                          let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
+                          chrome.downloads.download({
+                            url: audiourl,
+                            filename: filename
+                          }, function(downloadId) {
+                            console.log("download done!");
+                            URL.revokeObjectURL(audiourl);
+                            //remove finished work
+                            chrome.storage.local.get({"timeshift_list":[]},function(data){
+                              let list = data["timeshift_list"];
+                              list = list.filter(function(l){
+                                return l !==m3u8link;
+                              });
+                              chrome.storage.local.set({"timeshift_list":list},function(){
+                                chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+                              });
+                            });
+                            chrome.storage.local.remove(keyList, function() {
+                              console.log("clean done!");
+                              if (chrome.runtime.lastError) {
+                                console.log("cleanup error", chrome.runtime.lastError);
+                              }
+                            });
+
+                          });
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+              req.onloadend  = function(event){
+                  //can this capture MISMATCH?
+                  //see https://stackoverflow.com/questions/48127436/how-to-catch-chrome-error-neterr-file-not-found-in-xmlhttprequest
+                  if(!event.loaded){
+                    //debugger;
+                  }
+                  if(!req.response){
+                    //debugger;
+                  }
+              }
+              //TODO: dont know why MISMATCH cannot handle in here
+              req.addEventListener('error',function(){
+                returned = true;
+                chrome.storage.local.get({"timeshift_list":[]},function(data){
+                  let list = data["timeshift_list"];
+                  list = list.filter(function(l){
+                    return l !==m3u8link;
+                  });
+                  chrome.storage.local.set({"timeshift_list":list},function(){
+                    chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+                  });
+                });
+
+                chrome.storage.local.remove(keyList.filter(function(val) {
+                  return !val
+                }), function() {
+
+                });               
+              })
+              req.send();
             
-            // }, 0 ); //Math.floor(index / 6) * 400 //whatever
+            }, Math.floor(index / 6) * 300 ); //Math.floor(index / 6) * 400 //whatever
             // req.send();
           })(storekey, item, i);
         }
@@ -660,7 +697,9 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
     chrome.storage.local.set({
       "selected_areaid": area_id
     }, function() {});
-  })
+  });
+
+  chrome.browserAction.setBadgeText({text: ""}); //clean badgetext when crash
     // //cookie may not be set here?
     // chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id },function(c){
     //   console.log("set cookie",c);
