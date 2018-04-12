@@ -121,7 +121,6 @@ window.onload = function () {
             }else{
                 if(shouldhidden){
                     record_button.hidden = true;
-                    download_button.hidden = true;
                 }else{
                     //not recording
                     if(url[0]=='#'){
@@ -145,22 +144,22 @@ window.onload = function () {
                         }
                     }
 
-                    if(tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8")!=-1 && /\/ts\//.test(results[0].href)  && !data["timeshift_list"].includes(tmpUrl)){
-                        //viewing timeshift
-                        download_button.hidden=false;
-                        download_button.innerText = chrome.i18n.getMessage("timeshift_button");
-                        download_button.onclick = function(){
-                            chrome.runtime.sendMessage({"download-timeshift":tmpUrl},function(){
-                                window.close();
-                            });
-                        }
-                    }else{
-                        download_button.hidden = true;
-                    }
+
 
                 }
             }
-
+            if(tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8")!=-1 && /\/ts\//.test(results[0].href)  && !data["timeshift_list"].includes(tmpUrl)){
+                //viewing timeshift
+                download_button.hidden=false;
+                download_button.innerText = chrome.i18n.getMessage("timeshift_button");
+                download_button.onclick = function(){
+                    chrome.runtime.sendMessage({"download-timeshift":tmpUrl},function(){
+                        window.close();
+                    });
+                }
+            }else{
+                download_button.hidden = true;
+            }
         
         });
 
