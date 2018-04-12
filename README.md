@@ -25,15 +25,15 @@ Permission Details:
 
 What's new:
 -----------
-+ version 0.2.0 [pre-release]
++ version 0.2.0
     
     Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
 
     For switching to  other area in timeshift(タイムシフト) page, only click 地域変更 button in timeshift(タイムシフト) page.
 
-    The "3 hours a day" limitation of timeshift(タイムシフト) has been unblocked.You can listen no matter how long now. 
+    The "3 hours a day" limitation of timeshift(タイムシフト) has been unblocked.You can listen no matter how long now. And also you can download timeshift(タイムシフト) program.
 
-    "Choose Area" is only needed in displaying area in live(ライブ)
+    "Choose Area" is only needed in displaying area in live(ライブ).
 
     If there's any bug or problem ,please try to disable and then enable it.If this does not help , please tell me via review page or github issue.
 
@@ -137,4 +137,4 @@ TODO
     https://stackoverflow.com/questions/45911251/what-is-the-best-way-to-create-a-cross-browser-gmail-extension
     https://www.smashingmagazine.com/2017/04/browser-extension-edge-chrome-firefox-opera-brave-vivaldi/
 6. modify firefox android page to responsive page. (partially done)
-7. break the time limitation of timeshift and be able to download timeshift content
+7. break the time limitation of timeshift and be able to download timeshift content (done)
