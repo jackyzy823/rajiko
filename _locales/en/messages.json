@@ -12,7 +12,13 @@
         "message":"Choose Area - Rajiko"
     }
     ,"record_button_to_start":{
-        "message":"Record ライブ"
+        "message":"Record $RADIONAME$"
+        ,"placeholders":{
+            "radioname":{
+                "content":"$1",
+                "example" : "bayfm78"
+            }
+        }
     }
     ,"record_button_to_stop":{
         "message":"Stop recording"
@@ -22,7 +28,7 @@
         ,"placeholders":{
             "radio":{
                 "content" :"$1",
-                "example" : "BAYFM"
+                "example" : "bayfm78"
             }
         }
     },"timeshift_button":{

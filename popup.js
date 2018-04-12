@@ -126,7 +126,7 @@ window.onload = function () {
                     if(url[0]=='#'){
                         //playing live
                         record_button.hidden = false;
-                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
+                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start",radioAreaId[url.slice(1)].name);
                         record_button.onclick = function(data){
                             chrome.runtime.sendMessage({"start-recording":url.slice(1)},function(){
                                 window.close();
@@ -135,10 +135,10 @@ window.onload = function () {
                     } else if (tmpUrl[0]=='#'  && /\/live\//.test(results[0].href)){
                         //viewing live
                         record_button.hidden = false;
-                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start");
+                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start",radioAreaId[tmpUrl.slice(1)].name);
                         record_button.onclick = function(data){
                             chrome.runtime.sendMessage({"start-recording":tmpUrl.slice(1)},function(){
-                                window.alert(chrome.i18n.getMessage("record_prepare",tmpUrl.slice(1)));
+                                window.alert(chrome.i18n.getMessage("record_prepare",radioAreaId[tmpUrl.slice(1)].name));
                                 window.close();
                             });
                         }

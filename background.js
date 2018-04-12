@@ -32,7 +32,7 @@ ExpireToken.prototype.add = function(area, token) {
 
 // NOTE: sync function!!
 function retTokenByRadioname(radioname,default_area_id){
-  let availableArea = radioAreaId[radioname];
+  let availableArea = radioAreaId[radioname].area;
   let hadTokenArea = availableArea.filter(function(a){
     return !!authTokens[a];
   })
@@ -83,7 +83,7 @@ function retTokenByRadioname(radioname,default_area_id){
 }
 
 function retTokenByRadioname_async(radioname,default_area_id, callback){
-  let availableArea = radioAreaId[radioname];
+  let availableArea = radioAreaId[radioname].area;
   let hadTokenArea = availableArea.filter(function(a){
     return !!authTokens[a];
   })
