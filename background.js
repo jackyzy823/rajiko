@@ -455,10 +455,11 @@ function streamListener(req){
                         }
                     });
 
-                    chrome.storage.local.getBytesInUse(null,function(bytes){
-                        console.log("use ",bytes/1000.0 /1000.0 ,'mb');
-                    })
-                    // });            
+                    // DEBUG !Poor performance!
+                    // chrome.storage.local.getBytesInUse(null,function(bytes){
+                    //     console.log("use ",bytes/1000.0 /1000.0 ,'mb');
+                    // })
+       
                 }        
             }
             else{
@@ -492,10 +493,10 @@ function streamListener(req){
                             console.log("store error",chrome.runtime.lastError);
                         }
                     })
-
-                    chrome.storage.local.getBytesInUse(null,function(bytes){
-                        console.log("use ",bytes/1000.0 /1000.0 ,'mb');
-                    })
+                    // DEBUG
+                    // chrome.storage.local.getBytesInUse(null,function(bytes){
+                    //     console.log("use ",bytes/1000.0 /1000.0 ,'mb');
+                    // })
                     
                 }
                 xhr.send();
