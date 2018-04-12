@@ -645,12 +645,30 @@ function downloadtimeShift(m3u8link, default_area_id) {
               req.onloadend  = function(event){
                   //can this capture MISMATCH?
                   //see https://stackoverflow.com/questions/48127436/how-to-catch-chrome-error-neterr-file-not-found-in-xmlhttprequest
-                  if(!event.loaded){
-                    //debugger;
-                  }
-                  if(!req.response){
-                    //debugger;
-                  }
+                if(!event.loaded){
+                  //net::ERR_NETWORK_CHANGED goes here
+                  //can reload other already downloaded from disk cache ,so do not retry by iteself.
+                  //cacnel
+                  //TODO: use a function to handle error
+                  returned  = true;
+                  chrome.storage.local.get({"timeshift_list":[]},function(data){
+                    let list = data["timeshift_list"];
+                    list = list.filter(function(l){
+                      return l !==m3u8link;
+                    });
+                    chrome.storage.local.set({"timeshift_list":list},function(){
+                      chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+                    });
+                  });
+
+                  chrome.storage.local.remove(keyList.filter(function(val) {
+                    return !val
+                  }), function() {
+
+                  }); 
+
+
+                }
               }
               //TODO: dont know why MISMATCH cannot handle in here
               req.addEventListener('error',function(){
@@ -669,7 +687,7 @@ function downloadtimeShift(m3u8link, default_area_id) {
                   return !val
                 }), function() {
 
-                });               
+                });
               })
               req.send();
             
