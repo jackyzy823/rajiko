@@ -337,16 +337,6 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
 }
 
 
-
-/* OBSOLETED prototype of multi recording. 
-function recorder(radio){
-  let radioname = radio;
-  let stopme = function();
-  let worker = function();
-  return worker
-}
-*/
-
 //download live stuff
 function timestamp2Filename(t) {
   let d = new Date(t);
@@ -521,51 +511,51 @@ function streamListener(req){
 
 //https://github.com/hughsk/map-limit/blob/master/test.js
 function mapLimit(arr, limit, iterator, callback) {
-  var complete = 0
-  var aborted = false
-  var results = []
-  var queued = 0
-  var l = arr.length
-  var i = 0
+  let complete = 0;
+  let aborted = false;
+  let results = [];
+  let queued = 0;
+  let l = arr.length;
+  let i = 0;
 
-  for (var r = 0; r < l; r++) {
-    results[r] = null
+  for (let r = 0; r < l; r++) {
+    results[r] = null;
   }
 
-  flush()
+  flush();
 
   function flush() {
-    if (complete === l)
-      return callback(null, results)
+    if (complete === l){ 
+      return callback(null, results);
+    }
 
     while (queued < limit) {
-      if (aborted) break
-      if (i === l) break
-      push()
+      if (aborted){ break; }
+      if (i === l){ break; }
+      push();
     }
   }
 
   function abort(err) {
-    aborted = true
-    return callback(err,results) //return results althrough error , becasue we need cleanup
+    aborted = true;
+    return callback(err,results); //return results althrough error , becasue we need cleanup
   }
 
   function push() {
-    var idx = i++
+    let idx = i++;
 
-    queued += 1
+    queued += 1;
 
-    iterator(arr[idx], function(err, result) {
-      if (err) return abort(err)
-      results[idx] = result
-      complete += 1
-      queued -= 1
-      flush()
-    })
+    iterator(arr[idx],idx, function(err, result) {
+      if (err) {return abort(err);}
+      results[idx] = result;
+      complete += 1;
+      queued -= 1;
+      flush();
+    });
   }
 }
 
-// NOTE: do in async or move to worker?
 function downloadtimeShift(m3u8link, default_area_id) {
   let radioname, from, to;
   (new URL(m3u8link)).search.slice(1).split('&').map(function(kv) {
@@ -587,7 +577,7 @@ function downloadtimeShift(m3u8link, default_area_id) {
 
   retTokenByRadioname_async(radioname, default_area_id, function(token) {
     let q1 = new XMLHttpRequest();
-    q1.open('GET', m3u8link); //will this be capture??
+    q1.open('GET', m3u8link);
     q1.setRequestHeader('X-Radiko-AuthToken', token);
     q1.onload = function(xhrevent) {
       let resp = this.responseText;
@@ -604,19 +594,7 @@ function downloadtimeShift(m3u8link, default_area_id) {
           return d[0] != '#' && d.trim() != '';
         });
 
-        // let returned = false;
-        let linksCount = links.length;
-        // let keyList = new Array(linksCount);
-        let count = 0;
-
-        let iteritem = new Array(linksCount);
-        for(let i =0 ;i<linksCount ;i++){
-          iteritem[i] = [i, links[i]];
-        }
-
-        mapLimit(iteritem,6,function(val,next){
-          let idx = val[0];
-          let item = val[1];
+        mapLimit(links,6,function(item,idx,next){
           let storekey = filename + '_' + idx;
           let req = new XMLHttpRequest();
           req.open('GET', item);
@@ -628,9 +606,7 @@ function downloadtimeShift(m3u8link, default_area_id) {
 
             chrome.storage.local.set(storage_set, function() {
               if (chrome.runtime.lastError) {
-                // returned = true;
                 next(chrome.runtime.lastError,null); //no data in storage yet.
-
               }else{
                 next(null,storekey);
               }
@@ -643,7 +619,6 @@ function downloadtimeShift(m3u8link, default_area_id) {
               //net::ERR_NETWORK_CHANGED goes here
               //can reload other already downloaded from disk cache ,so do not retry by iteself.
               //cacnel
-              //TODO: use a function to handle error
               let err = true;
               next(err,null);
             }
