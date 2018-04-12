@@ -519,8 +519,51 @@ function streamListener(req){
     return {};
 }
 
-//download timeshift stuff
-let timeShiftQueue = {}; // "RAIDONAME_STARTTIME":
+//https://github.com/hughsk/map-limit/blob/master/test.js
+function mapLimit(arr, limit, iterator, callback) {
+  var complete = 0
+  var aborted = false
+  var results = []
+  var queued = 0
+  var l = arr.length
+  var i = 0
+
+  for (var r = 0; r < l; r++) {
+    results[r] = null
+  }
+
+  flush()
+
+  function flush() {
+    if (complete === l)
+      return callback(null, results)
+
+    while (queued < limit) {
+      if (aborted) break
+      if (i === l) break
+      push()
+    }
+  }
+
+  function abort(err) {
+    aborted = true
+    return callback(err,results) //return results althrough error , becasue we need cleanup
+  }
+
+  function push() {
+    var idx = i++
+
+    queued += 1
+
+    iterator(arr[idx], function(err, result) {
+      if (err) return abort(err)
+      results[idx] = result
+      complete += 1
+      queued -= 1
+      flush()
+    })
+  }
+}
 
 // NOTE: do in async or move to worker?
 function downloadtimeShift(m3u8link, default_area_id) {
@@ -561,96 +604,91 @@ function downloadtimeShift(m3u8link, default_area_id) {
           return d[0] != '#' && d.trim() != '';
         });
 
-        let returned = false;
+        // let returned = false;
         let linksCount = links.length;
-        let keyList = new Array(linksCount);
+        // let keyList = new Array(linksCount);
         let count = 0;
 
-        //TODO: 1. parallel limit  (ConnectionsPerHostname = 6) 2. use webworker/parallel.js ?
-        for (let i = 0; i < linksCount; i++) {
-          let storekey = filename + '_' + i;
-          let item = links[i];
-          (function(storekey, item, index) {
-            if (returned) {return;}
-            setTimeout(function() {
-              let req = new XMLHttpRequest();
-              req.open('GET', item);
-              req.responseType = 'arraybuffer';
-              req.onload = function(xhrevent) {
-                let audio_string = ab2str(this.response);
-                let storage_set = {};
-                storage_set[storekey] = audio_string;
+        let iteritem = new Array(linksCount);
+        for(let i =0 ;i<linksCount ;i++){
+          iteritem[i] = [i, links[i]];
+        }
 
-                chrome.storage.local.set(storage_set, function() {
-                  if (chrome.runtime.lastError) {
-                    returned = true;
-                    chrome.storage.local.get({"timeshift_list":[]},function(data){
-                      let list = data["timeshift_list"];
-                      list = list.filter(function(l){
-                        return l !==m3u8link;
-                      });
-                      chrome.storage.local.set({"timeshift_list":list},function(){
-                        chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
-                      });
-                    });
-                    chrome.storage.local.remove(keyList.filter(function(val) {
-                      return !val
-                    }), function() {
+        mapLimit(iteritem,6,function(val,next){
+          let idx = val[0];
+          let item = val[1];
+          let storekey = filename + '_' + idx;
+          let req = new XMLHttpRequest();
+          req.open('GET', item);
+          req.responseType = 'arraybuffer';
+          req.onload = function(xhrevent) {
+            let audio_string = ab2str(this.response);
+            let storage_set = {};
+            storage_set[storekey] = audio_string;
 
-                    });
+            chrome.storage.local.set(storage_set, function() {
+              if (chrome.runtime.lastError) {
+                // returned = true;
+                next(chrome.runtime.lastError,null); //no data in storage yet.
 
-                  } else {
-                    keyList[index] = storekey;
-                    count += 1;
-                    if (count == linksCount) {
-                      chrome.storage.local.get(keyList, function(data) {
-                        if (data) {
-                          let audio_buf = keyList.map(function(x) {
-                            return str2ab(data[x]);
-                          })
-                          let audiodata = new Blob(audio_buf, {
-                            type: "audio/aac"
-                          });
-                          let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
-                          chrome.downloads.download({
-                            url: audiourl,
-                            filename: filename
-                          }, function(downloadId) {
-                            console.log("download done!");
-                            URL.revokeObjectURL(audiourl);
-                            //remove finished work
-                            chrome.storage.local.get({"timeshift_list":[]},function(data){
-                              let list = data["timeshift_list"];
-                              list = list.filter(function(l){
-                                return l !==m3u8link;
-                              });
-                              chrome.storage.local.set({"timeshift_list":list},function(){
-                                chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
-                              });
-                            });
-                            chrome.storage.local.remove(keyList, function() {
-                              console.log("clean done!");
-                              if (chrome.runtime.lastError) {
-                                console.log("cleanup error", chrome.runtime.lastError);
-                              }
-                            });
-
-                          });
-                        }
-                      });
-                    }
-                  }
-                });
+              }else{
+                next(null,storekey);
               }
-              req.onloadend  = function(event){
-                  //can this capture MISMATCH?
-                  //see https://stackoverflow.com/questions/48127436/how-to-catch-chrome-error-neterr-file-not-found-in-xmlhttprequest
-                if(!event.loaded){
-                  //net::ERR_NETWORK_CHANGED goes here
-                  //can reload other already downloaded from disk cache ,so do not retry by iteself.
-                  //cacnel
-                  //TODO: use a function to handle error
-                  returned  = true;
+            });
+          }
+          req.onloadend  = function(event){
+              //can this capture MISMATCH?
+              //see https://stackoverflow.com/questions/48127436/how-to-catch-chrome-error-neterr-file-not-found-in-xmlhttprequest
+            if(!event.loaded){
+              //net::ERR_NETWORK_CHANGED goes here
+              //can reload other already downloaded from disk cache ,so do not retry by iteself.
+              //cacnel
+              //TODO: use a function to handle error
+              let err = true;
+              next(err,null);
+            }
+          }
+          //TODO: dont know why MISMATCH cannot handle in here
+          req.addEventListener('error',function(){
+              let err = true;
+              next(err,null);
+          })
+          req.send();          
+
+        },function(err,keyList){
+          if(err){
+            chrome.storage.local.get({"timeshift_list":[]},function(data){
+              let list = data["timeshift_list"];
+              list = list.filter(function(l){
+                return l !==m3u8link;
+              });
+              chrome.storage.local.set({"timeshift_list":list},function(){
+                chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+              });
+            });
+
+            chrome.storage.local.remove(keyList.filter(function(val) {
+              return !val
+            }), function() {
+
+            });
+          }else{
+            chrome.storage.local.get(keyList, function(data) {
+              if (data) {
+                let audio_buf = keyList.map(function(x) {
+                  return str2ab(data[x]);
+                })
+                let audiodata = new Blob(audio_buf, {
+                  type: "audio/aac"
+                });
+                let audiourl = URL.createObjectURL(audiodata); //you shall free this via URL.revokeObjectURL
+                chrome.downloads.download({
+                  url: audiourl,
+                  filename: filename
+                }, function(downloadId) {
+                  console.log("download done!");
+                  URL.revokeObjectURL(audiourl);
+                  //remove finished work
                   chrome.storage.local.get({"timeshift_list":[]},function(data){
                     let list = data["timeshift_list"];
                     list = list.filter(function(l){
@@ -660,41 +698,19 @@ function downloadtimeShift(m3u8link, default_area_id) {
                       chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
                     });
                   });
+                  chrome.storage.local.remove(keyList, function() {
+                    console.log("clean done!");
+                    if (chrome.runtime.lastError) {
+                      console.log("cleanup error", chrome.runtime.lastError);
+                    }
+                  });
 
-                  chrome.storage.local.remove(keyList.filter(function(val) {
-                    return !val
-                  }), function() {
-
-                  }); 
-
-
-                }
+                });
               }
-              //TODO: dont know why MISMATCH cannot handle in here
-              req.addEventListener('error',function(){
-                returned = true;
-                chrome.storage.local.get({"timeshift_list":[]},function(data){
-                  let list = data["timeshift_list"];
-                  list = list.filter(function(l){
-                    return l !==m3u8link;
-                  });
-                  chrome.storage.local.set({"timeshift_list":list},function(){
-                    chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
-                  });
-                });
+            });
+          }
 
-                chrome.storage.local.remove(keyList.filter(function(val) {
-                  return !val
-                }), function() {
-
-                });
-              })
-              req.send();
-            
-            }, Math.floor(index / 6) * 300 ); //Math.floor(index / 6) * 400 //whatever
-            // req.send();
-          })(storekey, item, i);
-        }
+        });
 
       }
       q2.send();
