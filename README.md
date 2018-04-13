@@ -2,9 +2,10 @@ Rajiko
 ====================
 How to use:
 -------------------
-1. Install it from Chrome webstore or Firefox addons
-2. Do nothing or change default area by clicking icon which only affects live area
-3. Recording live or download timeshift by clicking icon
+1. Install it from Chrome webstore or Firefox addons.
+2. Do nothing or change default area by clicking icon which only affects live area.
+3. Recording live or download timeshift by clicking icon. 
+4. Click icon or click pause button to stop recording.
 
 
 Permission Details:
@@ -19,13 +20,11 @@ Permission Details:
 8. downloads : for downloading recored audio.
 9. \*://\*.smartstream.ne.jp/\* : the site where audio stored.
 10. unlimitedStorage : for recording radio.
-11. \*://\*.d2-apps.net/\*: disable radiko's statistics requests. [TODO]
-
 
 
 What's new:
 -----------
-+ version 0.2.0
++ version 0.2.1
     
     Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
 
@@ -35,8 +34,9 @@ What's new:
 
     "Choose Area" is only needed in displaying area in live(ライブ).
 
-    If there's any bug or problem ,please try to disable and then enable it.If this does not help , please tell me via review page or github issue.
+    If there's any bug or problem ,please try to disable and then enable or reinstall it.If this does not help , please tell me via review page or github issue.
 
+    Update to the newest radio table [20180412].
 
 + version 0.1.4.1
     
@@ -82,6 +82,10 @@ Suppport List:
 + yandex browser latest
 
 + firefox for android latest
+
+Known Issue:
+---------------
++ Failed to download recorded on firefox nightly and firefox for android nightly
 
 
 
