@@ -310,6 +310,7 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
 
   //polyfill
   //see https://github.com/kiefferbp/webext-getBytesInUse-polyfill/blob/master/index.js
+  //Poor performance!!
   chrome.storage.local.getBytesInUse = function(keys, callback) {
     let size = 0;
     if (typeof keys === 'string') {
@@ -341,7 +342,7 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
 // 51 may cancel
 // 38
 // 51
-// after stop and resume -> how to handle this? solution: stop recording when stop clicked!
+// after stop and resume -> how to handle this? solution: stop recording when pause clicked!
 // 27
 // 28 may cancel
 // 16
@@ -435,7 +436,7 @@ function streamListener(){
           });
           xhr.responseType = 'arraybuffer';
           xhr.onload = function(xhrevent){
-            //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Apppear only on chrome v22 linux.
+            //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Appears only on chrome v50 linux.
             let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
             let storage_set ={};
             storage_set[radioname+'_'+ info["start_time"] + '_' + count ] = audio_string;
@@ -447,12 +448,7 @@ function streamListener(){
               if(chrome.runtime.lastError){
                 console.log("store error",chrome.runtime.lastError);
               }
-            })
-            // DEBUG
-            // chrome.storage.local.getBytesInUse(null,function(bytes){
-            //     console.log("use ",bytes/1000.0 /1000.0 ,'mb');
-            // })
-            
+            });
           }
           xhr.send();
 
