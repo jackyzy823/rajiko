@@ -106,9 +106,10 @@ vertical-align: -17px;
 #search-form  .esb-dropdown {padding:unset;}
 #search-form .icon--cross {display: none}
 /*hide other program in live page because it conflict with .img-list__link 's height*/
-#others-program {display: none;}
-#others-program .img-list__text {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
-
+/*#others-program {display: none;}
+#others-program .img-list__text {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}*/
+#others-program .img-list__item {min-height: 200px}
+#others-program  .img-list__genre {margin-top: 5px}
 .player-area__volume {display: none;}
 /*padding left for button click*/
 #player-detail {width: unset;position: unset;padding-left: 122px;}
@@ -145,13 +146,15 @@ vertical-align: -17px;
 
 .timeshift-page-nav {width: 100%;}
 
+
+/*
 .program-table-header__list  {overflow: unset;width: unset;height: unset;}
 .program-table-header__list .item:first-child {margin-left: 12px;}
-
+*/
 /*.program-table__pager .item--prev {position: absolute; left: 0px; z-index: 1;} 
 .program-table__pager .item--next {position: absolute; right: 0; z-index: 1; }
 */
-.program-table__channel-outer {  width: 100%; display: inline-flex; } 
+/*.program-table__channel-outer {  width: 100%; display: inline-flex; } 
 .program-table__items {width: 100%}
 .program-table__outer {width: 100%;}
 .program-table__channel .name img {right: unset;width: 56%}
@@ -160,5 +163,5 @@ vertical-align: -17px;
 .program-table__date-outer {width: 100%; display: block; } 
 .program-table__pager {display: none}
 .program-table__body--col8 .program-table__date {width: 10% ;padding: 2px}
-.program-table__body--col8 .program-table__items .item-outer {width: 11%}
+.program-table__body--col8 .program-table__items .item-outer {width: 11%}*/
 /*.program-table-header__list-outer  {overflow: scroll;}*/
