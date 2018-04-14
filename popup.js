@@ -53,8 +53,9 @@ window.onload = function () {
     };
 
     //load region and area
-    chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
-        let area_id = data["selected_areaid"];
+    //TODO : via message not via local.get to fasten when recording or downloading
+    chrome.runtime.sendMessage({"get-area":true},function(data){
+        let area_id = data["get-area"];
         for (let i = 0; i < regions.length; i++) {
             let tmp = document.createElement("option");
             tmp.setAttribute("id", regions[i].id);
@@ -72,9 +73,9 @@ window.onload = function () {
 
             }
 
-        });
-
+        });        
     });
+
 
 
 
@@ -90,11 +91,6 @@ window.onload = function () {
     //
     let record_button = document.getElementById("rajiko-record");
     let download_button = document.getElementById("rajiko-download");
-    // download_button.onclick = function(){
-    //     chrome.runtime.sendMessage({"download-timeshift":"<TEST_LINK>"},function(){
-    //         window.close();
-    //     });
-    // }
     // only download viewing timeshift not playing 
     // recording playing first ,if not exisit recording viewing.
     chrome.tabs.executeScript({code:"var tmpdata = {href : window.location.href,tmpUrl : document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value, url :document.getElementById('url') && document.getElementById('url').value };tmpdata",runAt:"document_start"},function(results){
@@ -143,9 +139,6 @@ window.onload = function () {
                             });
                         }
                     }
-
-
-
                 }
             }
             if(tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8")!=-1 && /\/ts\//.test(results[0].href)  && !data["timeshift_list"].includes(tmpUrl)){
@@ -160,15 +153,8 @@ window.onload = function () {
             }else{
                 download_button.hidden = true;
             }
-        
         });
-
     });
-
-// TODO: choose when display
-
-
-
 };
 
 

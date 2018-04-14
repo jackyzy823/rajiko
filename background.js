@@ -873,6 +873,8 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         }, function(c) {
           console.log("set cookie", c);
         });
+      } else if (msg["get-area"]){
+          respCallback({"get-area":area_id});
       } else if (msg["start-recording"]) {
         let radioname = msg["start-recording"];
 
