@@ -15,8 +15,7 @@ function loadArea(regionIdx) {
 }
 
 
-
-window.onload = function () {
+document.addEventListener("DOMContentLoaded",function () {
     //define event
     let region_select = document.getElementById("rajiko-region");
     region_select.onchange = function (data) {
@@ -155,7 +154,7 @@ window.onload = function () {
             }
         });
     });
-};
+});
 
 
 
