@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.2
+
+    fix timeshift bypass logic.
+
 + version 0.2.1
     
     Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
