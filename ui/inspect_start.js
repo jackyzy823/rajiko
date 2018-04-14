@@ -610,19 +610,21 @@ moment.tz.link("Asia/Tokyo|Japan");
 moment.tz.setDefault("Asia/Tokyo");
 
 //break timeshift 3hour limit
+// from tsdetail -> scheduleId (for 1 day , check every 1s ) && storeWatchId (for 3 hours,check on update)
+// this watcher is the first.
 store.watch('update',
-    function(key,val){
-        if( /[0-9]{14}/.test(key)){
-            if(val.listened_time == 0 && val.limit == 10000000000){ 
-                return
-            }
-            else{
-                val.limit = 10000000000 ;
-                val.listened_time = 0;
-                store.set(val)
-            }
+    function(key,val,oldVal){ // if oldVal == undefined -> a new created one
+        if( /[0-9]{14}$/.test(key)){
+            val.listened_time = 0;
+            val.limit = moment(val.to, 'YYYYMMDDHHmmss').unix() + 8 * 24 * 60 * 60; //same as tsdetail.js, but will be delete after 8*2 days
+            //use raw store api
+            store.storage.write(key,JSON.stringify(val));
         }
-    });
+    }
+);
+
+
+
 //to bypass check at 
 // to enfore select stream_smh_multi url areafree = 0 link (bypass containStation check)
 // to pass our generated token 
