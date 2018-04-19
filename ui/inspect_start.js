@@ -609,6 +609,22 @@ moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0
 moment.tz.link("Asia/Tokyo|Japan");
 moment.tz.setDefault("Asia/Tokyo");
 
+//because ftTime is JST time
+//apps/js/playerCommon.js?_=20180221
+$.Radiko.Player.View.seekBarView.updateBalloon = function (ftTime, addTime) {
+    moment.tz.setDefault();
+    var seekmt = moment(ftTime + addTime);
+    var hour = seekmt.hour();
+    if (hour < 5) {
+        hour += 24;
+    }
+    $('.balloon span').text(
+        sprintf("%02d:%02d:%02d", hour, seekmt.minute(), seekmt.second())
+    );
+    moment.tz.setDefault("Asia/Tokyo");
+}
+
+
 //break timeshift 3hour limit
 // from tsdetail -> scheduleId (for 1 day , check every 1s ) && storeWatchId (for 3 hours,check on update)
 // this watcher is the first.
