@@ -22,6 +22,13 @@ Permission Details:
 10. unlimitedStorage : for recording radio.
 
 
+TokenShare Project:
+-------------------
+Share your token to help each other!
+When GPS fake method has benn banned.Share token (which area related to ip) with others to help others listening to your area's readio.
+For overseas , You can do nothing ,but wait for others share,or use japan ip (vpn or etc...)
+ 
+
 What's new:
 -----------
 + version 0.2.2

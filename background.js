@@ -925,11 +925,50 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
   chrome.webRequest.onBeforeRequest.addListener(
     function(req) {
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
+      if(ifInit || ifTabId){
+        return {};
+      }
+
       chrome.cookies.set({
         url: "http://radiko.jp/",
         name: "default_area_id",
         value: area_id
       });
+
+      //do area request to get ip areaid
+      //document.write('<span class="JP27">OSAKA JAPAN</span>');
+      let areacheckreq = new XMLHttpRequest();
+      areacheckreq.open('GET',"http://radiko.jp/area"); 
+      areacheckreq.onload = function(xhrevent){
+        let match = this.responseText.match(/class="(JP[0-9]{1,2})"/);
+        if(match.length){
+          //from japan
+          // can share ip-area
+          let shareArea = match[1] ; //
+          // do async
+          let gen_and_share = function(){
+            //via pc auth1&2 if gps fake fail
+            // post -> {shareArea,token,vaildTill}
+            // should i validate  in server if token works ?
+
+            // request
+            // if defaultarea can radio play do nothing
+            // else
+            // post -> {[lists_of_areas_of_radioname] }  
+            // resp {one_of_area,token,validTill} -> store in expiretoken
+          };
+          gen_and_share() && setInterval( gen_and_share,30*60*1000); //share every 30 minustes
+        }else{
+          //from other country
+          //get token for default area.
+        }
+      }
+      areacheckreq.send();
+
+
+
       return {
         cancel: true
       };
