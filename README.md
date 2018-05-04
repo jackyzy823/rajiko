@@ -24,6 +24,11 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.3
+
+        fix time display in ballon when dragging in timeshift
+        update gps info from radiko android DEVELOPER_MODE
+
 + version 0.2.2
 
     fix timeshift bypass logic.
@@ -91,7 +96,9 @@ Known Issue:
 ---------------
 + Failed to download recorded on firefox nightly and firefox for android nightly
 
-
+Why I do this:
+-------------------
+An overseas fan of Kalafina wanted to listen to the radio program 'Kalafina倶楽部 ' which was ended a few days after this extension have been developed.
 
 Technical Details:
 ------------------
@@ -124,8 +131,8 @@ Technical Details:
     However the android version's full key is protected by native dynamic librarys.Obviously the key is much longer than that in pc version.
 
 2. But how do you generate the partialkey/how do you get fullkey?
-    
-    TODO
+
+    By reversing android dynamic library,You can get the fullkey from .data segment  after bypassing the root check ,emulator check and lots of anti-debugging tricks and waiting for itself to repair the .data segment.
 
 TODO
 ------------
