@@ -607,12 +607,16 @@
 
 moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0 1zB0 NX0|38e6");
 moment.tz.link("Asia/Tokyo|Japan");
-moment.tz.setDefault("Asia/Tokyo");
+//do less with those who are in japan.
+let needChangeTZ = Intl.DateTimeFormat().resolvedOptions().timeZone.toLowerCase() !='asia/tokyo';
+if(needChangeTZ){
+    moment.tz.setDefault("Asia/Tokyo");
+}
 
 //because ftTime is JST time
 //apps/js/playerCommon.js?_=20180221
 $.Radiko.Player.View.seekBarView.updateBalloon = function (ftTime, addTime) {
-    moment.tz.setDefault();
+    needChangeTZ && moment.tz.setDefault();
     var seekmt = moment(ftTime + addTime);
     var hour = seekmt.hour();
     if (hour < 5) {
@@ -621,8 +625,64 @@ $.Radiko.Player.View.seekBarView.updateBalloon = function (ftTime, addTime) {
     $('.balloon span').text(
         sprintf("%02d:%02d:%02d", hour, seekmt.minute(), seekmt.second())
     );
-    moment.tz.setDefault("Asia/Tokyo");
+    needChangeTZ && moment.tz.setDefault("Asia/Tokyo");
 }
+
+function diffTimestamp(){
+    return 60 * 1000 * (-  (new Date()).getTimezoneOffset() + moment.tz.zone('Asia/Tokyo').utcOffset(0))
+}
+
+let  onDragSeekKai = function(){
+            moveSeek = true;
+            var seekBar = $("#seekbar");
+            var x = seekBar.find(".knob").position().left;
+            var rate = x / seekBar.width();
+            var playTime = player.totm() - player.fttm();
+            var time = playTime * rate;
+            time = time > playTime ? playTime : time;
+
+            var seekTime = new XDate(player.fttm() + time, false);
+            var now = moment();
+
+            // 追っかけ放送対応
+            //isAfter is comparing timestamp , XDATE parse date(with out tz info) to current timezone timestamp 
+            if (moment(player.fttm() + time + diffTimestamp() ).isAfter(now)) {
+                //TODO this time is also need to be change
+                seekTime = new XDate(parseInt(now.clone().subtract('minutes', 1).format('x')), false);
+            }
+            var url = create_ts_url({
+                ft: player.fttm(),
+                to: player.totm(),
+                seek: seekTime
+            });
+            $("#url").val(url);
+            seekBar.find('.active').css('width', x);
+            this.updateBalloon(player.fttm(), time);
+
+            var timelest = playTime - time;
+            $.Radiko.Player.setSeekPlayTime(time / 1000, timelest / 1000);
+
+            // 追っかけ放送対応
+            if (moment(player.fttm() + time + diffTimestamp()  ).isAfter(now)) { 
+                //TODO this time is also need to be change??
+                var moveTime = now.subtract('minutes', 1).format('x') - player.fttm().getTime();
+                var timeRate = moveTime / playTime;
+                var movablePos = seekBar.width() * timeRate;
+                seekBar.find('.active').css('width', movablePos);
+                seekBar.find('.knob').css('left', movablePos);
+                return false;
+            }
+}
+// $("#seekbar").find(".knob").off("drag"); //$.Radiko.Player.View.seekBarView
+$.Radiko.Player.View.seekBarView.onDragSeek = function(){}; // remove  
+$("#seekbar").find(".knob").draggable( "destroy" );
+$("#seekbar").find(".knob").draggable({
+                axis: "x",
+                containment: "parent",
+                start: $.Radiko.Player.View.seekBarView.onDragStart,
+                drag: onDragSeekKai.bind($.Radiko.Player.View.seekBarView),
+                stop: $.Radiko.Player.View.seekBarView.onDragSeekKnob
+});
 
 
 //break timeshift 3hour limit

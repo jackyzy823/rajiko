@@ -96,6 +96,7 @@ Suppport List:
 Known Issue:
 ---------------
 + Failed to download recorded on firefox nightly and firefox for android nightly
++ Drag issue with timezone in timefree mode. (1.Always play the start part Wherever you drag 2.Cannot drag over time after localtime now) .The second problem may be caused by radiko which only aims atjapan user not  handling timezone problem .
 
 Why I do this:
 -------------------
