@@ -27,6 +27,7 @@ What's new:
 + version 0.2.3
 
         fix time display in ballon when dragging in timeshift
+
         update gps info from radiko android DEVELOPER_MODE
 
 + version 0.2.2
