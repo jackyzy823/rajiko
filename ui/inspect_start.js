@@ -1,6 +1,7 @@
 const needChangeTZ = Intl.DateTimeFormat().resolvedOptions().timeZone.toLowerCase() !='asia/tokyo';
 if(needChangeTZ){
     //for those who are from different timezones.
+    //TODO: better solution? such as changing Date prototype? 
 
     //! moment-timezone.js
     //! version : 0.5.14
@@ -618,7 +619,7 @@ if(needChangeTZ){
     //because ftTime is JST time
     //apps/js/playerCommon.js?_=20180221
     $.Radiko.Player.View.seekBarView.updateBalloon = function (ftTime, addTime) {
-        needChangeTZ && moment.tz.setDefault();
+        moment.tz.setDefault();//THIS LINE CHANGED 
         var seekmt = moment(ftTime + addTime);
         var hour = seekmt.hour();
         if (hour < 5) {
@@ -627,7 +628,7 @@ if(needChangeTZ){
         $('.balloon span').text(
             sprintf("%02d:%02d:%02d", hour, seekmt.minute(), seekmt.second())
         );
-        needChangeTZ && moment.tz.setDefault("Asia/Tokyo");
+        moment.tz.setDefault("Asia/Tokyo");//THIS LINE CHANGED 
     }
 
     let onDragSeekKai = function(){

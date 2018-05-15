@@ -2,7 +2,7 @@ Rajiko
 ====================
 How to use:
 -------------------
-1. Install it from Chrome webstore or Firefox addons.
+1. Install it from [Chrome webstore](https://chrome.google.com/webstore/detail/rajiko/ejcfdikabeebbgbopoagpabbdokepnff) or [Firefox addons](https://addons.mozilla.org/firefox/addon/rajiko/).
 2. Do nothing or change default area by clicking icon which only affects live area.
 3. Recording live or download timeshift by clicking icon. 
 4. Click icon or click pause button to stop recording.
@@ -26,21 +26,21 @@ What's new:
 -----------
 + version 0.2.3
 
-        fix time display in ballon when dragging in timeshift
+    fix time display in ballon when dragging in timefree, fix dragging in different timezone (Don't know if this fix works)
 
-        update gps info from radiko android DEVELOPER_MODE
+    update gps info from radiko android DEVELOPER_MODE
 
 + version 0.2.2
 
-    fix timeshift bypass logic.
+    fix timefree bypass logic.
 
 + version 0.2.1
     
-    Now, you can use areafree(エリアフリー) and timeshift(タイムシフト) as premium(プレミアム会員)  freely without any operation.
+    Now, you can use areafree(エリアフリー) and timefree(タイムフリー) as premium(プレミアム会員)  freely without any operation.
 
-    For switching to  other area in timeshift(タイムシフト) page, only click 地域変更 button in timeshift(タイムシフト) page.
+    For switching to  other area in timefree(タイムフリー) page, only click 地域変更 button in timefree(タイムフリー) page.
 
-    The "3 hours a day" limitation of timeshift(タイムシフト) has been unblocked.You can listen no matter how long now. And also you can download timeshift(タイムシフト) program.
+    The "3 hours a day" limitation of timefree(タイムフリー) has been unblocked.You can listen no matter how long now. And also you can download timefree(タイムフリー) program.
 
     "Choose Area" is only needed in displaying area in live(ライブ).
 
@@ -97,6 +97,7 @@ Known Issue:
 ---------------
 + Failed to download recorded on firefox nightly and firefox for android nightly
 + Drag issue with timezone in timefree mode. (1.Always play the start part Wherever you drag 2.Cannot drag over time after localtime now) .The second problem may be caused by radiko which only aims atjapan user not  handling timezone problem .
++ Timefree only plays 5 seconds. (Don't know whether this is my issue or radiko's)
 
 Why I do this:
 -------------------
