@@ -232,7 +232,7 @@ function genRandomInfo() {
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
   let appversion = function() {
-    let version = ["6.3.6", "6.3.5", "6.3.3", "6.3.2", "6.3.1"]; //new version 6.3.6 from 2018/04/03
+    let version = ["6.3.8", "6.3.7", "6.3.6", "6.3.5", "6.3.3"]; //new version 6.3.8 from 2018/06/07
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
 
