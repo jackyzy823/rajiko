@@ -272,8 +272,8 @@ function genGPS(area_id) {
 if( typeof browser === "undefined"){  //see webextension-polyfill
   // for chrome
   //see chroumium bug:  https://bugs.chromium.org/p/chromium/issues/detail?id=831062
-  function ab2str(buf){
-    return String.fromCharCode.apply(null, new Uint8Array(buf)); //uint16 will raise must multiple of 2  error 
+  function ab2str(buf,offset){
+    return String.fromCharCode.apply(null, new Uint8Array(buf,offset)); //uint16 will raise must multiple of 2  error 
   }
   function str2ab(str) {
     let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char  *2
@@ -286,15 +286,15 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
   }
 }else{
   //for firefox save memory via Uint16Array , use pkcs5 for padding.
-  function ab2str(buf) {
-    let len = buf.byteLength;
+  function ab2str(buf,offset) {
+    let len = buf.byteLength - offset;
     let padding = len %8 ==0 ? 8:len %8;
     let crafted = new Uint8Array(len + padding );
     let p = new Array(padding);
     for(let i =0;i<padding;i++){
       p[i] = padding;
     }
-    crafted.set(new Uint8Array(buf),0);
+    crafted.set(new Uint8Array(buf,offset),0);
     crafted.set(p,len);
     return String.fromCharCode.apply(null, new Uint16Array(crafted.buffer));
   }
@@ -330,6 +330,23 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
     });
   }
 
+}
+
+//aac parse stuff
+//parse hls packed audio (id3 tags and data)
+// return id3 tag size and timestamp of this packed audio if success else return [0,0]
+function parseAAC(data){ //data -> Arraybuffer
+	let processing =  new DataView(data);
+	if( processing.getUint8(0) != 73 || processing.getUint8(1) != 68 || processing.getUint8(2) != 51){  // ID3
+		return [0,0];
+	}
+	let id3payloadsize = processing.getUint32(6,false) ; //bigendian
+	let id3tagsize = 10 + id3payloadsize ; //header size + payloadsize
+
+	let timestampLow = processing.getUint32(id3tagsize - 4,false); // 32bit
+	let timestampHigh = processing.getUint32(id3tagsize - 8 ,false); //need only the last bit
+	let timestamp =  timestampLow + 0xffffffff * timestampHigh;
+	return [id3tagsize,timestamp];
 }
 
 
@@ -402,7 +419,7 @@ function streamListener(){
               if(audio_uint8 == null ){
                 return {} ; //a strange request by radiko get 0 bytes;
               }
-              let audio_string =  ab2str(audio_uint8.buffer);
+              let audio_string =  ab2str(audio_uint8.buffer , parseAAC(audio_uint8.buffer)[0]); // drop id3 tag ;timestamp not used for now
               let storage_set ={};
 
               storage_set[radioname+'_'+ info["start_time"] + '_' + count ] = audio_string;
@@ -438,7 +455,7 @@ function streamListener(){
           xhr.responseType = 'arraybuffer';
           xhr.onload = function(xhrevent){
             //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Appears only on chrome v50 linux.
-            let audio_string =  ab2str(this.response);//btoa(String.fromCharCode.apply(null, new Uint8Array(xhr.response)));
+            let audio_string =  ab2str(this.response, parseAAC(this.response)[0]); //timestamp not used for now.
             let storage_set ={};
             storage_set[radioname+'_'+ info["start_time"] + '_' + count ] = audio_string;
             count += 1;
@@ -613,7 +630,7 @@ function downloadtimeShift(m3u8link, default_area_id) {
           req.open('GET', item);
           req.responseType = 'arraybuffer';
           req.onload = function(xhrevent) {
-            let audio_string = ab2str(this.response);
+            let audio_string = ab2str(this.response, parseAAC(this.response)[0]); //timestamp not used for now.
             let storage_set = {};
             storage_set[storekey] = audio_string;
 

@@ -137,8 +137,17 @@ Technical Details:
 
     By reversing android dynamic library,You can get the fullkey from .data segment  after bypassing the root check ,emulator check and lots of anti-debugging tricks and waiting for itself to repair the .data segment.
 
+ABOUT AAC
+------------
+1. HLS(HTTP Live Streaming) using  Packed Audio see : https://tools.ietf.org/html/draft-pantos-http-live-streaming-23  which is ID3 tag + audio sample(AAC_ADTS,MP3,AC3)
+2. About com.apple.streaming.transportStreamTimestamp ? Could i use this to sort?(yes)  PTS ->  (stamp2 - stamp1) / (90*1000.0) https://blog.csdn.net/qq_32430349/article/details/50218317
+3. Drop all ID3 tag? see id3 in hls :https://helpx.adobe.com/adobe-media-server/dev/timed-metadata-hls-hds-streams.html
+4. ID3 header -> size  PRIV Frame header (PRIV size flag) -> identi end with \x00  64bit data (31bit 0 and 33bit data bigendian)
+    frame header  see http://id3.org/id3v2.4.0-structure priv see http://id3.org/id3v2.4.0-frames
+
 TODO
 ------------
+0. Using ffmpeg.js (based on Emscripten:an LLVM-to-JavaScript compiler) concating ts segments to avoid 5s problem in mediaplayer.Note:size is about 13MB. [depercated :  just drop id3 tags and simplely concat adts strem]
 1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection (partially done)
     due to the limitation of extension , cannot captialize some header's key 
 2. Automatic switch location , no need for manually choice. (consider not supporting)
