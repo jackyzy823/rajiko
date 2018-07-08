@@ -24,6 +24,11 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.4
+    sync radiko android version code to 6.4.0
+
+    resolve 5s problem in some mediaplayer. Now aac are concated without id3 metadata.
+
 + version 0.2.3
 
     fix time display in ballon when dragging in timefree, fix dragging in different timezone (Don't know if this fix works)
@@ -147,7 +152,7 @@ ABOUT AAC
 
 TODO
 ------------
-0. Using ffmpeg.js (based on Emscripten:an LLVM-to-JavaScript compiler) concating ts segments to avoid 5s problem in mediaplayer.Note:size is about 13MB. [depercated :  just drop id3 tags and simplely concat adts strem]
+0. Using ffmpeg.js (based on Emscripten:an LLVM-to-JavaScript compiler) concating ts segments to avoid 5s problem in mediaplayer.Note:size is about 13MB. (depercated :  just drop id3 tags and simplely concat adts strem)
 1. Fake request headers more similarly (such as remove cookies and set accept,user agent,and etc) to avoid detection (partially done)
     due to the limitation of extension , cannot captialize some header's key 
 2. Automatic switch location , no need for manually choice. (consider not supporting)
