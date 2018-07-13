@@ -24,7 +24,12 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.4.1
+    
+    upadte new radio-area map for FMFUKUI(FM福井)
+
 + version 0.2.4
+
     sync radiko android version code to 6.4.0
 
     resolve 5s problem in some mediaplayer. Now aac are concated without id3 metadata.
