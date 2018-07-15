@@ -703,6 +703,7 @@ store.watch('update',
 
 //to bypass check at 
 // to enfore select stream_smh_multi url areafree = 0 link (bypass containStation check)
+// also bypass connectiontype check! see allocateConnection
 // to pass our generated token 
 // this may run after d2-app report premium?
 $.Radiko.login_status.areafree=1 ;

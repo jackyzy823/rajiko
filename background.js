@@ -35,7 +35,8 @@ function retTokenByRadioname(radioname,default_area_id){
   })
 
   if(hadTokenArea.length!=0){
-    return authTokens[ hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0]  ].token;
+    let pickArea = hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0];
+    return [authTokens[pickArea].token,pickArea];
   }
   let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
   let info = genRandomInfo();
@@ -76,7 +77,7 @@ function retTokenByRadioname(radioname,default_area_id){
   auth2.send();
 
   let res  = (new ExpireToken()).add(pickArea,token); 
-  return token; 
+  return [token,pickArea]; 
 }
 
 function retTokenByRadioname_async(radioname,default_area_id, callback){
@@ -86,7 +87,8 @@ function retTokenByRadioname_async(radioname,default_area_id, callback){
   })
 
   if(hadTokenArea.length!=0){
-    return callback(authTokens[ hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0]  ].token);
+    let pickArea = hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0];
+    return callback(authTokens[pickArea].token , pickArea);
   }
   let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
   let info = genRandomInfo();
@@ -126,7 +128,7 @@ function retTokenByRadioname_async(radioname,default_area_id, callback){
 
     auth2.onload = function(xhrevent){
       let res  = (new ExpireToken()).add(pickArea,token); 
-      return callback(token); 
+      return callback(token,pickArea); 
     }
     auth2.send();    
   }
@@ -605,9 +607,10 @@ function downloadtimeShift(m3u8link, default_area_id) {
   let filename = radioname + '_' + from + '_' + to + '.aac';
   console.log("timeshift file", filename);
 
-  retTokenByRadioname_async(radioname, default_area_id, function(token) {
+  retTokenByRadioname_async(radioname, default_area_id, function(token,pickArea) {
     let q1 = new XMLHttpRequest();
     q1.open('GET', m3u8link);
+    q1.setRequestHeader('X-Radiko-AreaId',pickArea);
     q1.setRequestHeader('X-Radiko-AuthToken', token);
     q1.onload = function(xhrevent) {
       let resp = this.responseText;
@@ -616,6 +619,7 @@ function downloadtimeShift(m3u8link, default_area_id) {
       })[0];
       let q2 = new XMLHttpRequest();
       q2.open('GET', detailLink);
+      q2.setRequestHeader('X-Radiko-AreaId',pickArea);
       q2.setRequestHeader('X-Radiko-AuthToken', token);
 
       q2.onload = function(xhrevent) {
@@ -1054,24 +1058,31 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
       let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
       if (regexpresult) {
         let radioname = regexpresult[1];
-        let use_token = retTokenByRadioname(radioname);
+        let res = retTokenByRadioname(radioname);
+        let use_token = res[0];
+        let use_area = res[1];
 
         req.requestHeaders = req.requestHeaders.filter(function(x) {
-          return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
+          return !["x-radiko-authtoken","x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
         });
         req.requestHeaders.push({
           name: "X-Radiko-AuthToken",
           value: use_token
         });
+        req.requestHeaders.push({
+          name:"X-Radiko-AreaId",
+          value:use_area
+        })
         return {
           requestHeaders: req.requestHeaders
         };
       }
 
     }, {
-      urls: ["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8", "*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"]
+      urls: ["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8?*"]// "*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"
     }, ["blocking", "requestHeaders"]
   )
+  //http://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8?station_id=*&l=15&lsid=AAM_UUID&type=b (see connectionType b->areafree c->notfree?)
 
   // for timeshift listen
   chrome.webRequest.onBeforeSendHeaders.addListener(
@@ -1096,15 +1107,21 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         }
       });
 
-      let use_token = retTokenByRadioname(radioname);
+      let res = retTokenByRadioname(radioname);
+      let use_token = res[0];
+      let use_area = res[1];
 
       req.requestHeaders = req.requestHeaders.filter(function(x) {
-        return !["x-radiko-authtoken"].includes(x.name.toLowerCase()); //remove previous token
+        return !["x-radiko-authtoken","x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
       });
       req.requestHeaders.push({
         name: "X-Radiko-AuthToken",
         value: use_token
       });
+      req.requestHeaders.push({
+        name:"X-Radiko-AreaId",
+        value:use_area
+      })
       return {
         requestHeaders: req.requestHeaders
       };
@@ -1112,6 +1129,23 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
       urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/ ]
     }, ["blocking", "requestHeaders"]
   )
+
+  chrome.webRequest.onHeadersReceived.addListener(function(req){
+    for(let i=0;i<req.responseHeaders.length;i++ ){
+      if( req.responseHeaders[i].name.toLowerCase() == "access-control-allow-origin"){
+        return
+      }
+    }
+    req.responseHeaders.push({
+      name: "Access-Control-Allow-Origin",
+      value: "http://radiko.jp"
+    }); 
+    return {
+      responseHeaders: req.responseHeaders
+    };
+  },{urls:["*://media.radiko.jp/*.aac"]},["blocking","responseHeaders"])
+
+
 /*
     //TODO: add block statistics request filter
     chrome.webRequest.onBeforeRequest.addListener(function(req){
