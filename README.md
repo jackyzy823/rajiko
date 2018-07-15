@@ -111,7 +111,7 @@ Suppport List:
 
 Known Issue:
 ---------------
-+ The timeshift program can not be played after downloading without force refresh ,becuase of a problem of xhr access-control with disk cache see :https://lists.w3.org/Archives/Public/www-archive/2017Aug/0000.html (solved by add Access-Control-Allow-Origin in response via extension)
++ The timeshift program can not be played after downloading without force refresh ,becuase of a problem of xhr access-control with disk cache see :https://lists.w3.org/Archives/Public/www-archive/2017Aug/0000.html (solved by add Access-Control-Allow-Origin in response via extension or see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin  CORS and caching ->set Vary: Origin in response?)
 + Failed to download recorded on firefox nightly and firefox for android nightly
 + Drag issue with timezone in timefree mode. (1.Always play the start part Wherever you drag 2.Cannot drag over time after localtime now) .The second problem may be caused by radiko which only aims atjapan user not  handling timezone problem . (solved)
 + Timefree only plays 5 seconds. (Don't know whether this is my issue or radiko's ,update :solved) 
