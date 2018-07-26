@@ -908,6 +908,8 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           }
         }, function() {
           console.log("Add recording listener");
+          //TODO 2 kind of listener ? for rpaa and previous? 
+          // USE tabid and message.tabs.tab.id? or current only one recording?
           chrome.webRequest.onBeforeSendHeaders.addListener( //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
             streamListener(), {
               urls: ["*://*.smartstream.ne.jp/" + radioname + "/*.aac"]
@@ -1031,7 +1033,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
 
 
-
+  //TODO how can i force  to not selecting rpaa url?
   //finish auth1 and auth2 in this req
   chrome.webRequest.onBeforeRequest.addListener(
     function(req) {
@@ -1041,14 +1043,14 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           return {};
       }
 
-      let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_smh_multi\/(.*?)\.xml/g.exec(req.url);
+      let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_rpaa\/(.*?)\.xml/g.exec(req.url);
       if (regexpresult) {
         let radioname = regexpresult[1];
         retTokenByRadioname(radioname, area_id);
       }
       return {};
     }, {
-      urls: ["http://radiko.jp/v2/station/stream_smh_multi/*.xml" /*for areafree*/ ] 
+      urls: ["http://radiko.jp/v2/station/stream_rpaa/*.xml" /*for areafree*/ ] 
     }, ["blocking"]
   );
 
