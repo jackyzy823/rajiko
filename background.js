@@ -474,7 +474,7 @@ function streamListener(){
     return {};
   } ;
   let stopmeFunc =function(msg, sender, respCallback) {
-    if (msg["stop-recording"]) {
+    if (msg["stop-recording"]) { //do stop recording caused by pause button need same tabid?
       respCallback();
       chrome.runtime.onMessage.removeListener(stopmeFunc);
       chrome.webRequest.onBeforeSendHeaders.removeListener(listenerFunc);

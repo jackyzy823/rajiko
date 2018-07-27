@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.1
+    
+    dirty fix for live recording issue caused by radiko using new  `rpaa` api for stream. (May encounter unexpected problem.Issues are welcomed.)
+
 + version 0.2.5
     
     fix error caused by radiko new type api requestheader (X-Radiko-AreaId).
