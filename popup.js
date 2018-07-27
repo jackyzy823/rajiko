@@ -123,8 +123,13 @@ document.addEventListener("DOMContentLoaded",function () {
                         record_button.hidden = false;
                         record_button.innerText = chrome.i18n.getMessage("record_button_to_start",radioAreaId[url.slice(1)].name);
                         record_button.onclick = function(data){
-                            chrome.runtime.sendMessage({"start-recording":url.slice(1)},function(){
-                                window.close();
+                            chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
+                                let tab = arrayOfTabs[0];
+                                if (/radiko\.jp/.test(tab.url)) {
+                                    chrome.runtime.sendMessage({"start-recording":tmpUrl.slice(1),"tabId":tab.id},function(){
+                                        window.close();
+                                    });
+                                }
                             });
                         }
                     } else if (tmpUrl[0]=='#'  && /\/live\//.test(results[0].href)){
@@ -132,11 +137,17 @@ document.addEventListener("DOMContentLoaded",function () {
                         record_button.hidden = false;
                         record_button.innerText = chrome.i18n.getMessage("record_button_to_start",radioAreaId[tmpUrl.slice(1)].name);
                         record_button.onclick = function(data){
-                            chrome.runtime.sendMessage({"start-recording":tmpUrl.slice(1)},function(){
-                                window.alert(chrome.i18n.getMessage("record_prepare",radioAreaId[tmpUrl.slice(1)].name));
-                                window.close();
+                            chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
+                                let tab = arrayOfTabs[0];
+                                if (/radiko\.jp/.test(tab.url)) {
+                                    chrome.runtime.sendMessage({"start-recording":tmpUrl.slice(1),"tabId":tab.id},function(){
+                                        window.alert(chrome.i18n.getMessage("record_prepare",radioAreaId[tmpUrl.slice(1)].name));
+                                        window.close();
+                                    });
+                                }
                             });
                         }
+
                     }
                 }
             }

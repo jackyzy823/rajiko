@@ -369,9 +369,9 @@ function parseAAC(data){ //data -> Arraybuffer
 // 28
 function streamListener(){
   let started  = false;
-  let current_idx = null;
   let count = 0; //storage also need count for downloading
-
+  let start_time;
+  let end_time;
   let timestamp2Filename =  function(t) {
     let d = new Date(t);
     let d_str = '' + d.getFullYear();
@@ -387,18 +387,11 @@ function streamListener(){
       if(data["current_recording"]){ 
         let info = data["current_recording"];
         let radioname = info["radioname"];
-        info["end_time"] = (new Date()).getTime();
+        end_time = (new Date()).getTime();
         if(!started){
           started = true;
-          info["start_time"] =info["end_time"];
-          current_idx = parseInt(req.url.split('_').pop().split('.').shift());
-        }else{
-          let tmp_idx = parseInt(req.url.split('_').pop().split('.').shift());
-          if(tmp_idx <= current_idx){
-            return {} ; //avoid radiko's one jump back request and same seq request
-          }
-          current_idx = tmp_idx;
-        }
+          start_time =end_time;
+        } //seems like jump-back problem disappered!
         if(chrome.webRequest.filterResponseData){
           let filter = chrome.webRequest.filterResponseData(req.requestId);
           let audio_uint8 = null ;
@@ -424,9 +417,9 @@ function streamListener(){
               let audio_string =  ab2str(audio_uint8.buffer , parseAAC(audio_uint8.buffer)[0]); // drop id3 tag ;timestamp not used for now
               let storage_set ={};
 
-              storage_set[radioname+'_'+ info["start_time"] + '_' + count ] = audio_string;
+              storage_set[radioname+'_'+ start_time + '_' + count ] = audio_string;
               count += 1;
-              info["count"] = count;  //info[count] get before set is common and may set wrong.
+              // info["count"] = count;  //info[count] get before set is common and may set wrong.
               storage_set["current_recording"] = info;
 
               chrome.storage.local.set(storage_set,function(){
@@ -459,9 +452,9 @@ function streamListener(){
             //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Appears only on chrome v50 linux.
             let audio_string =  ab2str(this.response, parseAAC(this.response)[0]); //timestamp not used for now.
             let storage_set ={};
-            storage_set[radioname+'_'+ info["start_time"] + '_' + count ] = audio_string;
+            storage_set[radioname+'_'+ start_time + '_' + count ] = audio_string;
             count += 1;
-            info["count"] = count;  //info[count] get before set is common and may set wrong.
+            // info["count"] = count;  //info[count] get before set is common and may set wrong.
             storage_set["current_recording"] = info;
 
             chrome.storage.local.set(storage_set,function(){
@@ -490,15 +483,15 @@ function streamListener(){
         if (data["current_recording"]) {
           let info = data["current_recording"]
           let radioname = info["radioname"];
-          let filename = timestamp2Filename(info["start_time"]) + "_" + timestamp2Filename(info["end_time"]) + ".aac";
-          if(info["count"] == 0){
+          let filename = timestamp2Filename(start_time) + "_" + timestamp2Filename(end_time) + ".aac";
+          if(count == 0){
             chrome.storage.local.remove("current_recording", function() {});
             return;
           }
 
-          let keyList = new Array(info["count"]);
-          for (let i = 0; i < info["count"]; i++) {
-            keyList[i] = radioname + '_' + info["start_time"] + '_' + i;
+          let keyList = new Array(count);
+          for (let i = 0; i < count; i++) {
+            keyList[i] = radioname + '_' + start_time + '_' + i;
           }
 
           chrome.storage.local.get(keyList, function(data) {
@@ -899,7 +892,6 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           respCallback({"get-area":area_id});
       } else if (msg["start-recording"]) {
         let radioname = msg["start-recording"];
-
         console.log("Strart recording", radioname);
         chrome.storage.local.set({
           "current_recording": {
@@ -909,10 +901,11 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         }, function() {
           console.log("Add recording listener");
           //TODO 2 kind of listener ? for rpaa and previous? 
-          // USE tabid and message.tabs.tab.id? or current only one recording?
+          // USE tabid and chrome.tabs.query->tab.id? or current only one recording?
           chrome.webRequest.onBeforeSendHeaders.addListener( //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
             streamListener(), {
-              urls: ["*://*.smartstream.ne.jp/" + radioname + "/*.aac"]
+              urls: ["*://*.smartstream.ne.jp/" + radioname + "/*.aac*","*://rpaa.smartstream.ne.jp/segments/*.aac*"]
+              ,tabId:msg["tabId"] //restrict to specific tabid
             } // may specific detailed FM name to avoid save other stream? 
             // is filter case sensitive??? yes path is case sensitive but domain is not
             , ["blocking", "requestHeaders"]
