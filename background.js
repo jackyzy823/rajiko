@@ -234,7 +234,7 @@ function genRandomInfo() {
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
   let appversion = function() {
-    let version = ["6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5" ]; //new version 6.4.0 from 2018/07/04
+    let version = ["6.4.4","6.4.3","6.4.2","6.4.1","6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5" ]; //new version 6.4.0 from 2018/07/04
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
 
@@ -881,13 +881,18 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         chrome.storage.local.set({
           selected_areaid: area_id
         }, function() {});
-        chrome.cookies.set({
-          url: "http://radiko.jp/",
-          name: "default_area_id",
-          value: area_id
-        }, function(c) {
-          console.log("set cookie", c);
-        });
+        // fix incognito mode cookie problem
+        chrome.cookies.getAllCookieStores(function(storeInfo){
+          storeInfo.forEach(function(v,idx,a){
+            chrome.cookies.set({
+              url: "http://radiko.jp/",
+              name: "default_area_id",
+              value: area_id,
+              storeId: v.id,
+            });
+          })
+        })
+
       } else if (msg["get-area"]){
           respCallback({"get-area":area_id});
       } else if (msg["start-recording"]) {
@@ -941,11 +946,20 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
   chrome.webRequest.onBeforeRequest.addListener(
     function(req) {
-      chrome.cookies.set({
-        url: "http://radiko.jp/",
-        name: "default_area_id",
-        value: area_id
-      });
+      chrome.cookies.getAllCookieStores(function(storeInfo){
+        storeInfo.forEach(function(v,idx,a){
+          if(v.tabIds.includes(req.tabId)){
+            chrome.cookies.set({
+              url: "http://radiko.jp/",
+              name: "default_area_id",
+              value: area_id,
+              storeId: v.id,
+            });
+          }
+        })
+      })
+      
+
       return {
         cancel: true
       };
