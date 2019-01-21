@@ -508,15 +508,21 @@ function streamListener(){
                 url: audiourl,
                 filename: radioname + "/" + filename
               }, function(downloadId) {
-                console.log("download done!");
-                URL.revokeObjectURL(audiourl);
-                keyList.push("current_recording") // also remove current_recording
-                chrome.storage.local.remove(keyList, function() {
-                  console.log("clean done!");
-                  if (chrome.runtime.lastError) {
-                    console.log("cleanup error", chrome.runtime.lastError);
+                // for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1521308
+                chrome.downloads.onChanged.addListener(function handler(delta) {
+                  if (delta.id == downloadId && delta.state && delta.state.current === "complete") {
+                    console.log("download done!");
+                    chrome.downloads.onChanged.removeListener(handler);
+                    URL.revokeObjectURL(audiourl);
+                    keyList.push("current_recording") // also remove current_recording
+                    chrome.storage.local.remove(keyList, function() {
+                      console.log("clean done!");
+                      if (chrome.runtime.lastError) {
+                        console.log("cleanup error", chrome.runtime.lastError);
+                      }
+                    })
                   }
-                })
+                });
               });
             }
           });
@@ -688,25 +694,28 @@ function downloadtimeShift(m3u8link, default_area_id) {
                   url: audiourl,
                   filename: filename
                 }, function(downloadId) {
-                  console.log("download done!");
-                  URL.revokeObjectURL(audiourl);
-                  //remove finished work
-                  chrome.storage.local.get({"timeshift_list":[]},function(data){
-                    let list = data["timeshift_list"];
-                    list = list.filter(function(l){
-                      return l !==m3u8link;
-                    });
-                    chrome.storage.local.set({"timeshift_list":list},function(){
-                      chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
-                    });
-                  });
-                  chrome.storage.local.remove(keyList, function() {
-                    console.log("clean done!");
-                    if (chrome.runtime.lastError) {
-                      console.log("cleanup error", chrome.runtime.lastError);
+                  chrome.downloads.onChanged.addListener(function handler(delta) {
+                    if (delta.id == downloadId && delta.state && delta.state.current === "complete") {
+                      console.log("download done!");
+                      chrome.downloads.onChanged.removeListener(handler);
+                      URL.revokeObjectURL(audiourl);
+                      chrome.storage.local.get({"timeshift_list":[]},function(data){
+                        let list = data["timeshift_list"];
+                        list = list.filter(function(l){
+                          return l !==m3u8link;
+                        });
+                        chrome.storage.local.set({"timeshift_list":list},function(){
+                          chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+                        });
+                      });
+                      chrome.storage.local.remove(keyList, function() {
+                        console.log("clean done!");
+                        if (chrome.runtime.lastError) {
+                          console.log("cleanup error", chrome.runtime.lastError);
+                        }
+                      });
                     }
                   });
-
                 });
               }
             });
