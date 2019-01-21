@@ -24,6 +24,14 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.2
+
+    make extension work under incognito mode
+
+    sync radiko android version code to 6.4.4
+
+    fix download blob file problem in new version firefox
+
 + version 0.2.5.1
     
     dirty fix for live recording issue caused by radiko using new  `rpaa` api for stream. (May encounter unexpected problem.Issues are welcomed.)
