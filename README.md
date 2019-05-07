@@ -24,6 +24,12 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.3
+
+    remove alert to avoid stuck in Chrome on Windows
+
+    sync radiko android version code to 7.0.6
+
 + version 0.2.5.2
 
     make extension work under incognito mode

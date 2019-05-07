@@ -5,9 +5,6 @@
     ,"confirm_button":{
         "message":"確認する"
     }
-    ,"refresh_alert":{
-        "message":"radiko.jpのページを更新してください"
-    }
     ,"popup_title":{
         "message":"エリアを選択してください - Rajiko"
     }
@@ -22,16 +19,17 @@
     }
     ,"record_button_to_stop":{
         "message":"録音を停止する"
-    } 
-    ,"record_prepare":{
-        "message":"再生中の放送はありませんが、現在のページの$RADIO$に録音する準備ができました。"
+    }
+    ,"record_button_to_prepare":{
+        "message":"$RADIONAME$ の録音を準備する"
         ,"placeholders":{
-            "radio":{
-                "content" :"$1",
+            "radioname":{
+                "content":"$1",
                 "example" : "bayfm78"
             }
         }
-    },"timeshift_button":{
+    } 
+    ,"timeshift_button":{
         "message":"タイムシフト ダウンロード"
     }
 }

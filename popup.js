@@ -41,9 +41,7 @@ document.addEventListener("DOMContentLoaded",function () {
                     if (/radiko\.jp/.test(tab.url)) {
                         chrome.tabs.reload(tab.id);
                     }
-                    else {
-                        window.alert(chrome.i18n.getMessage("refresh_alert"));
-                    }
+                    // in Windows ,chrome display extension's alert in it's own popup window however size is too small for alert window to close.
                     window.close();
                 });
             }
@@ -135,13 +133,12 @@ document.addEventListener("DOMContentLoaded",function () {
                     } else if (tmpUrl[0]=='#'  && /\/live\//.test(results[0].href)){
                         //viewing live
                         record_button.hidden = false;
-                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start",radioAreaId[tmpUrl.slice(1)].name);
+                        record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare",radioAreaId[tmpUrl.slice(1)].name);
                         record_button.onclick = function(data){
                             chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
                                 let tab = arrayOfTabs[0];
                                 if (/radiko\.jp/.test(tab.url)) {
                                     chrome.runtime.sendMessage({"start-recording":tmpUrl.slice(1),"tabId":tab.id},function(){
-                                        window.alert(chrome.i18n.getMessage("record_prepare",radioAreaId[tmpUrl.slice(1)].name));
                                         window.close();
                                     });
                                 }

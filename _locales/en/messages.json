@@ -5,9 +5,6 @@
     ,"confirm_button":{
         "message":"Confirm"
     }
-    ,"refresh_alert":{
-        "message":"Please refresh pages of radiko.jp!"
-    }
     ,"popup_title":{
         "message":"Choose Area - Rajiko"
     }
@@ -23,15 +20,16 @@
     ,"record_button_to_stop":{
         "message":"Stop recording"
     }
-    ,"record_prepare":{
-        "message":"No radio playing currently! Ready to record $RADIO$ in the current page."
+    ,"record_button_to_prepare":{
+        "message":"Prepare recording for $RADIONAME$"
         ,"placeholders":{
-            "radio":{
-                "content" :"$1",
+            "radioname":{
+                "content":"$1",
                 "example" : "bayfm78"
             }
         }
-    },"timeshift_button":{
+    }
+    ,"timeshift_button":{
         "message":"Download タイムシフト"
     }
 
