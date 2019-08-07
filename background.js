@@ -1038,13 +1038,13 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
   chrome.webRequest.onBeforeSendHeaders.addListener(
     authListener.modifyRequest, {
       urls: ["*://*.radiko.jp/v2/api/auth*"]
-    }, ["blocking", "requestHeaders"]
+    }, ["blocking", "requestHeaders","extraHeaders"]
   );
 
   chrome.webRequest.onHeadersReceived.addListener(
     authListener.modifyResponse, {
       urls: ["*://*.radiko.jp/v2/api/auth1"]
-    }, ["blocking", "responseHeaders"]
+    }, ["blocking", "responseHeaders","extraHeaders"]
   );
 
 
