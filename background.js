@@ -234,7 +234,8 @@ function genRandomInfo() {
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
   let appversion = function() {
-    let version = ["7.0.6","7.0.5","7.0.4","7.0.3","7.0.2","7.0.1","7.0.0","6.4.7","6.4.6","6.4.4","6.4.3","6.4.2","6.4.1","6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5" ]; //new version 6.4.0 from 2018/07/04
+    let version = ["7.1.1","7.1.0","7.0.9","7.0.8","7.0.7","7.0.6","7.0.5","7.0.4","7.0.3","7.0.2","7.0.1","7.0.0","6.4.7","6.4.6"]; 
+    // ,"6.4.4","6.4.3","6.4.2","6.4.1","6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5"  // remove those too old version
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
 
@@ -1038,13 +1039,13 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
   chrome.webRequest.onBeforeSendHeaders.addListener(
     authListener.modifyRequest, {
       urls: ["*://*.radiko.jp/v2/api/auth*"]
-    }, ["blocking", "requestHeaders","extraHeaders"]
+    }, typeof browser === "undefined" ? ["blocking", "requestHeaders","extraHeaders"]: ["blocking", "requestHeaders"]
   );
 
   chrome.webRequest.onHeadersReceived.addListener(
     authListener.modifyResponse, {
       urls: ["*://*.radiko.jp/v2/api/auth1"]
-    }, ["blocking", "responseHeaders","extraHeaders"]
+    }, typeof browser === "undefined" ? ["blocking", "responseHeaders","extraHeaders"]:["blocking", "responseHeaders"]
   );
 
 

@@ -24,6 +24,12 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.4
+
+    fix cors issue for Chrome 76 +
+
+    sync radiko android version code to 7.1.1
+
 + version 0.2.5.3
 
     remove alert to avoid stuck in Chrome on Windows
@@ -126,6 +132,8 @@ Suppport List:
 + yandex browser latest
 
 + firefox for android latest
+
++ kiwi browser for android
 
 Known Issue:
 ---------------
