@@ -1035,17 +1035,33 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
     }, ["blocking", "requestHeaders"]
   );
 
+  // or just 
+  //Object.values(chrome.webRequest.OnBeforeSendHeadersOptions) 
+  //Object.values(chrome.webRequest.OnHeadersReceivedOptions) 
+  let optReqSpec = ["blocking", "requestHeaders"];
+  let optRespSpec = ["blocking", "responseHeaders"];
+  // else firefox or chrome <72
+  if (chrome.webRequest.OnBeforeSendHeadersOptions.hasOwnProperty("EXTRA_HEADERS")){
+    //chrome 72+
+    optReqSpec.push("extraHeaders");
+  }
+  if (chrome.webRequest.OnHeadersReceivedOptions.hasOwnProperty("EXTRA_HEADERS")){
+    //chrome 72+
+    optRespSpec.push("extraHeaders");
+  }
+
+
   // affect self xhr tooooooooo
   chrome.webRequest.onBeforeSendHeaders.addListener(
     authListener.modifyRequest, {
       urls: ["*://*.radiko.jp/v2/api/auth*"]
-    }, typeof browser === "undefined" ? ["blocking", "requestHeaders","extraHeaders"]: ["blocking", "requestHeaders"]
+    }, optReqSpec
   );
 
   chrome.webRequest.onHeadersReceived.addListener(
     authListener.modifyResponse, {
       urls: ["*://*.radiko.jp/v2/api/auth1"]
-    }, typeof browser === "undefined" ? ["blocking", "responseHeaders","extraHeaders"]:["blocking", "responseHeaders"]
+    }, optRespSpec
   );
 
 

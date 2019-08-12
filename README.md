@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.5
+
+    fix compatible problem for Chrome 72 -
+
 + version 0.2.5.4
 
     fix cors issue for Chrome 76 +
