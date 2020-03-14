@@ -205,7 +205,11 @@ const VERSION_MAP = {
   "7.0.0": { sdk: "24", builds: ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"] },
   "7.1.0": { sdk: "25", builds: ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"] },
   "7.1.1": { sdk: "25", builds: ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"] },
-  "7.1.2": { sdk: "25", builds: ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"] }
+  "7.1.2": { sdk: "25", builds: ["N2G48H", "NZH54D", "NKG47S", "NHG47Q", "NJH47F", "N2G48C", "NZH54B", "NKG47M", "NJH47D", "NHG47O", "N2G48B", "N2G47Z", "NJH47B", "NJH34C", "NKG47L", "NHG47N", "N2G47X", "N2G47W", "NHG47L", "N2G47T", "N2G47R", "N2G47O", "NHG47K", "N2G47J", "N2G47H", "N2G47F", "N2G47E", "N2G47D"] },
+  "8.0.0": { sdk: "26", builds: ["5650811", "5796467", "5948681", "6107732", "6127070"] },
+  "8.1.0": { sdk: "27", builds: ["5794017", "6107733", "6037697"] },
+  "9.0.0": { sdk: "28", builds: ["5948683", "5794013", "6127072"] },
+  "10.0.0": { sdk: "29", builds: ["5933585"] },
 };
 
 
@@ -234,7 +238,7 @@ function genRandomInfo() {
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
   let appversion = function() {
-    let version = ["7.1.1","7.1.0","7.0.9","7.0.8","7.0.7","7.0.6","7.0.5","7.0.4","7.0.3","7.0.2","7.0.1","7.0.0","6.4.7","6.4.6"]; 
+    let version = ["7.2.0","7.1.13","7.1.12","7.1.11","7.1.1","7.1.0","7.0.9","7.0.8","7.0.7","7.0.6","7.0.5","7.0.4","7.0.3","7.0.2","7.0.1","7.0.0","6.4.7","6.4.6"]; 
     // ,"6.4.4","6.4.3","6.4.2","6.4.1","6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5"  // remove those too old version
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
