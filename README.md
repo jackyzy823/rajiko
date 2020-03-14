@@ -24,6 +24,12 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.6
+
+    upadte new radio-area map for HI-SIX(エフエム高知)
+
+    sync radiko android version code to 7.2.0
+
 + version 0.2.5.5
 
     fix compatible problem for Chrome 72 -
