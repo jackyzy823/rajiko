@@ -7,7 +7,8 @@
   "description": "__MSG_manifest_app_description__",
 
   "icons": {
-    "256": "Circle-icons-radio.png"
+    "48": "Circle-icons-radio-blue-48.png",
+    "128": "Circle-icons-radio.png"
   },
   "permissions": [
       "activeTab",
