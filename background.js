@@ -536,7 +536,7 @@ function streamListener(){
 
       }) //
       chrome.browserAction.setIcon && chrome.browserAction.setIcon({
-        path: 'Circle-icons-radio-blue-24.png'
+        path: 'Circle-icons-radio-blue-48.png'
       })
     }
   };
@@ -936,7 +936,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           respCallback();
         });
         chrome.browserAction.setIcon && chrome.browserAction.setIcon({
-          path: 'Circle-icons-radio-red-24.png'
+          path: 'Circle-icons-radio-red-48.png'
         })
 
 
