@@ -24,12 +24,17 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.5.8
+
+    upadte new radio-area map for エフエム佐賀 エフエム徳島
+
+    sync radiko android version code to 7.2.9
+
 + version 0.2.5.7
 
     upadte new radio-area map for エフエム秋田、Rhythm Station　エフエム山形、FM岡山、エフエム山陰、エフエム宮崎
 
     change some radio's name
-
 
 + version 0.2.5.6
 
