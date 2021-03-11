@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Rajiko",
-  "version": "0.2.5.8",
+  "version": "0.2.6",
 
   "description": "__MSG_manifest_app_description__",
 
@@ -35,6 +35,10 @@
     "matches": ["*://*.radiko.jp/"],
     "js": ["ui/common_start.js"],
     "run_at":"document_start"
+  },{
+    "matches": ["*://*.radiko.jp/share/?*noreload=1*"],
+    "js": ["ui/share_redirect.js"],
+    "run_at":"document_idle"
   }],
   "web_accessible_resources": ["ui/inspect_start.js"],
 

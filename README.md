@@ -24,6 +24,12 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.6
+
+    make share page bypass geoblock (fix #1)
+
+    sync radiko android version code to 7.3.7
+
 + version 0.2.5.8
 
     upadte new radio-area map for エフエム佐賀 エフエム徳島
