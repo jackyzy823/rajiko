@@ -710,3 +710,8 @@ $.Radiko.login_status.areafree=1 ;
 $.Radiko.login_status.premium=1 ;
 window.isStationInArea = function(){return true;}
 
+
+if (window.location.hash == "#!/out"){
+    $.colorbox.close();
+    history.pushState(null, null, ' ')
+}

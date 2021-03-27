@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.7
+
+    bypass unclosable dialog
+
 + version 0.2.6
 
     make share page bypass geoblock (fix #1)
