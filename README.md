@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.7.1
+
+    make page history correct via history.back
+
 + version 0.2.7
 
     bypass unclosable dialog
