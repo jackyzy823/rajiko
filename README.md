@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.2.7.2
+
+    since chrome do not count hash in history. revert v0.2.7.
+
 + version 0.2.7.1
 
     make page history correct via history.back
