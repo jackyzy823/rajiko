@@ -1,3 +1,14 @@
+window.addEventListener('hashchange', function(event) {
+  if(event.newURL == "https://radiko.jp/#!/out"){
+    document.getElementById("cboxClose").click()
+    if(event.oldURL == "https://radiko.jp/"){
+      history.replaceState(null,null," ")
+    }else{
+      window.location.href = event.oldURL  
+    }
+  }
+});
+
 document.addEventListener("DOMContentLoaded", function(event) {
   let inspect_script = document.createElement("script");
   inspect_script.src = chrome.runtime.getURL('ui/inspect_start.js');
