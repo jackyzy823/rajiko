@@ -713,5 +713,5 @@ window.isStationInArea = function(){return true;}
 
 if (window.location.hash == "#!/out"){
     $.colorbox.close();
-    history.repalceState(null, null, ' ')
+    history.replaceState(null, null, ' ')
 }
