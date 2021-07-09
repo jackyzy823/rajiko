@@ -1,6 +1,6 @@
 {
     "manifest_app_description": {
-        "message": "Rajiko is a tool for unblocking geolocation restriction of radiko.jp! Enjoy radio of Tokyo，Aomori,and etc From Osaka,Nagazaki even overseas!"
+        "message": "Rajiko is a tool for unblocking geolocation restriction of radiko.jp! Enjoy the radio of Tokyo, Aomori, etc. from Osaka, Nagasaki, and even overseas!"
     }
     ,"confirm_button":{
         "message":"Confirm"
@@ -21,7 +21,7 @@
         "message":"Stop recording"
     }
     ,"record_button_to_prepare":{
-        "message":"Prepare recording for $RADIONAME$"
+        "message":"Prepare to record $RADIONAME$"
         ,"placeholders":{
             "radioname":{
                 "content":"$1",
@@ -30,7 +30,7 @@
         }
     }
     ,"timeshift_button":{
-        "message":"Download タイムシフト"
+        "message":"Download Timeshift"
     }
 
 }
