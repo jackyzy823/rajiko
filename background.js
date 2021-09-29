@@ -239,7 +239,8 @@ function genRandomInfo() {
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
   let appversion = function() {
-    let version = ["7.3.7","7.3.6","7.3.5","7.3.4","7.3.3","7.3.2","7.3.1","7.3.0","7.2.11","7.2.10","7.2.1","7.2.0","7.1.13","7.1.1","7.1.0","7.0.9","6.4.7","6.4.6"];
+    let version = ["7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10","7.2.1","7.2.0","7.1.13","7.1.1","7.1.0","7.0.9","6.4.7","6.4.6"];
+    // "7.3.5","7.3.4","7.3.3","7.3.2",
     // ,"7.2.9","7.2.5","7.2.4","7.1.11","7.0.4","7.0.3","7.0.2","7.0.1","7.0.0"
     // "7.2.8","7.2.7","7.2.6","7.2.3","7.2.2","7.1.12","7.0.8","7.0.7","7.0.6","7.0.5",
     // ,"6.4.4","6.4.3","6.4.2","6.4.1","6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5"  // remove those too old version
@@ -902,7 +903,13 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         chrome.cookies.getAllCookieStores(function(storeInfo){
           storeInfo.forEach(function(v,idx,a){
             chrome.cookies.set({
-              url: "http://radiko.jp/",
+              domain: "http://radiko.jp/",
+              name: "default_area_id",
+              value: area_id,
+              storeId: v.id,
+            });
+            chrome.cookies.set({
+              domain: "https://radiko.jp/",
               name: "default_area_id",
               value: area_id,
               storeId: v.id,
@@ -971,6 +978,12 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           if(v.tabIds.includes(req.tabId)){
             chrome.cookies.set({
               url: "http://radiko.jp/",
+              name: "default_area_id",
+              value: area_id,
+              storeId: v.id,
+            });
+            chrome.cookies.set({
+              url: "https://radiko.jp/",
               name: "default_area_id",
               value: area_id,
               storeId: v.id,
