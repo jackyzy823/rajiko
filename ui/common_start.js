@@ -1,15 +1,16 @@
-window.addEventListener('hashchange', function(event) {
-  if(event.newURL == "https://radiko.jp/#!/out"){
-    document.getElementById("cboxClose").click()
-    if(event.oldURL == "https://radiko.jp/"){
-      history.replaceState(null,null," ")
-    }else{
-      window.location.href = event.oldURL  
-    }
-  }
-});
-
 document.addEventListener("DOMContentLoaded", function(event) {
+  let cheat_areacheck = document.createElement("script");
+  cheat_areacheck.innerText=`
+  $.origin_ajax = $.ajax;
+  $.ajax = function(options){
+    if(options.url == "/area"){
+      options.error = null ; 
+      $.Radiko.area.id="LOL" ;
+    }; 
+    return $.origin_ajax(options);
+  };`
+  document.head.appendChild(cheat_areacheck);
+
   let inspect_script = document.createElement("script");
   inspect_script.src = chrome.runtime.getURL('ui/inspect_start.js');
   document.head.appendChild(inspect_script);

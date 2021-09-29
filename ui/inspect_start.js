@@ -708,12 +708,6 @@ store.watch('update',
 // this may run after d2-app report premium?
 $.Radiko.login_status.areafree=1 ;
 $.Radiko.login_status.premium=1 ;
+
 window.isStationInArea = function(){return true;}
-
-
-// basically  enter the out url directly
-if (window.location.hash == "#!/out"){
-    $.colorbox.close();
-    history.replaceState(null, null, ' ')
-}
 
