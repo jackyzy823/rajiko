@@ -24,9 +24,15 @@ Permission Details:
 
 What's new:
 -----------
-+ version 0.2.8
++ version 0.2.9
+    
+    update css in popup to fix issue in chrome 94 (close #8). Many Thanks to @andykamezou for his css advise.
 
-    use hashchange event to detect #!out and close dialog
+    hijack ajax to avoid #!out issue (replace old method)
+
+    upadte new radio-area map
+
+    sync radiko android version code 
 
 + version 0.2.7.2
 

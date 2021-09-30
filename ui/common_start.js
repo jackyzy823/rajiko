@@ -1,14 +1,15 @@
 document.addEventListener("DOMContentLoaded", function(event) {
   let cheat_areacheck = document.createElement("script");
   cheat_areacheck.innerText=`
-  $.origin_ajax = $.ajax;
+  let _origin_ajax = $.ajax;
   $.ajax = function(options){
     if(options.url == "/area"){
-      options.error = null ; 
-      $.Radiko.area.id="LOL" ;
-    }; 
-    return $.origin_ajax(options);
+      options.error = null;
+      Object.defineProperty($.Radiko.area,"id",{value:"LOL" , writable:false});
+    };
+    return _origin_ajax(options);
   };`
+
   document.head.appendChild(cheat_areacheck);
 
   let inspect_script = document.createElement("script");
