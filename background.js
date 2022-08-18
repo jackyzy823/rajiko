@@ -195,13 +195,7 @@ const coordinates = {
 //https://source.android.com/setup/build-numbers
 
 const VERSION_MAP = {
-  "5.0.0": { sdk: "21", builds: ["LRX21V", "LRX21T", "LRX21R", "LRX21Q", "LRX21P", "LRX21O", "LRX21M", "LRX21L"] },
-  "5.0.1": { sdk: "21", builds: ["LRX22C"] },
-  "5.0.2": { sdk: "21", builds: ["LRX22L", "LRX22G"] },
-  "5.1.0": { sdk: "22", builds: ["LMY47O", "LMY47M", "LMY47I", "LMY47E", "LMY47D"] },
-  "5.1.1": { sdk: "22", builds: ["LMY49M", "LMY49J", "LMY49I", "LMY49H", "LMY49G", "LMY49F", "LMY48Z", "LYZ28N", "LMY48Y", "LMY48X", "LMY48W", "LVY48H", "LYZ28M", "LMY48U", "LMY48T", "LVY48F", "LYZ28K", "LMY48P", "LMY48N", "LMY48M", "LVY48E", "LYZ28J", "LMY48J", "LMY48I", "LVY48C", "LMY48G", "LYZ28E", "LMY47Z", "LMY48B", "LMY47X", "LMY47V"] },
-  "6.0.0": { sdk: "23", builds: ["MMB29N", "MDB08M", "MDB08L", "MDB08K", "MDB08I", "MDA89E", "MDA89D", "MRA59B", "MRA58X", "MRA58V", "MRA58U", "MRA58N", "MRA58K"] },
-  "6.0.1": { sdk: "23", builds: ["MOI10E", "MOB31Z", "MOB31T", "MOB31S", "M4B30Z", "MOB31K", "MMB31C", "M4B30X", "MOB31H", "MMB30Y", "MTC20K", "MOB31E", "MMB30W", "MXC89L", "MTC20F", "MOB30Y", "MOB30X", "MOB30W", "MMB30S", "MMB30R", "MXC89K", "MTC19Z", "MTC19X", "MOB30P", "MOB30O", "MMB30M", "MMB30K", "MOB30M", "MTC19V", "MOB30J", "MOB30I", "MOB30H", "MOB30G", "MXC89H", "MXC89F", "MMB30J", "MTC19T", "M5C14J", "MOB30D", "MHC19Q", "MHC19J", "MHC19I", "MMB29X", "MXC14G", "MMB29V", "MXB48T", "MMB29U", "MMB29R", "MMB29Q", "MMB29T", "MMB29S", "MMB29P", "MMB29O", "MXB48K", "MXB48J", "MMB29M", "MMB29K"] },
+  // Accroding to  https://radiko.jp/#!/info/2558
   "7.0.0": { sdk: "24", builds: ["NBD92Q", "NBD92N", "NBD92G", "NBD92F", "NBD92E", "NBD92D", "NBD91Z", "NBD91Y", "NBD91X", "NBD91U", "N5D91L", "NBD91P", "NRD91K", "NRD91N", "NBD90Z", "NBD90X", "NBD90W", "NRD91D", "NRD90U", "NRD90T", "NRD90S", "NRD90R", "NRD90M"] },
   "7.1.0": { sdk: "25", builds: ["NDE63X", "NDE63V", "NDE63U", "NDE63P", "NDE63L", "NDE63H"] },
   "7.1.1": { sdk: "25", builds: ["N9F27M", "NGI77B", "N6F27M", "N4F27P", "N9F27L", "NGI55D", "N4F27O", "N8I11B", "N9F27H", "N6F27I", "N4F27K", "N9F27F", "N6F27H", "N4F27I", "N9F27C", "N6F27E", "N4F27E", "N6F27C", "N4F27B", "N6F26Y", "NOF27D", "N4F26X", "N4F26U", "N6F26U", "NUF26N", "NOF27C", "NOF27B", "N4F26T", "NMF27D", "NMF26X", "NOF26W", "NOF26V", "N6F26R", "NUF26K", "N4F26Q", "N4F26O", "N6F26Q", "N4F26M", "N4F26J", "N4F26I", "NMF26V", "NMF26U", "NMF26R", "NMF26Q", "NMF26O", "NMF26J", "NMF26H", "NMF26F"] },
@@ -211,6 +205,7 @@ const VERSION_MAP = {
   "9.0.0": { sdk: "28", builds: ["5948683", "5794013", "6127072"] },
   "10.0.0": { sdk: "29", builds: ["5933585", "6969601", "7023426" , "7070703"] },
   "11.0.0": { sdk:"30" , builds: ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]},
+  "12.0.0": { sdk: "31" , builds: ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]},
 };
 
 
@@ -239,11 +234,8 @@ function genRandomInfo() {
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
   let appversion = function() {
-    let version = ["7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10","7.2.1","7.2.0","7.1.13","7.1.1","7.1.0","7.0.9","6.4.7","6.4.6"];
-    // "7.3.5","7.3.4","7.3.3","7.3.2",
-    // ,"7.2.9","7.2.5","7.2.4","7.1.11","7.0.4","7.0.3","7.0.2","7.0.1","7.0.0"
-    // "7.2.8","7.2.7","7.2.6","7.2.3","7.2.2","7.1.12","7.0.8","7.0.7","7.0.6","7.0.5",
-    // ,"6.4.4","6.4.3","6.4.2","6.4.1","6.4.0", "6.3.8", "6.3.7", "6.3.6", "6.3.5"  // remove those too old version
+    // Min version should follow  https://radiko.jp/res/app/update/config.json from https://radiko.jp/res/app/config/aSmartPhone7a.xml
+    let version = ["7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10"];
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
 
