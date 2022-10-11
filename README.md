@@ -24,6 +24,14 @@ Permission Details:
 
 What's new:
 -----------
++ version 0.3.0
+
+    improve timezone handle.
+
+    upadte new radio-area map
+
+    sync radiko android version code 
+    
 + version 0.2.9
     
     update css in popup to fix issue in chrome 94 (close #8). Many Thanks to @andykamezou for his css advise.
