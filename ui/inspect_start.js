@@ -614,23 +614,40 @@ if(needChangeTZ){
     moment.tz.link("Asia/Tokyo|Japan");
     moment.tz.setDefault("Asia/Tokyo");
 
-    const diffTimestamp   =  60 * 1000 * (-  (new Date()).getTimezoneOffset() + moment.tz.zone('Asia/Tokyo').utcOffset(0));
+    // moment.tz.zone('Asia/Tokyo').utcOffset(0)) -> -540
+    const diffMin  = (new Date()).getTimezoneOffset() - moment.tz.zone('Asia/Tokyo').utcOffset(0) ;
+    const diffTimestamp =  -1 * 60 * 1000 * diffMin; //different direction
+    const diffSec = diffMin * 60;
+    const diffHour = diffMin / 60;
+
+    // for timeshift's timetable
+    var oldsetScrollInit = setScrollInit;
+    setScrollInit = function(){
+        var oldGetHours = Date.prototype.getHours;
+        Date.prototype.getHours = function(){return  (24 + oldGetHours.bind(this)() +  Math.floor(diffHour)) % 24;};
+        oldsetScrollInit();
+        Date.prototype.getHours = oldGetHours;
+    }
+
+//    var oldSetSeekPlayTime = $.Radiko.Player.setSeekPlayTime
+//    $.Radiko.Player.setSeekPlayTime = function(startSec,endSec) {
+//        return oldSetSeekPlayTime(startSec+diffSec,endSec-diffSec)}
+
+    // note: this conflicts with setSeekPlayTime's modification
+    var oldonChangeCurrentTime = $.Radiko.Player.View.seekBarView.__proto__.onChangeCurrentTime;
+    $.Radiko.Player.View.seekBarView.stopListening($.Radiko.Player.Model , 'change:currentTime');
+    $.Radiko.Player.View.seekBarView.listenTo($.Radiko.Player.Model , 'change:currentTime' , function(model, currentTime){
+        return oldonChangeCurrentTime(model,currentTime+diffSec);
+    })
 
     //because ftTime is JST time
     //apps/js/playerCommon.js?_=20180221
-    $.Radiko.Player.View.seekBarView.updateBalloon = function (ftTime, addTime) {
-        moment.tz.setDefault();//THIS LINE CHANGED 
-        var seekmt = moment(ftTime + addTime);
-        var hour = seekmt.hour();
-        if (hour < 5) {
-            hour += 24;
-        }
-        $('.balloon span').text(
-            sprintf("%02d:%02d:%02d", hour, seekmt.minute(), seekmt.second())
-        );
-        moment.tz.setDefault("Asia/Tokyo");//THIS LINE CHANGED 
+    var oldupdateBalloon = $.Radiko.Player.View.seekBarView.__proto__.updateBalloon;
+    $.Radiko.Player.View.seekBarView.__proto__.updateBalloon = function (ftTime, addTime) {
+        oldupdateBalloon(ftTime + diffTimestamp, addTime);
     }
 
+    // todo: how to make this wrappable.
     let onDragSeekKai = function(){
         moveSeek = true;
         var seekBar = $("#seekbar");
@@ -672,15 +689,7 @@ if(needChangeTZ){
         }
     }
 
-    $.Radiko.Player.View.seekBarView.onDragSeek = function(){}; // remove  
-    $("#seekbar").find(".knob").draggable( "destroy" );
-    $("#seekbar").find(".knob").draggable({
-        axis: "x",
-        containment: "parent",
-        start: $.Radiko.Player.View.seekBarView.onDragStart,
-        drag: onDragSeekKai.bind($.Radiko.Player.View.seekBarView),
-        stop: $.Radiko.Player.View.seekBarView.onDragSeekKnob
-    });
+    $("#seekbar").find(".knob").draggable( "option", { drag: onDragSeekKai.bind($.Radiko.Player.View.seekBarView)});
 }
 
 
