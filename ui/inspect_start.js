@@ -612,7 +612,8 @@ if(needChangeTZ){
     
     moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0 1zB0 NX0|38e6");
     moment.tz.link("Asia/Tokyo|Japan");
-    moment.tz.setDefault("Asia/Tokyo");
+    const tokyozone = moment.tz.zone("Asia/Tokyo");
+    moment.defaultZone = tokyozone;
 
     // moment.tz.zone('Asia/Tokyo').utcOffset(0)) -> -540
     const diffMin  = (new Date()).getTimezoneOffset() - moment.tz.zone('Asia/Tokyo').utcOffset(0) ;
@@ -621,9 +622,9 @@ if(needChangeTZ){
     const diffHour = diffMin / 60;
 
     // for timeshift's timetable
-    var oldsetScrollInit = setScrollInit;
+    let oldsetScrollInit = setScrollInit;
     setScrollInit = function(){
-        var oldGetHours = Date.prototype.getHours;
+        let oldGetHours = Date.prototype.getHours;
         Date.prototype.getHours = function(){return  (24 + oldGetHours.bind(this)() +  Math.floor(diffHour)) % 24;};
         oldsetScrollInit();
         Date.prototype.getHours = oldGetHours;
@@ -634,7 +635,7 @@ if(needChangeTZ){
 //        return oldSetSeekPlayTime(startSec+diffSec,endSec-diffSec)}
 
     // note: this conflicts with setSeekPlayTime's modification
-    var oldonChangeCurrentTime = $.Radiko.Player.View.seekBarView.__proto__.onChangeCurrentTime;
+    let oldonChangeCurrentTime = $.Radiko.Player.View.seekBarView.__proto__.onChangeCurrentTime;
     $.Radiko.Player.View.seekBarView.stopListening($.Radiko.Player.Model , 'change:currentTime');
     $.Radiko.Player.View.seekBarView.listenTo($.Radiko.Player.Model , 'change:currentTime' , function(model, currentTime){
 	// for past timeshift on non-default region -> 0
@@ -644,54 +645,17 @@ if(needChangeTZ){
 
     //because ftTime is JST time
     //apps/js/playerCommon.js?_=20180221
-    var oldupdateBalloon = $.Radiko.Player.View.seekBarView.__proto__.updateBalloon;
-    $.Radiko.Player.View.seekBarView.__proto__.updateBalloon = function (ftTime, addTime) {
-        oldupdateBalloon(ftTime + diffTimestamp, addTime);
-    }
 
-    // todo: how to make this wrappable.
-    let onDragSeekKai = function(){
-        moveSeek = true;
-        var seekBar = $("#seekbar");
-        var x = seekBar.find(".knob").position().left;
-        var rate = x / seekBar.width();
-        var playTime = player.totm() - player.fttm();
-        var time = playTime * rate;
-        time = time > playTime ? playTime : time;
+    // this conflicts with newonDragSeek
+    //var oldupdateBalloon = $.Radiko.Player.View.seekBarView.__proto__.updateBalloon;
+    //$.Radiko.Player.View.seekBarView.__proto__.updateBalloon = function (ftTime, addTime) {
+    //    oldupdateBalloon(ftTime + diffTimestamp, addTime);
+    //}
 
-        var seekTime = new XDate(player.fttm() + time, false);
-        var now = moment();
+    let oldonDragSeek = $.Radiko.Player.View.seekBarView.__proto__.onDragSeek;
+    let newonDragSeek = function(){ moment.defaultZone = null;oldonDragSeek.call($.Radiko.Player.View.seekBarView);moment.defaultZone = tokyozone;}
 
-        // 追っかけ放送対応
-        //isAfter is comparing timestamp , XDATE parse date(with out tz info) to current timezone timestamp 
-        if (moment(player.fttm() + time + diffTimestamp ).isAfter(now)) { //THIS LINE CHANGED
-            seekTime = new XDate(parseInt(now.clone().subtract('minutes', 1).format('x')), false);
-        }
-        var url = create_ts_url({
-            ft: player.fttm(),
-            to: player.totm(),
-            seek: seekTime
-        });
-        $("#url").val(url);
-        seekBar.find('.active').css('width', x);
-        this.updateBalloon(player.fttm(), time);
-
-        var timelest = playTime - time;
-        $.Radiko.Player.setSeekPlayTime(time / 1000, timelest / 1000);
-
-        // 追っかけ放送対応
-        if (moment(player.fttm() + time + diffTimestamp  ).isAfter(now)) {   //THIS LINE CHANGED 
-            //TODO this time is also need to be change?? yes
-            var moveTime = now.subtract('minutes', 1).format('x') + diffTimestamp - player.fttm().getTime();  //THIS LINE CHANGED
-            var timeRate = moveTime / playTime;
-            var movablePos = seekBar.width() * timeRate;
-            seekBar.find('.active').css('width', movablePos);
-            seekBar.find('.knob').css('left', movablePos);
-            return false;
-        }
-    }
-
-    $("#seekbar").find(".knob").draggable( "option", { drag: onDragSeekKai.bind($.Radiko.Player.View.seekBarView)});
+    $("#seekbar").find(".knob").draggable( "option", { drag: newonDragSeek});
 }
 
 
