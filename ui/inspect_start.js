@@ -637,7 +637,9 @@ if(needChangeTZ){
     var oldonChangeCurrentTime = $.Radiko.Player.View.seekBarView.__proto__.onChangeCurrentTime;
     $.Radiko.Player.View.seekBarView.stopListening($.Radiko.Player.Model , 'change:currentTime');
     $.Radiko.Player.View.seekBarView.listenTo($.Radiko.Player.Model , 'change:currentTime' , function(model, currentTime){
-        return oldonChangeCurrentTime(model,currentTime+diffSec);
+	// for past timeshift on non-default region -> 0
+	// other ( ongoing timeshift on default/non-default , past timeshift on default) -> diffSec
+        return oldonChangeCurrentTime(model,currentTime+( player.chasing() ? diffSec : 0 ));
     })
 
     //because ftTime is JST time
