@@ -923,9 +923,27 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           console.log("Add recording listener");
           //TODO 2 kind of listener ? for rpaa and previous? 
           // USE tabid and chrome.tabs.query->tab.id? or current only one recording?
+              /* known type of m3u8 for both areafree and timefree
+                               set(ET.fromstring(https://radiko.jp/v3/station/stream/pc_html5/<radioname>.xml).findall(".//url[@areafree='0'][@timefree='0']/playlist_create_url"))
+                                       https://rd-wowza-radiko.radiko-cf.com/so/playlist.m3u8
+                                       https://rpaa.smartstream.ne.jp/so/playlist.m3u8
+                                       https://f-radiko.smartstream.ne.jp/<radioname>/_definst_/simul-stream.stream/playlist.m3u8
+                                       https://si-f-radiko.smartstream.ne.jp/so/playlist.m3u8
+              */
+              /* Known Type of AAC url
+                                       https://rd-wowza-radiko.radiko-cf.com/segments/o/A/<radioname>/<date>/<date>_<time>_<seg>.aac
+                                       https://rpaa.smartstream.ne.jp/segments/o/B/e/E/<seg>.aac
+                                       https://f-radiko.smartstream.ne.jp/<radioname>/_definst_/simul-stream.stream/media-uv4f4m9dn_w2134393784_575547.aac?<params>
+                                       https://si-f-radiko.smartstream.ne.jp/segments/o/B/<radioname>/<date>/<date>_<time>_<seg>.aac
+              */
           chrome.webRequest.onBeforeSendHeaders.addListener( //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
             streamListener(), {
-              urls: ["*://*.smartstream.ne.jp/" + radioname + "/*.aac*","*://rpaa.smartstream.ne.jp/segments/*.aac*"]
+              urls: [
+              "*://*.smartstream.ne.jp/" + radioname + "/*.aac*",
+              "*://rpaa.smartstream.ne.jp/segments/*.aac*",
+              "*://*.radiko-cf.com/segments/*/*/"+radioname+"/*.aac*",
+              "*://*.smartstream.ne.jp/segments/*/*/"+radioname+"/*.aac*"
+              ]
               ,tabId:msg["tabId"] //restrict to specific tabid
             } // may specific detailed FM name to avoid save other stream? 
             // is filter case sensitive??? yes path is case sensitive but domain is not
