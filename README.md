@@ -23,7 +23,15 @@ Permission Details:
 
 
 What's new:
------------
+----------
++ version 0.3.1
+
+    fix m3u8 endpoints
+
+    fix aac urls endpoints
+
+    fix drag issue in some cases.
+-
 + version 0.3.0
 
     improve timezone handle.
