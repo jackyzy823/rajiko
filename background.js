@@ -1081,60 +1081,9 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
 
 
-  //TODO how can i force  to not selecting rpaa url?
-  //finish auth1 and auth2 in this req
-  chrome.webRequest.onBeforeRequest.addListener(
-    function(req) {
-      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
-      if(ifInit || ifTabId){ 
-          return {};
-      }
-
-      let regexpresult = /http:\/\/radiko\.jp\/v2\/station\/stream_rpaa\/(.*?)\.xml/g.exec(req.url);
-      if (regexpresult) {
-        let radioname = regexpresult[1];
-        retTokenByRadioname(radioname, area_id);
-      }
-      return {};
-    }, {
-      urls: ["http://radiko.jp/v2/station/stream_rpaa/*.xml" /*for areafree*/ ] 
-    }, ["blocking"]
-  );
-
-  //simplely find token to use for areafree and live  
-  chrome.webRequest.onBeforeSendHeaders.addListener(
-    function(req) {
-      let regexpresult = /jp\/(.*?)\/_definst_/g.exec(req.url);
-      if (regexpresult) {
-        let radioname = regexpresult[1];
-        let res = retTokenByRadioname(radioname);
-        let use_token = res[0];
-        let use_area = res[1];
-
-        req.requestHeaders = req.requestHeaders.filter(function(x) {
-          return !["x-radiko-authtoken","x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
-        });
-        req.requestHeaders.push({
-          name: "X-Radiko-AuthToken",
-          value: use_token
-        });
-        req.requestHeaders.push({
-          name:"X-Radiko-AreaId",
-          value:use_area
-        })
-        return {
-          requestHeaders: req.requestHeaders
-        };
-      }
-
-    }, {
-      urls: ["*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8?*"]// "*://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/chunklist_*.m3u8"
-    }, ["blocking", "requestHeaders"]
-  )
   //http://f-radiko.smartstream.ne.jp/*/_definst_/simul-stream.stream/playlist.m3u8?station_id=*&l=15&lsid=AAM_UUID&type=b (see connectionType b->areafree c->notfree?)
 
-  // for timeshift listen
+  // for all timeshift/areafree
   chrome.webRequest.onBeforeSendHeaders.addListener(
       function(req) {
 
@@ -1176,7 +1125,10 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         requestHeaders: req.requestHeaders
       };
     }, {
-      urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/ ]
+      urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/ 
+            ,"*://*.smartstream.ne.jp/*/playlist.m3u8?*" // some new apis
+	    ,"*://*.radiko-cf.com/*/playlist.m3u8?*"
+      ]
     }, ["blocking", "requestHeaders"]
   )
 

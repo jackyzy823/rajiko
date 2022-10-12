@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Rajiko",
-  "version": "0.3.0",
+  "version": "0.3.1",
 
   "description": "__MSG_manifest_app_description__",
 
@@ -16,10 +16,11 @@
       "storage",
       "webRequest",
       "webRequestBlocking",
-      "*://*.radiko.jp/*",
       "downloads",
+      "unlimitedStorage",
+      "*://*.radiko.jp/*",
       "*://*.smartstream.ne.jp/*",
-      "unlimitedStorage"
+      "*://*.radiko-cf.com/*"
     ]
 
     ,
