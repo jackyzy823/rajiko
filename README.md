@@ -24,6 +24,12 @@ Permission Details:
 
 What's new:
 ----------
++ version 0.3.2
+
+    fix area check bypass
+
+    upadte new radio-area map
+
 + version 0.3.1
 
     fix m3u8 endpoints
