@@ -1007,7 +1007,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         cancel: true
       };
     }, {
-      urls: ["*://*.radiko.jp/area*"]
+      urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
     }, ["blocking"]
   );
 

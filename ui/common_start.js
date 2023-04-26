@@ -1,16 +1,29 @@
 document.addEventListener("DOMContentLoaded", function(event) {
-  let cheat_areacheck = document.createElement("script");
-  cheat_areacheck.innerText=`
-  let _origin_ajax = $.ajax;
-  $.ajax = function(options){
-    if(options.url == "/area"){
-      options.error = null;
-      Object.defineProperty($.Radiko.area,"id",{value:"LOL" , writable:false});
-    };
-    return _origin_ajax(options);
-  };`
+  chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
+    let area_id = data["selected_areaid"];
+    let cheat_areacheck = document.createElement("script");
+    // response_handler.fail will always called no matter you're in Japan or not
+    // because we block it in background.js
+    // $.cookie("default_area_id") from onBeforeRequest is not quite reliable here,
+    // so we use chrome.storage
+    cheat_areacheck.innerText=`
+    (function(){
+      const _origin_ajax = $.ajax;
+      $.ajax = function(options){
+        if(options.url == "/area" || options.url == "https://api.radiko.jp/apparea/area" ){
+          let response_handler =  _origin_ajax(options);
+          response_handler.fail = function(){
+            $.Radiko.area.id = "`+ area_id +`";
+            return this;
+          };
+          return response_handler;
+        }
+        return _origin_ajax(options);
+      };})();`
+  
+    document.head.appendChild(cheat_areacheck); 
+  });
 
-  document.head.appendChild(cheat_areacheck);
 
   let inspect_script = document.createElement("script");
   inspect_script.src = chrome.runtime.getURL('ui/inspect_start.js');
