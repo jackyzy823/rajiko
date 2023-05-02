@@ -1,6 +1,6 @@
-document.addEventListener("DOMContentLoaded", function(event) {
-  chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
-    let area_id = data["selected_areaid"];
+chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
+  let area_id = data["selected_areaid"];
+  document.addEventListener("DOMContentLoaded", function(event) {
     let cheat_areacheck = document.createElement("script");
     // response_handler.fail will always called no matter you're in Japan or not
     // because we block it in background.js
@@ -20,24 +20,24 @@ document.addEventListener("DOMContentLoaded", function(event) {
         }
         return _origin_ajax(options);
       };})();`
-  
-    document.head.appendChild(cheat_areacheck); 
-  });
+
+    document.head.appendChild(cheat_areacheck);
 
 
-  let inspect_script = document.createElement("script");
-  inspect_script.src = chrome.runtime.getURL('ui/inspect_start.js');
-  document.head.appendChild(inspect_script);
+    let inspect_script = document.createElement("script");
+    inspect_script.src = chrome.runtime.getURL('ui/inspect_start.js');
+    document.head.appendChild(inspect_script);
 
 
-  let targetPlayButton = document.getElementById('play').getElementsByTagName('i')[0];
-  let observer = new MutationObserver(function(list){
-    for(let mutation of list){
-      if(mutation.type == 'attributes' && mutation.attributeName == 'class' && !mutation.target.classList.contains('on')){
-        chrome.runtime.sendMessage({"stop-recording":true},function(){});
+    let targetPlayButton = document.getElementById('play').getElementsByTagName('i')[0];
+    let observer = new MutationObserver(function(list){
+      for(let mutation of list){
+        if(mutation.type == 'attributes' && mutation.attributeName == 'class' && !mutation.target.classList.contains('on')){
+          chrome.runtime.sendMessage({"stop-recording":true},function(){});
+        }
       }
-    }
-  });
-  observer.observe(targetPlayButton,{attributes:true});
+    });
+    observer.observe(targetPlayButton,{attributes:true});
 
+  });
 });
