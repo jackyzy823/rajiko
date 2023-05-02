@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 0.3.3
+
+    fix bug on chrome by calling storage API before DOMContentLoaded
+
 + version 0.3.2
 
     fix area check bypass
@@ -37,7 +41,7 @@ What's new:
     fix aac urls endpoints
 
     fix drag issue in some cases.
--
+
 + version 0.3.0
 
     improve timezone handle.
