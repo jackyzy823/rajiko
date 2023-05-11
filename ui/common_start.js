@@ -6,11 +6,11 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
     // because we block it in background.js
     // $.cookie("default_area_id") from onBeforeRequest is not quite reliable here,
     // so we use chrome.storage
-    cheat_areacheck.innerText=`
+    cheat_areacheck.textContent=`
     (function(){
       const _origin_ajax = $.ajax;
       $.ajax = function(options){
-        if(options.url == "/area" || options.url == "https://api.radiko.jp/apparea/area" ){
+        if(options.url.startsWith("/area") || options.url.startsWith("https://api.radiko.jp/apparea/area")){
           let response_handler =  _origin_ajax(options);
           response_handler.fail = function(){
             $.Radiko.area.id = "`+ area_id +`";
