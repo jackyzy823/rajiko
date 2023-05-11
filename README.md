@@ -24,6 +24,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 0.3.4
+
+   fix matching when urls have query param
+ 
 + version 0.3.3
 
     fix bug on chrome by calling storage API before DOMContentLoaded
