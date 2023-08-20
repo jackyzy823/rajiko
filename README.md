@@ -24,6 +24,14 @@ Permission Details:
 
 What's new:
 ----------
++ version 0.3.5
+
+   update css in popup to fix issue in chrome. Many Thanks to @fireattack.
+
+   upadte new radio-area map
+
+   sync radiko android version code 
+
 + version 0.3.4
 
    fix matching when urls have query param

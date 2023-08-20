@@ -206,6 +206,7 @@ const VERSION_MAP = {
   "10.0.0": { sdk: "29", builds: ["5933585", "6969601", "7023426" , "7070703"] },
   "11.0.0": { sdk:"30" , builds: ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]},
   "12.0.0": { sdk: "31" , builds: ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]},
+  "13.0.0": { sdl: "33" , builds: ["TQ3C.230805.001.B2", "TQ3A.230805.001.A2", "TQ3A.230705.001.A1", "TQ2B.230505.005.A1", "TQ2A.230505.002", "TQ2A.230405.003.E1"]},
 };
 
 
@@ -221,6 +222,8 @@ const MODEL_LIST = ["SC-02H", "SCV33", "SM-G935F", "SM-G935X", "SM-G935W8", "SM-
   //sharp
   , "101F", "201F", "202F", "301F", "IS12F", "F-03D", "F-03E", "M01", "M305", "M357", "M555", "M555", "F-11D", "F-06E", "EM01F", "F-05E", "FJT21", "F-01D", "FAR70B", "FAR7", "F-04E", "F-02E", "F-10D", "F-05D", "FJL22", "ISW11F", "ISW13F", "FJL21", "F-074", "F-07D"
   //fujitu arrows
+  , "G9FPL", "GWKK3", "GHL1X", "G0DZQ", "G82U8", "GP4BC", "GE2AE", "GVU6C", "GQML3", "GX7AS", "GB62Z", "G1AZG", "GLUOG", "G8VOU", "GB7N6", "G9S9B16", "G1F8F", "G4S1M", "GD1YQ", "GTT9Q"
+  // pixel
 ];
 
 function genRandomInfo() {
@@ -235,7 +238,7 @@ function genRandomInfo() {
 
   let appversion = function() {
     // Min version should follow  https://radiko.jp/res/app/update/config.json from https://radiko.jp/res/app/config/aSmartPhone7a.xml
-    let version = ["7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.9", "7.4.8", "7.4.7", "7.4.6","7.4.5","7.4.4","7.4.3","7.4.2","7.4.1","7.4.0","7.3.8","7.3.7","7.3.6","7.3.1","7.3.0","7.2.11","7.2.10"];
+    let version = ["8.0.11", "8.0.10", "8.0.9", "8.0.7", "8.0.6", "8.0.5", "8.0.4", "8.0.3", "8.0.2", "7.5.7", "7.5.6", "7.5.5", "7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.5","7.4.1"];
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
 
