@@ -1,5 +1,12 @@
 Rajiko
 ====================
+
+Warning:
+--------------------
+This addon will not work on Manifest V3 with only declarativeNetRequest API. 
+
+So if Chromium based browsers totally abandon MV2 in the future, I'll stop maintaining for these browsers.
+
 How to use:
 -------------------
 1. Install it from [Chrome webstore](https://chrome.google.com/webstore/detail/rajiko/ejcfdikabeebbgbopoagpabbdokepnff) or [Firefox addons](https://addons.mozilla.org/firefox/addon/rajiko/).
