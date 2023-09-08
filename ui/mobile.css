@@ -51,8 +51,8 @@ vertical-align: -17px;
 .header__station-list {display:none}
 .content .content__inner {width:100%} 
 .top-main-slider {display:none}
-.header__nav .item__outer :nth-child(4) {display:none} 
-.header__nav .item__outer :nth-child(5) {display:none} 
+/*Only display first 3 item live/timeshift/areafree .*/
+.header__nav .item__outer :not(:nth-child(-n+3)) {display:none}
 .img-list__channel {display:inline;text-align :unset}
 .img-list__item {float: unset; height: unset; width: unset ; padding:unset;margin-top: 4px;border-radius: unset;margin-right:unset} 
 .img-list__img {float:right; width:45%;line-height:unset;margin:unset;border-radius: unset;}
@@ -146,6 +146,18 @@ vertical-align: -17px;
 
 .timeshift-page-nav {width: 100%;}
 
+/* For header's width fits device screen width, because of a fixed button for timetable */
+.top-slider__nav .item--next {right: 10%;}
+.top-slider__nav .item--prev {left: 10%;}
+.program-table__pager .item--next {right: 10%;}
+.program-table__pager .item--prev {left: 10%;}
+
+.program-table__body { overflow: scroll;}
+.program-table-header__list-outer {overflow: scroll;}
+.program-table__channel-wrapper { overflow: unset;}
+.program-table__date-wrapper {overflow: unset;}
+
+.timeshift-detail__sub, .live-detail__sub { float:unset; margin:auto; width: 90%;}
 
 /*
 .program-table-header__list  {overflow: unset;width: unset;height: unset;}

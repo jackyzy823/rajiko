@@ -1,6 +1,6 @@
 chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
   let area_id = data["selected_areaid"];
-  document.addEventListener("DOMContentLoaded", function(event) {
+  function inspect(){
     let cheat_areacheck = document.createElement("script");
     // response_handler.fail will always called no matter you're in Japan or not
     // because we block it in background.js
@@ -8,6 +8,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
     // so we use chrome.storage
     cheat_areacheck.textContent=`
     (function(){
+      Object.defineProperty(window.navigator, 'userAgent', { value:  window.navigator.userAgent.replace(/android.*?\;/gi, "").replace(/mobile/gi, "")})
       const _origin_ajax = $.ajax;
       $.ajax = function(options){
         if(options.url.startsWith("/area") || options.url.startsWith("https://api.radiko.jp/apparea/area")){
@@ -38,6 +39,18 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
       }
     });
     observer.observe(targetPlayButton,{attributes:true});
+  };
 
+  var executed = false;
+  document.addEventListener("readystatechange", function(event){
+    // complete interactive
+    if (event.target.readyState !== "loading" && !executed) {
+      inspect();
+      executed = true;
+    } else {
+      // loading
+      document.addEventListener('DOMContentLoaded', inspect);
+    }
   });
+  
 });

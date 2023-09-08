@@ -1014,62 +1014,35 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
     }, ["blocking"]
   );
 
+  // firefox mobile only
+  !( typeof browser === "undefined") && browser.contentScripts && chrome.runtime.getPlatformInfo(function(resp){
+    if(resp.os == chrome.runtime.PlatformOs.ANDROID ){
 
+      browser.contentScripts.register({
+        matches: ["*://*.radiko.jp/*"], //asterisk necessary?
+        js: [{
+          file: "ui/mobile_start.js"
+        }], //DOMContentLoaded
+        css: [{
+          file: "ui/mobile.css"
+        }],
+        runAt: "document_start"
+      })
 
-
-  chrome.webRequest.onBeforeSendHeaders.addListener(
-    function mobileListener(){
-      let modifier = [];
-      return function(req) {
-        for (let i = 0; i < req.requestHeaders.length; i++) {
-          if (req.requestHeaders[i].name.toLowerCase() == "user-agent") {
-            let ua = req.requestHeaders[i].value.toLowerCase();
-            if (ua.indexOf("android") != -1 || ua.indexOf("mobile") != -1) {
-              req.requestHeaders[i].value = req.requestHeaders[i].value.replace(/android.*?\;/gi, "").replace(/mobile/gi, ""); //ugly
-              console.log(req.requestHeaders[i].value)
-              if (browser && browser.contentScripts) {
-                //chrome.runtime.getPlatformInfo(function(info) {info.os == chrome.runtime.PlatformOs.ANDROID} )
-                // >= firefox android 59 
-                if (modifier.length == 0) { //and unregister?
-                  modifier.push(browser.contentScripts.register({
-                    matches: ["*://*.radiko.jp/*"], //asterisk necessary?
-                    js: [{
-                      file: "ui/mobile_start.js"
-                    }], //DOMContentLoaded
-                    css: [{
-                      file: "ui/mobile.css"
-                    }],
-                    runAt: "document_start"
-                  })); //must keep a reference ,otherwise it will not work.
-                }
-
-                //only add once!!! and need removeListener?
-                chrome.webRequest.onBeforeRequest.addListener(function(req) {
-                  //"https://radiko.jp/mobile/#!/timeshift"  -> http://radiko.jp/#!/timeshift
-                  // let item = /\/#!\/(.*)/g.exec(req.url)[0]
-                  return {
-                    redirectUrl: "http://radiko.jp"
-                  };
-                }, {
-                  urls: ["*://radiko.jp/mobile/#!/*"]
-                }, ["blocking"]);
-                chrome.webRequest.handlerBehaviorChanged(function() {
-                  console.log("call handlerBehaviorChanged")
-                }); //expensive !! for mobile reload correctly?                            
-              }
-              //do not redirect to mobile app download page via change to pc useragents
-              //may be a feature because real android device does not send this request
-            }
+      chrome.webRequest.onBeforeSendHeaders.addListener((e)=>{
+        for (const header of e.requestHeaders) {
+          if (header.name.toLowerCase() === "user-agent") {
+            header.value = header.value.replace(/android.*?\;/gi, "").replace(/mobile/gi, "");
           }
         }
-        return {
-          requestHeaders: req.requestHeaders
-        };
-      }
-    }(), {
-      urls: ["*://*.radiko.jp/"]
-    }, ["blocking", "requestHeaders"]
-  );
+        chrome.webRequest.handlerBehaviorChanged()
+        return { requestHeaders: e.requestHeaders };
+      },
+      {
+        urls: ["*://*.radiko.jp/"] // TODO /* needed?
+      }, ["blocking", "requestHeaders"])
+    }
+  })
 
   // or just 
   //Object.values(chrome.webRequest.OnBeforeSendHeadersOptions) 
