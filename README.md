@@ -9,7 +9,7 @@ So if Chromium based browsers totally abandon MV2 in the future, I'll stop maint
 
 How to use:
 -------------------
-1. Install it from [Chrome webstore](https://chrome.google.com/webstore/detail/rajiko/ejcfdikabeebbgbopoagpabbdokepnff) or [Firefox addons](https://addons.mozilla.org/firefox/addon/rajiko/).
+1. Install it from [Chrome webstore](https://chrome.google.com/webstore/detail/rajiko/ejcfdikabeebbgbopoagpabbdokepnff) or [Firefox addons](https://addons.mozilla.org/firefox/addon/rajiko/). For Firefox Android users, before [Addons General Availability](https://blog.mozilla.org/addons/2023/08/10/prepare-your-firefox-desktop-extension-for-the-upcoming-android-release/), you need to use [Beta/Nightly with Addons Collections](https://blog.mozilla.org/addons/2020/09/29/expanded-extension-support-in-firefox-for-android-nightly/) to use Radiko.
 2. Do nothing or change default area by clicking icon which only affects live area.
 3. Recording live or download timeshift by clicking icon. 
 4. Click icon or click pause button to stop recording.
@@ -31,6 +31,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 0.3.6
+
+    major improvement on Firefox for Android
+
 + version 0.3.5
 
    update css in popup to fix issue in chrome. Many Thanks to @fireattack.
