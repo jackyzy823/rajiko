@@ -31,9 +31,13 @@ Permission Details:
 
 What's new:
 ----------
++ version 0.3.6.1
+
+  update manifest key for Firefox for Android
+
 + version 0.3.6
 
-    major improvement on Firefox for Android
+   major improvement on Firefox for Android
 
 + version 0.3.5
 

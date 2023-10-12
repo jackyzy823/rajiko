@@ -2,7 +2,7 @@
 
   "manifest_version": 2,
   "name": "Rajiko",
-  "version": "0.3.6",
+  "version": "0.3.6.1",
 
   "description": "__MSG_manifest_app_description__",
 
@@ -49,10 +49,11 @@
     "default_title": "__MSG_popup_title__"
 
   },
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "{3a8c3e6f-40c7-4eeb-9e42-8d7a803af62b}"
-    }
+    },
+    "gecko_android": {}
   }
 
 }
