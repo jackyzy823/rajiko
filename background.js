@@ -983,6 +983,32 @@ chrome.storage.local.get({ "selected_areaid": "JP13" }, function (data) { //if n
       }
     });
 
+  // Use filterResponse to modify area check result when using Firefox
+  if (!(typeof browser === "undefined") && chrome.webRequest.filterResponseData) {
+    chrome.webRequest.onBeforeRequest.addListener((req) => {
+      let filter = browser.webRequest.filterResponseData(req.requestId);
+      filter.onstop = (event) => {
+        // Template document.write('<span class=\"JP27\">OSAKA JAPAN</span>');
+        let encoder = new TextEncoder();
+        filter.write(encoder.encode(`document.write('<span class="${area_id}">${areaMap[area_id]} JAPAN</span>');`));
+        filter.close();
+      };
+      return {};
+    }, {
+      urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
+    }, ["blocking"]);
+  } else {
+    // Use prepared response from `response` folder.
+    // I'm not sure why it works now.
+    // As i can recall, previously 307 Internal Redirect is not a success code for `/area` API preflight.
+    chrome.webRequest.onBeforeRequest.addListener((req) => {
+      return {
+        redirectUrl: chrome.runtime.getURL(`response/area-${area_id}.html`),
+      };
+    }, {
+      urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
+    }, ["blocking"]);
+  }
 
   chrome.webRequest.onBeforeRequest.addListener(
     function (req) {
@@ -1004,15 +1030,9 @@ chrome.storage.local.get({ "selected_areaid": "JP13" }, function (data) { //if n
           }
         })
       })
-
-
-      return {
-        cancel: true
-      };
     }, {
     urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
-  }, ["blocking"]
-  );
+  });
 
   // firefox mobile only
   !(typeof browser === "undefined") && browser.contentScripts && chrome.runtime.getPlatformInfo(function (resp) {

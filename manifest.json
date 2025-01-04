@@ -47,7 +47,8 @@
     }
   ],
   "web_accessible_resources": [
-    "ui/inspect_start.js"
+    "ui/inspect_start.js",
+    "response/*.html"
   ],
   "browser_action": {
     "default_icon": "Circle-icons-radio-blue-48.png",
