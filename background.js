@@ -898,13 +898,13 @@ chrome.storage.local.get({ "selected_areaid": "JP13" }, function (data) { //if n
         chrome.cookies.getAllCookieStores(function (storeInfo) {
           storeInfo.forEach(function (v, idx, a) {
             chrome.cookies.set({
-              domain: "http://radiko.jp/",
+              url: "http://radiko.jp/",
               name: "default_area_id",
               value: area_id,
               storeId: v.id,
             });
             chrome.cookies.set({
-              domain: "https://radiko.jp/",
+              url: "https://radiko.jp/",
               name: "default_area_id",
               value: area_id,
               storeId: v.id,

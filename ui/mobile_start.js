@@ -22,5 +22,23 @@ document.addEventListener("DOMContentLoaded", function (event) {
 
     }
   });
+});
 
+// To bypass Radiko.Device.isMobile check when reloading on #! paths.
+function changeMobileUA() {
+  let change_mobile_ua = document.createElement("script");
+  change_mobile_ua.textContent = `(function(){Object.defineProperty(window.navigator, 'userAgent', { value:  window.navigator.userAgent.replace(/android.*?\;/gi, "").replace(/mobile/gi, "")});})();`
+  document.head.appendChild(change_mobile_ua);
+};
+
+var executed = false;
+document.addEventListener("readystatechange", function (event) {
+  // complete interactive
+  if (event.target.readyState !== "loading" && !executed) {
+    changeMobileUA();
+    executed = true;
+  } else {
+    // loading
+    document.addEventListener('DOMContentLoaded', changeMobileUA);
+  }
 });
