@@ -1,35 +1,35 @@
 {
     "manifest_app_description": {
         "message": "Rajikoはradiko.jpのジオロケーション制限を解除するツールです！ 大阪、長崎、そして海外から東京、青森などのラジオをお楽しみください！"
-    }
-    ,"confirm_button":{
-        "message":"確認する"
-    }
-    ,"popup_title":{
-        "message":"エリアを選択してください - Rajiko"
-    }
-    ,"record_button_to_start":{
-        "message":"$RADIONAME$を録音する"
-        ,"placeholders":{
-            "radioname":{
-                "content":"$1",
-                "example" : "bayfm78"
+    },
+    "confirm_button": {
+        "message": "確認する"
+    },
+    "popup_title": {
+        "message": "エリアを選択してください - Rajiko"
+    },
+    "record_button_to_start": {
+        "message": "$RADIONAME$を録音する",
+        "placeholders": {
+            "radioname": {
+                "content": "$1",
+                "example": "bayfm78"
             }
         }
-    }
-    ,"record_button_to_stop":{
-        "message":"録音を停止する"
-    }
-    ,"record_button_to_prepare":{
-        "message":"$RADIONAME$ の録音を準備する"
-        ,"placeholders":{
-            "radioname":{
-                "content":"$1",
-                "example" : "bayfm78"
+    },
+    "record_button_to_stop": {
+        "message": "録音を停止する"
+    },
+    "record_button_to_prepare": {
+        "message": "$RADIONAME$ の録音を準備する",
+        "placeholders": {
+            "radioname": {
+                "content": "$1",
+                "example": "bayfm78"
             }
         }
-    } 
-    ,"timeshift_button":{
-        "message":"タイムシフト ダウンロード"
+    },
+    "timeshift_button": {
+        "message": "タイムシフト ダウンロード"
     }
 }

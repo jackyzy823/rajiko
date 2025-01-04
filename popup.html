@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,44 +9,44 @@
     <script src="constants.js"></script>
     <script src="popup.js"></script>
     <style>
+        body {
+            width: 120px;
+        }
 
-body {
-    width: 120px;
-}
+        select,
+        button {
+            padding: 5px 8px;
+            border: none;
+            width: 120px;
+            min-height: 25px;
+            border-radius: 3px;
+            background: #e73c64;
+            color: #ddd;
+        }
 
-select, button {
-    padding: 5px 8px;
-    border: none;
-    width: 120px;
-    min-height: 25px;
-    border-radius: 3px;
-    background: #e73c64;
-    color: #ddd;
-}
+        /* Remove black outline on Chrome */
+        select:focus-visible {
+            outline: none;
+        }
 
-/* Remove black outline on Chrome */
-select:focus-visible {
-    outline: none;
-}
+        /* Color for selected item, only works on Chrome */
+        option:checked {
+            background: #b41e41;
+        }
 
-/* Color for selected item, only works on Chrome */
-option:checked {
-    background: #b41e41;
-}
-
-.select-style:not(:last-child){
-    margin-bottom: 5px;
-}
-
-</style>
+        .select-style:not(:last-child) {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 
 <body style="display: flex;flex-direction: column;">
     <select name="" id="rajiko-region" class="select-style"></select>
-    <select name="" id="rajiko-area" class="select-style" ></select>
+    <select name="" id="rajiko-area" class="select-style"></select>
     <button type="submit" id="rajiko-confirm" class="select-style"></button>
     <button type="submit" id="rajiko-record" class="select-style" hidden></button>
     <button type="submit" id="rajiko-download" class="select-style" hidden></button>
     <!-- UI is too difficult to me -->
 </body>
+
 </html>

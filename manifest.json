@@ -1,53 +1,58 @@
 {
-
   "manifest_version": 2,
   "name": "Rajiko",
   "version": "0.3.6.1",
-
   "description": "__MSG_manifest_app_description__",
-
   "icons": {
     "48": "Circle-icons-radio-blue-48.png",
     "128": "Circle-icons-radio.png"
   },
   "permissions": [
-      "activeTab",
-      "cookies",
-      "storage",
-      "webRequest",
-      "webRequestBlocking",
-      "downloads",
-      "unlimitedStorage",
-      "*://*.radiko.jp/*",
-      "*://*.smartstream.ne.jp/*",
-      "*://*.radiko-cf.com/*"
-    ]
-
-    ,
-  "default_locale": "ja"
-
-    ,
+    "activeTab",
+    "cookies",
+    "storage",
+    "webRequest",
+    "webRequestBlocking",
+    "downloads",
+    "unlimitedStorage",
+    "*://*.radiko.jp/*",
+    "*://*.smartstream.ne.jp/*",
+    "*://*.radiko-cf.com/*"
+  ],
+  "default_locale": "ja",
   "background": {
-    "scripts": ["constants.js", "background.js"]
-
+    "scripts": [
+      "constants.js",
+      "background.js"
+    ]
   },
-
-  "content_scripts":[{
-    "matches": ["*://*.radiko.jp/"],
-    "js": ["ui/common_start.js"],
-    "run_at":"document_start"
-  },{
-    "matches": ["*://*.radiko.jp/share/?*noreload=1*"],
-    "js": ["ui/share_redirect.js"],
-    "run_at":"document_idle"
-  }],
-  "web_accessible_resources": ["ui/inspect_start.js"],
-
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.radiko.jp/"
+      ],
+      "js": [
+        "ui/common_start.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.radiko.jp/share/?*noreload=1*"
+      ],
+      "js": [
+        "ui/share_redirect.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    "ui/inspect_start.js"
+  ],
   "browser_action": {
     "default_icon": "Circle-icons-radio-blue-48.png",
     "default_popup": "popup.html",
     "default_title": "__MSG_popup_title__"
-
   },
   "browser_specific_settings": {
     "gecko": {
@@ -55,5 +60,4 @@
     },
     "gecko_android": {}
   }
-
 }

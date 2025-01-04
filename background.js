@@ -3,20 +3,20 @@ const fullkey_b64 = "fAu/s1ySbQBAyfugPCOniGTrMcOu5XqKcup3tmrZUAvx3MGtIIZl7wHokm0
 //multi token stuff
 // JPX: { token: xx , requestTime: date.now }
 let authTokens = {};
-function ExpireToken(){
+function ExpireToken() {
 }
-ExpireToken.prototype.add = function(area, token) {
+ExpireToken.prototype.add = function (area, token) {
   let me = this;
-  if(authTokens[area]){ //avoid delete after update 
+  if (authTokens[area]) { //avoid delete after update 
     clearTimeout(authTokens[area].timer);
   }
-  let timer = setTimeout(function() {
+  let timer = setTimeout(function () {
     delete authTokens[area];
   }, 42e5);
   authTokens[area] = {
     token: token,
     requestTime: Date.now(),
-    timer : timer 
+    timer: timer
   };
   //radiko will reactive  default area token by auth1/2 , not to get new on.
   //should i reduce some seconds to avoid expire (choose this)  or update itself(should rewrite retTokenByRadioname 'cause it think not expired) ?
@@ -28,27 +28,27 @@ ExpireToken.prototype.add = function(area, token) {
 }
 
 // NOTE: sync function!!
-function retTokenByRadioname(radioname,default_area_id){
+function retTokenByRadioname(radioname, default_area_id) {
   let availableArea = radioAreaId[radioname].area;
-  let hadTokenArea = availableArea.filter(function(a){
+  let hadTokenArea = availableArea.filter(function (a) {
     return !!authTokens[a];
   })
 
-  if(hadTokenArea.length!=0){
-    let pickArea = hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0];
-    return [authTokens[pickArea].token,pickArea];
+  if (hadTokenArea.length != 0) {
+    let pickArea = hadTokenArea.includes(default_area_id) ? default_area_id : hadTokenArea[0];
+    return [authTokens[pickArea].token, pickArea];
   }
   let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
   let info = genRandomInfo();
   let auth1 = new XMLHttpRequest()
-  auth1.open('GET',"https://radiko.jp/v2/api/auth1",false); 
+  auth1.open('GET', "https://radiko.jp/v2/api/auth1", false);
 
   //TODO: for chrome : let webrequest listener modify useragent ?
-  auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
-  auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
-  auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
-  auth1.setRequestHeader('X-Radiko-Device',info.device);
-  auth1.setRequestHeader('X-Radiko-User',info.userid);
+  auth1.setRequestHeader('User-Agent', info.useragent); //refused by chrome but may accept by firefox
+  auth1.setRequestHeader('X-Radiko-App', 'aSmartPhone7a');
+  auth1.setRequestHeader('X-Radiko-App-Version', info.appversion);
+  auth1.setRequestHeader('X-Radiko-Device', info.device);
+  auth1.setRequestHeader('X-Radiko-User', info.userid);
 
   auth1.withCredentials = false;
   auth1.send();
@@ -60,49 +60,49 @@ function retTokenByRadioname(radioname,default_area_id){
 
 
   let auth2 = new XMLHttpRequest()
-  auth2.open('GET','https://radiko.jp/v2/api/auth2',false);
+  auth2.open('GET', 'https://radiko.jp/v2/api/auth2', false);
 
-  auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
-  auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
-  auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
-  auth2.setRequestHeader('X-Radiko-AuthToken',token)
-  auth2.setRequestHeader('X-Radiko-Device',info.device);
-  auth2.setRequestHeader('X-Radiko-User',info.userid);
+  auth2.setRequestHeader('User-Agent', info.useragent); //refused  by chrome but may accept by firefox
+  auth2.setRequestHeader('X-Radiko-App', 'aSmartPhone7a');
+  auth2.setRequestHeader('X-Radiko-App-Version', info.appversion);
+  auth2.setRequestHeader('X-Radiko-AuthToken', token)
+  auth2.setRequestHeader('X-Radiko-Device', info.device);
+  auth2.setRequestHeader('X-Radiko-User', info.userid);
 
-  auth2.setRequestHeader('X-Radiko-Location',genGPS(pickArea));
-  auth2.setRequestHeader('X-Radiko-Connection',"wifi");
-  auth2.setRequestHeader('X-Radiko-Partialkey',partial);
+  auth2.setRequestHeader('X-Radiko-Location', genGPS(pickArea));
+  auth2.setRequestHeader('X-Radiko-Connection', "wifi");
+  auth2.setRequestHeader('X-Radiko-Partialkey', partial);
 
   auth2.withCredentials = false;
   auth2.send();
 
-  let res  = (new ExpireToken()).add(pickArea,token); 
-  return [token,pickArea]; 
+  let res = (new ExpireToken()).add(pickArea, token);
+  return [token, pickArea];
 }
 
-function retTokenByRadioname_async(radioname,default_area_id, callback){
+function retTokenByRadioname_async(radioname, default_area_id, callback) {
   let availableArea = radioAreaId[radioname].area;
-  let hadTokenArea = availableArea.filter(function(a){
+  let hadTokenArea = availableArea.filter(function (a) {
     return !!authTokens[a];
   })
 
-  if(hadTokenArea.length!=0){
-    let pickArea = hadTokenArea.includes(default_area_id) ? default_area_id  : hadTokenArea[0];
-    return callback(authTokens[pickArea].token , pickArea);
+  if (hadTokenArea.length != 0) {
+    let pickArea = hadTokenArea.includes(default_area_id) ? default_area_id : hadTokenArea[0];
+    return callback(authTokens[pickArea].token, pickArea);
   }
   let pickArea = availableArea[(Math.floor(Math.random() * availableArea.length)) >> 0];
   let info = genRandomInfo();
   let auth1 = new XMLHttpRequest()
-  auth1.open('GET',"https://radiko.jp/v2/api/auth1"); //sync
+  auth1.open('GET', "https://radiko.jp/v2/api/auth1"); //sync
 
-  auth1.setRequestHeader('User-Agent',info.useragent); //refused by chrome but may accept by firefox
-  auth1.setRequestHeader('X-Radiko-App','aSmartPhone7a');
-  auth1.setRequestHeader('X-Radiko-App-Version',info.appversion);
-  auth1.setRequestHeader('X-Radiko-Device',info.device);
-  auth1.setRequestHeader('X-Radiko-User',info.userid);
+  auth1.setRequestHeader('User-Agent', info.useragent); //refused by chrome but may accept by firefox
+  auth1.setRequestHeader('X-Radiko-App', 'aSmartPhone7a');
+  auth1.setRequestHeader('X-Radiko-App-Version', info.appversion);
+  auth1.setRequestHeader('X-Radiko-Device', info.device);
+  auth1.setRequestHeader('X-Radiko-User', info.userid);
   auth1.withCredentials = false;
 
-  auth1.onload = function(xhrevent){
+  auth1.onload = function (xhrevent) {
     // case-insensitive
     let token = this.getResponseHeader('x-radiko-authtoken')
     let offset = parseInt(this.getResponseHeader('x-radiko-keyoffset'));
@@ -110,27 +110,27 @@ function retTokenByRadioname_async(radioname,default_area_id, callback){
     let partial = btoa(atob(fullkey_b64).slice(offset, offset + length));
 
     let auth2 = new XMLHttpRequest()
-    auth2.open('GET','https://radiko.jp/v2/api/auth2');
+    auth2.open('GET', 'https://radiko.jp/v2/api/auth2');
 
     //TODO: for chrome : let webrequest listener modify useragent ?
-    auth2.setRequestHeader('User-Agent',info.useragent); //refused  by chrome but may accept by firefox
-    auth2.setRequestHeader('X-Radiko-App','aSmartPhone7a');
-    auth2.setRequestHeader('X-Radiko-App-Version',info.appversion);
-    auth2.setRequestHeader('X-Radiko-AuthToken',token)
-    auth2.setRequestHeader('X-Radiko-Device',info.device);
-    auth2.setRequestHeader('X-Radiko-User',info.userid);
+    auth2.setRequestHeader('User-Agent', info.useragent); //refused  by chrome but may accept by firefox
+    auth2.setRequestHeader('X-Radiko-App', 'aSmartPhone7a');
+    auth2.setRequestHeader('X-Radiko-App-Version', info.appversion);
+    auth2.setRequestHeader('X-Radiko-AuthToken', token)
+    auth2.setRequestHeader('X-Radiko-Device', info.device);
+    auth2.setRequestHeader('X-Radiko-User', info.userid);
 
-    auth2.setRequestHeader('X-Radiko-Location',genGPS(pickArea));
-    auth2.setRequestHeader('X-Radiko-Connection',"wifi");
-    auth2.setRequestHeader('X-Radiko-Partialkey',partial);
+    auth2.setRequestHeader('X-Radiko-Location', genGPS(pickArea));
+    auth2.setRequestHeader('X-Radiko-Connection', "wifi");
+    auth2.setRequestHeader('X-Radiko-Partialkey', partial);
 
     auth2.withCredentials = false;
 
-    auth2.onload = function(xhrevent){
-      let res  = (new ExpireToken()).add(pickArea,token); 
-      return callback(token,pickArea); 
+    auth2.onload = function (xhrevent) {
+      let res = (new ExpireToken()).add(pickArea, token);
+      return callback(token, pickArea);
     }
-    auth2.send();    
+    auth2.send();
   }
   auth1.send();
 }
@@ -203,10 +203,10 @@ const VERSION_MAP = {
   "8.0.0": { sdk: "26", builds: ["5650811", "5796467", "5948681", "6107732", "6127070"] },
   "8.1.0": { sdk: "27", builds: ["5794017", "6107733", "6037697"] },
   "9.0.0": { sdk: "28", builds: ["5948683", "5794013", "6127072"] },
-  "10.0.0": { sdk: "29", builds: ["5933585", "6969601", "7023426" , "7070703"] },
-  "11.0.0": { sdk:"30" , builds: ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"]},
-  "12.0.0": { sdk: "31" , builds: ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"]},
-  "13.0.0": { sdk: "33" , builds: ["TQ3C.230805.001.B2", "TQ3A.230805.001.A2", "TQ3A.230705.001.A1", "TQ2B.230505.005.A1", "TQ2A.230505.002", "TQ2A.230405.003.E1"]},
+  "10.0.0": { sdk: "29", builds: ["5933585", "6969601", "7023426", "7070703"] },
+  "11.0.0": { sdk: "30", builds: ["RP1A.201005.006", "RQ1A.201205.011", "RQ1A.210105.002"] },
+  "12.0.0": { sdk: "31", builds: ["SD1A.210817.015.A4", "SD1A.210817.019.B1", "SD1A.210817.037", "SQ1D.220105.007"] },
+  "13.0.0": { sdk: "33", builds: ["TQ3C.230805.001.B2", "TQ3A.230805.001.A2", "TQ3A.230705.001.A1", "TQ2B.230505.005.A1", "TQ2A.230505.002", "TQ2A.230405.003.E1"] },
 };
 
 
@@ -236,13 +236,13 @@ function genRandomInfo() {
   let device = sdk + "." + model;
   let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
-  let appversion = function() {
+  let appversion = function () {
     // Min version should follow  https://radiko.jp/res/app/update/config.json from https://radiko.jp/res/app/config/aSmartPhone7a.xml
-    let version = ["8.0.11", "8.0.10", "8.0.9", "8.0.7", "8.0.6", "8.0.5", "8.0.4", "8.0.3", "8.0.2", "7.5.7", "7.5.6", "7.5.5", "7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.5","7.4.1"];
+    let version = ["8.0.11", "8.0.10", "8.0.9", "8.0.7", "8.0.6", "8.0.5", "8.0.4", "8.0.3", "8.0.2", "7.5.7", "7.5.6", "7.5.5", "7.5.0", "7.4.17", "7.4.16", "7.4.15", "7.4.14", "7.4.13", "7.4.12", "7.4.11", "7.4.10", "7.4.5", "7.4.1"];
     return version[(Math.floor(Math.random() * version.length)) >> 0];
   }();
 
-  let userid = function() {
+  let userid = function () {
     let hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
     let s = '';
     for (let i = 0; i < 32; i++) {
@@ -262,7 +262,7 @@ function genRandomInfo() {
 //remove accept-language accept cookie   referer 
 //pragma accept Cache-Control and origin(for cors) cannot be removed
 const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device", "x-radiko-partialkey"];
-const XHRREFUSELIST = ["origin" , "user-agent" , "referer" ,"accept-encoding", /*For using xhr in firefox*/"host","connection"];
+const XHRREFUSELIST = ["origin", "user-agent", "referer", "accept-encoding", /*For using xhr in firefox*/"host", "connection"];
 
 function genGPS(area_id) {
   let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
@@ -275,11 +275,11 @@ function genGPS(area_id) {
 }
 
 //TODO: optimize this to avoid high cpu usage 
-if( typeof browser === "undefined"){  //see webextension-polyfill
+if (typeof browser === "undefined") {  //see webextension-polyfill
   // for chrome
   //see chroumium bug:  https://bugs.chromium.org/p/chromium/issues/detail?id=831062
-  function ab2str(buf,offset){
-    return String.fromCharCode.apply(null, new Uint8Array(buf,offset)); //uint16 will raise must multiple of 2  error 
+  function ab2str(buf, offset) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf, offset)); //uint16 will raise must multiple of 2  error 
   }
   function str2ab(str) {
     let buf = new ArrayBuffer(str.length); // Uint16 -> 2 bytes for each char  *2
@@ -290,46 +290,46 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
     }
     return buf;
   }
-}else{
+} else {
   //for firefox save memory via Uint16Array , use pkcs5 for padding.
-  function ab2str(buf,offset) {
+  function ab2str(buf, offset) {
     let len = buf.byteLength - offset;
-    let padding = len %8 ==0 ? 8:len %8;
-    let crafted = new Uint8Array(len + padding );
+    let padding = len % 8 == 0 ? 8 : len % 8;
+    let crafted = new Uint8Array(len + padding);
     let p = new Array(padding);
-    for(let i =0;i<padding;i++){
+    for (let i = 0; i < padding; i++) {
       p[i] = padding;
     }
-    crafted.set(new Uint8Array(buf,offset),0);
-    crafted.set(p,len);
+    crafted.set(new Uint8Array(buf, offset), 0);
+    crafted.set(p, len);
     return String.fromCharCode.apply(null, new Uint16Array(crafted.buffer));
   }
   function str2ab(str) {
-    let buf = new ArrayBuffer(str.length * 2); 
+    let buf = new ArrayBuffer(str.length * 2);
     let bufView = new Uint16Array(buf);
     let paddingView = new Uint8Array(buf);
     for (let i = 0, strLen = str.length; i < strLen; i++) {
       bufView[i] = str.charCodeAt(i);
     }
-    let padding = paddingView[str.length*2 - 1];
-    return buf.slice(0,str.length*2 - padding);
+    let padding = paddingView[str.length * 2 - 1];
+    return buf.slice(0, str.length * 2 - padding);
   }
 
   //polyfill
   //see https://github.com/kiefferbp/webext-getBytesInUse-polyfill/blob/master/index.js
   //Poor performance!!
-  chrome.storage.local.getBytesInUse = function(keys, callback) {
+  chrome.storage.local.getBytesInUse = function (keys, callback) {
     let size = 0;
     if (typeof keys === 'string') {
       keys = [keys];
     }
-    chrome.storage.local.get(keys, function(results) {
+    chrome.storage.local.get(keys, function (results) {
       let lastError = chrome.runtime.lastError;
       if (lastError) {
         callback(-1);
         return;
       }
-      Object.keys(results).forEach(function(key) {
+      Object.keys(results).forEach(function (key) {
         size += (key + JSON.stringify(results[key])).length;
       });
       callback(size);
@@ -341,18 +341,18 @@ if( typeof browser === "undefined"){  //see webextension-polyfill
 //aac parse stuff
 //parse hls packed audio (id3 tags and data)
 // return id3 tag size and timestamp of this packed audio if success else return [0,0]
-function parseAAC(data){ //data -> Arraybuffer
-	let processing =  new DataView(data);
-	if( processing.getUint8(0) != 73 || processing.getUint8(1) != 68 || processing.getUint8(2) != 51){  // ID3
-		return [0,0];
-	}
-	let id3payloadsize = processing.getUint32(6,false) ; //bigendian
-	let id3tagsize = 10 + id3payloadsize ; //header size + payloadsize
+function parseAAC(data) { //data -> Arraybuffer
+  let processing = new DataView(data);
+  if (processing.getUint8(0) != 73 || processing.getUint8(1) != 68 || processing.getUint8(2) != 51) {  // ID3
+    return [0, 0];
+  }
+  let id3payloadsize = processing.getUint32(6, false); //bigendian
+  let id3tagsize = 10 + id3payloadsize; //header size + payloadsize
 
-	let timestampLow = processing.getUint32(id3tagsize - 4,false); // 32bit
-	let timestampHigh = processing.getUint32(id3tagsize - 8 ,false); //need only the last bit
-	let timestamp =  timestampLow + 0xffffffff * timestampHigh;
-	return [id3tagsize,timestamp];
+  let timestampLow = processing.getUint32(id3tagsize - 4, false); // 32bit
+  let timestampHigh = processing.getUint32(id3tagsize - 8, false); //need only the last bit
+  let timestamp = timestampLow + 0xffffffff * timestampHigh;
+  return [id3tagsize, timestamp];
 }
 
 
@@ -371,12 +371,12 @@ function parseAAC(data){ //data -> Arraybuffer
 // 28 may cancel
 // 16
 // 28
-function streamListener(){
-  let started  = false;
+function streamListener() {
+  let started = false;
   let count = 0; //storage also need count for downloading
   let start_time;
   let end_time;
-  let timestamp2Filename =  function(t) {
+  let timestamp2Filename = function (t) {
     let d = new Date(t);
     let d_str = '' + d.getFullYear();
     d_str += (d.getMonth() + 1).toString().length == 1 ? '0' + (d.getMonth() + 1).toString() : (d.getMonth() + 1).toString();
@@ -386,110 +386,110 @@ function streamListener(){
     d_str += d.getSeconds().toString().length == 1 ? '0' + d.getSeconds() : '' + d.getSeconds();
     return d_str;
   }
-  let listenerFunc =  function(req){
-    chrome.storage.local.get("current_recording",function(data){
-      if(data["current_recording"]){ 
+  let listenerFunc = function (req) {
+    chrome.storage.local.get("current_recording", function (data) {
+      if (data["current_recording"]) {
         let info = data["current_recording"];
         let radioname = info["radioname"];
         end_time = (new Date()).getTime();
-        if(!started){
+        if (!started) {
           started = true;
-          start_time =end_time;
+          start_time = end_time;
         } //seems like jump-back problem disappered!
-        if(chrome.webRequest.filterResponseData){
+        if (chrome.webRequest.filterResponseData) {
           let filter = chrome.webRequest.filterResponseData(req.requestId);
-          let audio_uint8 = null ;
-          filter.onstart = function(event){
-              // console.log(filename,"start!!!!",event);
+          let audio_uint8 = null;
+          filter.onstart = function (event) {
+            // console.log(filename,"start!!!!",event);
           }
-          filter.ondata = function(event){
+          filter.ondata = function (event) {
             filter.write(event.data);//pass through
-            if(audio_uint8 == null){
+            if (audio_uint8 == null) {
               audio_uint8 = new Uint8Array(event.data);
-            }else{
+            } else {
               let tmp = new Uint8Array(audio_uint8.byteLength + event.data.byteLength);
-              tmp.set(audio_uint8,0);
-              tmp.set(new Uint8Array(event.data),audio_uint8.byteLength);
+              tmp.set(audio_uint8, 0);
+              tmp.set(new Uint8Array(event.data), audio_uint8.byteLength);
               audio_uint8 = tmp;
             }
           }
-            filter.onstop = function(event){
-              filter.disconnect();
-              if(audio_uint8 == null ){
-                return {} ; //a strange request by radiko get 0 bytes;
-              }
-              let audio_string =  ab2str(audio_uint8.buffer , parseAAC(audio_uint8.buffer)[0]); // drop id3 tag ;timestamp not used for now
-              let storage_set ={};
-
-              storage_set[radioname+'_'+ start_time + '_' + count ] = audio_string;
-              count += 1;
-              // info["count"] = count;  //info[count] get before set is common and may set wrong.
-              storage_set["current_recording"] = info;
-
-              chrome.storage.local.set(storage_set,function(){
-                if(chrome.runtime.lastError){
-                  console.log("store error",chrome.runtime.lastError);
-                }
-              });
-   
-            }        
-        }
-        else{
-          let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-          let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
-          
-          //be careful !!! the request would inetercept itself!!!
-          if(ifInit || ifTabId){ 
-            //to avoid recursion
-            return;
-          }
-            
-          let xhr = new XMLHttpRequest();
-          xhr.open('GET',req.url); 
-          req.requestHeaders.map(function(x){ //set token and other headers
-            if(!XHRREFUSELIST.includes(x.name.toLowerCase())){
-              xhr.setRequestHeader(x.name,x.value);  
+          filter.onstop = function (event) {
+            filter.disconnect();
+            if (audio_uint8 == null) {
+              return {}; //a strange request by radiko get 0 bytes;
             }
-          });
-          xhr.responseType = 'arraybuffer';
-          xhr.onload = function(xhrevent){
-            //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Appears only on chrome v50 linux.
-            let audio_string =  ab2str(this.response, parseAAC(this.response)[0]); //timestamp not used for now.
-            let storage_set ={};
-            storage_set[radioname+'_'+ start_time + '_' + count ] = audio_string;
+            let audio_string = ab2str(audio_uint8.buffer, parseAAC(audio_uint8.buffer)[0]); // drop id3 tag ;timestamp not used for now
+            let storage_set = {};
+
+            storage_set[radioname + '_' + start_time + '_' + count] = audio_string;
             count += 1;
             // info["count"] = count;  //info[count] get before set is common and may set wrong.
             storage_set["current_recording"] = info;
 
-            chrome.storage.local.set(storage_set,function(){
-              if(chrome.runtime.lastError){
-                console.log("store error",chrome.runtime.lastError);
+            chrome.storage.local.set(storage_set, function () {
+              if (chrome.runtime.lastError) {
+                console.log("store error", chrome.runtime.lastError);
+              }
+            });
+
+          }
+        }
+        else {
+          let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension") != -1;  //initiator since chrome 63
+          let ifTabId = req.tabId && req.tabId == -1; //mean this request is not from tab
+
+          //be careful !!! the request would inetercept itself!!!
+          if (ifInit || ifTabId) {
+            //to avoid recursion
+            return;
+          }
+
+          let xhr = new XMLHttpRequest();
+          xhr.open('GET', req.url);
+          req.requestHeaders.map(function (x) { //set token and other headers
+            if (!XHRREFUSELIST.includes(x.name.toLowerCase())) {
+              xhr.setRequestHeader(x.name, x.value);
+            }
+          });
+          xhr.responseType = 'arraybuffer';
+          xhr.onload = function (xhrevent) {
+            //FIX: chrome in Linux has some data loss --> 00 is disappered? the lastest version of chrome has not this problem . Currently Appears only on chrome v50 linux.
+            let audio_string = ab2str(this.response, parseAAC(this.response)[0]); //timestamp not used for now.
+            let storage_set = {};
+            storage_set[radioname + '_' + start_time + '_' + count] = audio_string;
+            count += 1;
+            // info["count"] = count;  //info[count] get before set is common and may set wrong.
+            storage_set["current_recording"] = info;
+
+            chrome.storage.local.set(storage_set, function () {
+              if (chrome.runtime.lastError) {
+                console.log("store error", chrome.runtime.lastError);
               }
             });
           }
           xhr.send();
 
         }
-      }else{
+      } else {
         console.log("should not go here!!");
       }
     });
 
     return {};
-  } ;
-  let stopmeFunc =function(msg, sender, respCallback) {
+  };
+  let stopmeFunc = function (msg, sender, respCallback) {
     if (msg["stop-recording"]) { //do stop recording caused by pause button need same tabid?
       respCallback();
       chrome.runtime.onMessage.removeListener(stopmeFunc);
       chrome.webRequest.onBeforeSendHeaders.removeListener(listenerFunc);
       console.log("ready to download!");
-      chrome.storage.local.get("current_recording", function(data) {
+      chrome.storage.local.get("current_recording", function (data) {
         if (data["current_recording"]) {
           let info = data["current_recording"]
           let radioname = info["radioname"];
           let filename = timestamp2Filename(start_time) + "_" + timestamp2Filename(end_time) + ".aac";
-          if(count == 0){
-            chrome.storage.local.remove("current_recording", function() {});
+          if (count == 0) {
+            chrome.storage.local.remove("current_recording", function () { });
             return;
           }
 
@@ -498,9 +498,9 @@ function streamListener(){
             keyList[i] = radioname + '_' + start_time + '_' + i;
           }
 
-          chrome.storage.local.get(keyList, function(data) {
+          chrome.storage.local.get(keyList, function (data) {
             if (data) {
-              let audio_buf = keyList.map(function(x) {
+              let audio_buf = keyList.map(function (x) {
                 return str2ab(data[x]);
               });
 
@@ -511,7 +511,7 @@ function streamListener(){
               chrome.downloads.download({
                 url: audiourl,
                 filename: radioname + "/" + filename
-              }, function(downloadId) {
+              }, function (downloadId) {
                 // for firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1521308
                 chrome.downloads.onChanged.addListener(function handler(delta) {
                   if (delta.id == downloadId && delta.state && delta.state.current === "complete") {
@@ -519,7 +519,7 @@ function streamListener(){
                     chrome.downloads.onChanged.removeListener(handler);
                     URL.revokeObjectURL(audiourl);
                     keyList.push("current_recording") // also remove current_recording
-                    chrome.storage.local.remove(keyList, function() {
+                    chrome.storage.local.remove(keyList, function () {
                       console.log("clean done!");
                       if (chrome.runtime.lastError) {
                         console.log("cleanup error", chrome.runtime.lastError);
@@ -560,20 +560,20 @@ function mapLimit(arr, limit, iterator, callback) {
   flush();
 
   function flush() {
-    if (complete === l){ 
+    if (complete === l) {
       return callback(null, results);
     }
 
     while (queued < limit) {
-      if (aborted){ break; }
-      if (i === l){ break; }
+      if (aborted) { break; }
+      if (i === l) { break; }
       push();
     }
   }
 
   function abort(err) {
     aborted = true;
-    return callback(err,results); //return results althrough error , becasue we need cleanup
+    return callback(err, results); //return results althrough error , becasue we need cleanup
   }
 
   function push() {
@@ -581,8 +581,8 @@ function mapLimit(arr, limit, iterator, callback) {
 
     queued += 1;
 
-    iterator(arr[idx],idx, function(err, result) {
-      if (err) {return abort(err);}
+    iterator(arr[idx], idx, function (err, result) {
+      if (err) { return abort(err); }
       results[idx] = result;
       complete += 1;
       queued -= 1;
@@ -593,7 +593,7 @@ function mapLimit(arr, limit, iterator, callback) {
 
 function downloadtimeShift(m3u8link, default_area_id) {
   let radioname, from, to;
-  (new URL(m3u8link)).search.slice(1).split('&').map(function(kv) {
+  (new URL(m3u8link)).search.slice(1).split('&').map(function (kv) {
     let s = kv.split('=');
     switch (s[0]) {
       case 'station_id':
@@ -610,84 +610,84 @@ function downloadtimeShift(m3u8link, default_area_id) {
   let filename = radioname + '_' + from + '_' + to + '.aac';
   console.log("timeshift file", filename);
 
-  retTokenByRadioname_async(radioname, default_area_id, function(token,pickArea) {
+  retTokenByRadioname_async(radioname, default_area_id, function (token, pickArea) {
     let q1 = new XMLHttpRequest();
     q1.open('GET', m3u8link);
-    q1.setRequestHeader('X-Radiko-AreaId',pickArea);
+    q1.setRequestHeader('X-Radiko-AreaId', pickArea);
     q1.setRequestHeader('X-Radiko-AuthToken', token);
-    q1.onload = function(xhrevent) {
+    q1.onload = function (xhrevent) {
       let resp = this.responseText;
-      let detailLink = resp.split('\n').filter(function(d) {
+      let detailLink = resp.split('\n').filter(function (d) {
         return d[0] != '#' && d.trim() != '';
       })[0];
       let q2 = new XMLHttpRequest();
       q2.open('GET', detailLink);
-      q2.setRequestHeader('X-Radiko-AreaId',pickArea);
+      q2.setRequestHeader('X-Radiko-AreaId', pickArea);
       q2.setRequestHeader('X-Radiko-AuthToken', token);
 
-      q2.onload = function(xhrevent) {
+      q2.onload = function (xhrevent) {
         let resp = this.responseText;
-        let links = resp.split('\n').filter(function(d) {
+        let links = resp.split('\n').filter(function (d) {
           return d[0] != '#' && d.trim() != '';
         });
 
-        mapLimit(links,6,function(item,idx,next){
+        mapLimit(links, 6, function (item, idx, next) {
           let storekey = filename + '_' + idx;
           let req = new XMLHttpRequest();
           req.open('GET', item);
           req.responseType = 'arraybuffer';
-          req.onload = function(xhrevent) {
+          req.onload = function (xhrevent) {
             let audio_string = ab2str(this.response, parseAAC(this.response)[0]); //timestamp not used for now.
             let storage_set = {};
             storage_set[storekey] = audio_string;
 
-            chrome.storage.local.set(storage_set, function() {
+            chrome.storage.local.set(storage_set, function () {
               if (chrome.runtime.lastError) {
-                next(chrome.runtime.lastError,null); //no data in storage yet.
-              }else{
-                next(null,storekey);
+                next(chrome.runtime.lastError, null); //no data in storage yet.
+              } else {
+                next(null, storekey);
               }
             });
           }
-          req.onloadend  = function(event){
-              //can this capture MISMATCH?
-              //see https://stackoverflow.com/questions/48127436/how-to-catch-chrome-error-neterr-file-not-found-in-xmlhttprequest
-            if(!event.loaded){
+          req.onloadend = function (event) {
+            //can this capture MISMATCH?
+            //see https://stackoverflow.com/questions/48127436/how-to-catch-chrome-error-neterr-file-not-found-in-xmlhttprequest
+            if (!event.loaded) {
               //net::ERR_NETWORK_CHANGED goes here
               //can reload other already downloaded from disk cache ,so do not retry by iteself.
               //cacnel
               let err = true;
-              next(err,null);
+              next(err, null);
             }
           }
           //TODO: dont know why MISMATCH cannot handle in here
-          req.addEventListener('error',function(){
-              let err = true;
-              next(err,null);
+          req.addEventListener('error', function () {
+            let err = true;
+            next(err, null);
           })
-          req.send();          
+          req.send();
 
-        },function(err,keyList){
-          if(err){
-            chrome.storage.local.get({"timeshift_list":[]},function(data){
+        }, function (err, keyList) {
+          if (err) {
+            chrome.storage.local.get({ "timeshift_list": [] }, function (data) {
               let list = data["timeshift_list"];
-              list = list.filter(function(l){
-                return l !==m3u8link;
+              list = list.filter(function (l) {
+                return l !== m3u8link;
               });
-              chrome.storage.local.set({"timeshift_list":list},function(){
-                chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+              chrome.storage.local.set({ "timeshift_list": list }, function () {
+                chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({ text: list.length > 0 ? list.length.toString() : "" });
               });
             });
 
-            chrome.storage.local.remove(keyList.filter(function(val) {
+            chrome.storage.local.remove(keyList.filter(function (val) {
               return !val
-            }), function() {
+            }), function () {
 
             });
-          }else{
-            chrome.storage.local.get(keyList, function(data) {
+          } else {
+            chrome.storage.local.get(keyList, function (data) {
               if (data) {
-                let audio_buf = keyList.map(function(x) {
+                let audio_buf = keyList.map(function (x) {
                   return str2ab(data[x]);
                 })
                 let audiodata = new Blob(audio_buf, {
@@ -697,22 +697,22 @@ function downloadtimeShift(m3u8link, default_area_id) {
                 chrome.downloads.download({
                   url: audiourl,
                   filename: filename
-                }, function(downloadId) {
+                }, function (downloadId) {
                   chrome.downloads.onChanged.addListener(function handler(delta) {
                     if (delta.id == downloadId && delta.state && delta.state.current === "complete") {
                       console.log("download done!");
                       chrome.downloads.onChanged.removeListener(handler);
                       URL.revokeObjectURL(audiourl);
-                      chrome.storage.local.get({"timeshift_list":[]},function(data){
+                      chrome.storage.local.get({ "timeshift_list": [] }, function (data) {
                         let list = data["timeshift_list"];
-                        list = list.filter(function(l){
-                          return l !==m3u8link;
+                        list = list.filter(function (l) {
+                          return l !== m3u8link;
                         });
-                        chrome.storage.local.set({"timeshift_list":list},function(){
-                          chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({text: list.length > 0? list.length.toString() :""});
+                        chrome.storage.local.set({ "timeshift_list": list }, function () {
+                          chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({ text: list.length > 0 ? list.length.toString() : "" });
                         });
                       });
-                      chrome.storage.local.remove(keyList, function() {
+                      chrome.storage.local.remove(keyList, function () {
                         console.log("clean done!");
                         if (chrome.runtime.lastError) {
                           console.log("cleanup error", chrome.runtime.lastError);
@@ -740,25 +740,25 @@ function downloadtimeShift(m3u8link, default_area_id) {
 
 
 //main stuff
-chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not selected_areaid return default value:JP13
+chrome.storage.local.get({ "selected_areaid": "JP13" }, function (data) { //if not selected_areaid return default value:JP13
   let area_id = data["selected_areaid"];
 
-  let authListener = (function(){
+  let authListener = (function () {
     let partialkey = null;
     let info = genRandomInfo();
-    console.log("info in authListener",info);
-    let modifyRequest = function(req) {
-      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
-      if(ifInit || ifTabId){ 
-          return {};
+    console.log("info in authListener", info);
+    let modifyRequest = function (req) {
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension") != -1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId == -1; //mean this request is not from tab
+      if (ifInit || ifTabId) {
+        return {};
       }
-      
+
       if (req.url.indexOf("auth1") != -1 && req.method.toLowerCase() == 'get') {
 
         //some x-radiko cannot captialize .because it exists before modification.
         //may be another feature
-        req.requestHeaders = req.requestHeaders.filter(function(x) {
+        req.requestHeaders = req.requestHeaders.filter(function (x) {
           return !IGNORELIST.includes(x.name.toLowerCase());
         });
 
@@ -785,7 +785,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
 
       } else if (req.url.indexOf("auth2") != -1 && req.method.toLowerCase() == 'get') {
-        req.requestHeaders = req.requestHeaders.filter(function(x) {
+        req.requestHeaders = req.requestHeaders.filter(function (x) {
           //save token here
           if (x.name.toLowerCase() == 'x-radiko-authtoken') {
             let res = (new ExpireToken()).add(area_id, x.value);
@@ -842,12 +842,12 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
       return {
         requestHeaders: req.requestHeaders
       };
-    } ;
-    let modifyResponse = function(resp) {
-      let ifInit = resp.initiator && resp.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-      let ifTabId = resp.tabId && resp.tabId ==-1; //mean this resp is not from tab
-      if(ifInit || ifTabId){ 
-          return {};
+    };
+    let modifyResponse = function (resp) {
+      let ifInit = resp.initiator && resp.initiator.toLowerCase().indexOf("chrome-extension") != -1;  //initiator since chrome 63
+      let ifTabId = resp.tabId && resp.tabId == -1; //mean this resp is not from tab
+      if (ifInit || ifTabId) {
+        return {};
       }
 
 
@@ -872,31 +872,31 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         responseHeaders: resp.responseHeaders
       };
     };
-    return {modifyRequest: modifyRequest, modifyResponse:modifyResponse};
+    return { modifyRequest: modifyRequest, modifyResponse: modifyResponse };
   })();
   //clean previous unfinshed recording or downloading content if exists.
-  chrome.storage.local.clear(function() {
+  chrome.storage.local.clear(function () {
     chrome.storage.local.set({
       "selected_areaid": area_id
-    }, function() {});
+    }, function () { });
   });
 
-  chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({text: ""}); //clean badgetext when crash
+  chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({ text: "" }); //clean badgetext when crash
   // //cookie may not be set here?
   // chrome.cookies.set({ url: "http://radiko.jp/", name: "default_area_id", value: area_id },function(c){
   //   console.log("set cookie",c);
   // });
 
   chrome.runtime.onMessage.addListener(
-    function(msg, sender, respCallback) {
+    function (msg, sender, respCallback) {
       if (msg["update-area"]) {
         area_id = msg["update-area"];
         chrome.storage.local.set({
           selected_areaid: area_id
-        }, function() {});
+        }, function () { });
         // fix incognito mode cookie problem
-        chrome.cookies.getAllCookieStores(function(storeInfo){
-          storeInfo.forEach(function(v,idx,a){
+        chrome.cookies.getAllCookieStores(function (storeInfo) {
+          storeInfo.forEach(function (v, idx, a) {
             chrome.cookies.set({
               domain: "http://radiko.jp/",
               name: "default_area_id",
@@ -912,8 +912,8 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           })
         })
 
-      } else if (msg["get-area"]){
-          respCallback({"get-area":area_id});
+      } else if (msg["get-area"]) {
+        respCallback({ "get-area": area_id });
       } else if (msg["start-recording"]) {
         let radioname = msg["start-recording"];
         console.log("Strart recording", radioname);
@@ -922,33 +922,33 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
             "radioname": radioname,
             count: 0
           }
-        }, function() {
+        }, function () {
           console.log("Add recording listener");
           //TODO 2 kind of listener ? for rpaa and previous? 
           // USE tabid and chrome.tabs.query->tab.id? or current only one recording?
-              /* known type of m3u8 for both areafree and timefree
-                               set(ET.fromstring(https://radiko.jp/v3/station/stream/pc_html5/<radioname>.xml).findall(".//url[@areafree='0'][@timefree='0']/playlist_create_url"))
-                                       https://rd-wowza-radiko.radiko-cf.com/so/playlist.m3u8
-                                       https://rpaa.smartstream.ne.jp/so/playlist.m3u8
-                                       https://f-radiko.smartstream.ne.jp/<radioname>/_definst_/simul-stream.stream/playlist.m3u8
-                                       https://si-f-radiko.smartstream.ne.jp/so/playlist.m3u8
-              */
-              /* Known Type of AAC url
-                                       https://rd-wowza-radiko.radiko-cf.com/segments/o/A/<radioname>/<date>/<date>_<time>_<seg>.aac
-                                       https://rpaa.smartstream.ne.jp/segments/o/B/e/E/<seg>.aac
-                                       https://f-radiko.smartstream.ne.jp/<radioname>/_definst_/simul-stream.stream/media-uv4f4m9dn_w2134393784_575547.aac?<params>
-                                       https://si-f-radiko.smartstream.ne.jp/segments/o/B/<radioname>/<date>/<date>_<time>_<seg>.aac
-              */
+          /* known type of m3u8 for both areafree and timefree
+                           set(ET.fromstring(https://radiko.jp/v3/station/stream/pc_html5/<radioname>.xml).findall(".//url[@areafree='0'][@timefree='0']/playlist_create_url"))
+                                   https://rd-wowza-radiko.radiko-cf.com/so/playlist.m3u8
+                                   https://rpaa.smartstream.ne.jp/so/playlist.m3u8
+                                   https://f-radiko.smartstream.ne.jp/<radioname>/_definst_/simul-stream.stream/playlist.m3u8
+                                   https://si-f-radiko.smartstream.ne.jp/so/playlist.m3u8
+          */
+          /* Known Type of AAC url
+                                   https://rd-wowza-radiko.radiko-cf.com/segments/o/A/<radioname>/<date>/<date>_<time>_<seg>.aac
+                                   https://rpaa.smartstream.ne.jp/segments/o/B/e/E/<seg>.aac
+                                   https://f-radiko.smartstream.ne.jp/<radioname>/_definst_/simul-stream.stream/media-uv4f4m9dn_w2134393784_575547.aac?<params>
+                                   https://si-f-radiko.smartstream.ne.jp/segments/o/B/<radioname>/<date>/<date>_<time>_<seg>.aac
+          */
           chrome.webRequest.onBeforeSendHeaders.addListener( //for both (firefox can in onBeforeRequest with blocking,chrome can in onSendHeaders with requestHeaders) 
             streamListener(), {
-              urls: [
+            urls: [
               "*://*.smartstream.ne.jp/" + radioname + "/*.aac*",
               "*://rpaa.smartstream.ne.jp/segments/*.aac*",
-              "*://*.radiko-cf.com/segments/*/*/"+radioname+"/*.aac*",
-              "*://*.smartstream.ne.jp/segments/*/*/"+radioname+"/*.aac*"
-              ]
-              ,tabId:msg["tabId"] //restrict to specific tabid
-            } // may specific detailed FM name to avoid save other stream? 
+              "*://*.radiko-cf.com/segments/*/*/" + radioname + "/*.aac*",
+              "*://*.smartstream.ne.jp/segments/*/*/" + radioname + "/*.aac*"
+            ]
+            , tabId: msg["tabId"] //restrict to specific tabid
+          } // may specific detailed FM name to avoid save other stream? 
             // is filter case sensitive??? yes path is case sensitive but domain is not
             , ["blocking", "requestHeaders"]
           );
@@ -967,28 +967,28 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
       } else if (msg["download-timeshift"]) {
         console.log("start donwload timeshift");
         let link = msg["download-timeshift"];
-        chrome.storage.local.get({"timeshift_list":[]},function(data){
+        chrome.storage.local.get({ "timeshift_list": [] }, function (data) {
           let list = data["timeshift_list"];
           list.push(link);
-          chrome.storage.local.set({"timeshift_list":list},function(){
-            chrome.browserAction.setBadgeBackgroundColor && chrome.browserAction.setBadgeBackgroundColor({color: "#e73c64"});
-            chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({text:list.length.toString()});
+          chrome.storage.local.set({ "timeshift_list": list }, function () {
+            chrome.browserAction.setBadgeBackgroundColor && chrome.browserAction.setBadgeBackgroundColor({ color: "#e73c64" });
+            chrome.browserAction.setBadgeText && chrome.browserAction.setBadgeText({ text: list.length.toString() });
             downloadtimeShift(msg["download-timeshift"], area_id);
           })
         });
         //TOFO: check duplicate here
-      } else if ( msg["share-redirect"]) {
+      } else if (msg["share-redirect"]) {
         let param = msg["share-redirect"];
-        chrome.tabs.update(sender.tab.id , {"url":"https://radiko.jp/#!/ts/"+param.station+"/"+param.t});
+        chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
       }
     });
 
 
   chrome.webRequest.onBeforeRequest.addListener(
-    function(req) {
-      chrome.cookies.getAllCookieStores(function(storeInfo){
-        storeInfo.forEach(function(v,idx,a){
-          if(v.tabIds.includes(req.tabId)){
+    function (req) {
+      chrome.cookies.getAllCookieStores(function (storeInfo) {
+        storeInfo.forEach(function (v, idx, a) {
+          if (v.tabIds.includes(req.tabId)) {
             chrome.cookies.set({
               url: "http://radiko.jp/",
               name: "default_area_id",
@@ -1004,19 +1004,19 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
           }
         })
       })
-      
+
 
       return {
         cancel: true
       };
     }, {
-      urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
-    }, ["blocking"]
+    urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
+  }, ["blocking"]
   );
 
   // firefox mobile only
-  !( typeof browser === "undefined") && browser.contentScripts && chrome.runtime.getPlatformInfo(function(resp){
-    if(resp.os == chrome.runtime.PlatformOs.ANDROID ){
+  !(typeof browser === "undefined") && browser.contentScripts && chrome.runtime.getPlatformInfo(function (resp) {
+    if (resp.os == chrome.runtime.PlatformOs.ANDROID) {
 
       browser.contentScripts.register({
         matches: ["*://*.radiko.jp/*"], //asterisk necessary?
@@ -1029,7 +1029,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         runAt: "document_start"
       })
 
-      chrome.webRequest.onBeforeSendHeaders.addListener((e)=>{
+      chrome.webRequest.onBeforeSendHeaders.addListener((e) => {
         for (const header of e.requestHeaders) {
           if (header.name.toLowerCase() === "user-agent") {
             header.value = header.value.replace(/android.*?\;/gi, "").replace(/mobile/gi, "");
@@ -1038,9 +1038,9 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
         chrome.webRequest.handlerBehaviorChanged()
         return { requestHeaders: e.requestHeaders };
       },
-      {
-        urls: ["*://*.radiko.jp/"] // TODO /* needed?
-      }, ["blocking", "requestHeaders"])
+        {
+          urls: ["*://*.radiko.jp/"] // TODO /* needed?
+        }, ["blocking", "requestHeaders"])
     }
   })
 
@@ -1050,11 +1050,11 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
   let optReqSpec = ["blocking", "requestHeaders"];
   let optRespSpec = ["blocking", "responseHeaders"];
   // else firefox or chrome <72
-  if (chrome.webRequest.OnBeforeSendHeadersOptions.hasOwnProperty("EXTRA_HEADERS")){
+  if (chrome.webRequest.OnBeforeSendHeadersOptions.hasOwnProperty("EXTRA_HEADERS")) {
     //chrome 72+
     optReqSpec.push("extraHeaders");
   }
-  if (chrome.webRequest.OnHeadersReceivedOptions.hasOwnProperty("EXTRA_HEADERS")){
+  if (chrome.webRequest.OnHeadersReceivedOptions.hasOwnProperty("EXTRA_HEADERS")) {
     //chrome 72+
     optRespSpec.push("extraHeaders");
   }
@@ -1063,14 +1063,14 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
   // affect self xhr tooooooooo
   chrome.webRequest.onBeforeSendHeaders.addListener(
     authListener.modifyRequest, {
-      urls: ["*://*.radiko.jp/v2/api/auth*"]
-    }, optReqSpec
+    urls: ["*://*.radiko.jp/v2/api/auth*"]
+  }, optReqSpec
   );
 
   chrome.webRequest.onHeadersReceived.addListener(
     authListener.modifyResponse, {
-      urls: ["*://*.radiko.jp/v2/api/auth1"]
-    }, optRespSpec
+    urls: ["*://*.radiko.jp/v2/api/auth1"]
+  }, optRespSpec
   );
 
 
@@ -1079,19 +1079,19 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
 
   // for all timeshift/areafree
   chrome.webRequest.onBeforeSendHeaders.addListener(
-      function(req) {
+    function (req) {
 
       //let downloadTimeshift handle itself
-      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension")!=-1;  //initiator since chrome 63
-      let ifTabId = req.tabId && req.tabId ==-1; //mean this request is not from tab
-      if(ifInit || ifTabId){ 
-          return {};
+      let ifInit = req.initiator && req.initiator.toLowerCase().indexOf("chrome-extension") != -1;  //initiator since chrome 63
+      let ifTabId = req.tabId && req.tabId == -1; //mean this request is not from tab
+      if (ifInit || ifTabId) {
+        return {};
       }
-      
+
 
       console.log("modify timeshift token!!!!!!");
       let radioname;
-      (new URL(req.url)).search.slice(1).split('&').map(function(kv) {
+      (new URL(req.url)).search.slice(1).split('&').map(function (kv) {
         let s = kv.split('=');
         switch (s[0]) {
           case 'station_id':
@@ -1104,54 +1104,54 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) { //if not 
       let use_token = res[0];
       let use_area = res[1];
 
-      req.requestHeaders = req.requestHeaders.filter(function(x) {
-        return !["x-radiko-authtoken","x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
+      req.requestHeaders = req.requestHeaders.filter(function (x) {
+        return !["x-radiko-authtoken", "x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
       });
       req.requestHeaders.push({
         name: "X-Radiko-AuthToken",
         value: use_token
       });
       req.requestHeaders.push({
-        name:"X-Radiko-AreaId",
-        value:use_area
+        name: "X-Radiko-AreaId",
+        value: use_area
       })
       return {
         requestHeaders: req.requestHeaders
       };
     }, {
-      urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/ 
-            ,"*://*.smartstream.ne.jp/*/playlist.m3u8?*" // some new apis
-	    ,"*://*.radiko-cf.com/*/playlist.m3u8?*"
-      ]
-    }, ["blocking", "requestHeaders"]
+    urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/
+      , "*://*.smartstream.ne.jp/*/playlist.m3u8?*" // some new apis
+      , "*://*.radiko-cf.com/*/playlist.m3u8?*"
+    ]
+  }, ["blocking", "requestHeaders"]
   )
 
-  chrome.webRequest.onHeadersReceived.addListener(function(req){
-    for(let i=0;i<req.responseHeaders.length;i++ ){
-      if( req.responseHeaders[i].name.toLowerCase() == "access-control-allow-origin"){
+  chrome.webRequest.onHeadersReceived.addListener(function (req) {
+    for (let i = 0; i < req.responseHeaders.length; i++) {
+      if (req.responseHeaders[i].name.toLowerCase() == "access-control-allow-origin") {
         return
       }
     }
     req.responseHeaders.push({
       name: "Access-Control-Allow-Origin",
       value: "http://radiko.jp"
-    }); 
+    });
     return {
       responseHeaders: req.responseHeaders
     };
-  },{urls:["*://media.radiko.jp/*.aac"]},["blocking","responseHeaders"])
+  }, { urls: ["*://media.radiko.jp/*.aac"] }, ["blocking", "responseHeaders"])
 
 
-/*
-    //TODO: add block statistics request filter
-    chrome.webRequest.onBeforeRequest.addListener(function(req){
-      //block statiats
-      //1.http://log2.radiko.jp/tstet*
-      //2.http://pp.d2-apps.net/v1/impressions/log*  https://pp.d2-apps.net/v1/sync  //in timeshift?
-      //3.http://penta.a.one.impact-ad.jp/dc
-      return {cancel:true}
-    }, {urls:["http://log2.radiko.jp/*","*://*.d2-apps.net/*"]})
-*/
+  /*
+      //TODO: add block statistics request filter
+      chrome.webRequest.onBeforeRequest.addListener(function(req){
+        //block statiats
+        //1.http://log2.radiko.jp/tstet*
+        //2.http://pp.d2-apps.net/v1/impressions/log*  https://pp.d2-apps.net/v1/sync  //in timeshift?
+        //3.http://penta.a.one.impact-ad.jp/dc
+        return {cancel:true}
+      }, {urls:["http://log2.radiko.jp/*","*://*.d2-apps.net/*"]})
+  */
 
 
 

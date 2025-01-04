@@ -1,5 +1,5 @@
-const needChangeTZ = Intl.DateTimeFormat().resolvedOptions().timeZone.toLowerCase() !='asia/tokyo';
-if(needChangeTZ){
+const needChangeTZ = Intl.DateTimeFormat().resolvedOptions().timeZone.toLowerCase() != 'asia/tokyo';
+if (needChangeTZ) {
     //for those who are from different timezones.
     //TODO: better solution? such as changing Date prototype? 
 
@@ -90,13 +90,13 @@ if(needChangeTZ){
             return out * sign;
         }
 
-        function arrayToInt (array) {
+        function arrayToInt(array) {
             for (var i = 0; i < array.length; i++) {
                 array[i] = unpackBase60(array[i]);
             }
         }
 
-        function intToUntil (array, length) {
+        function intToUntil(array, length) {
             for (var i = 0; i < length; i++) {
                 array[i] = Math.round((array[i - 1] || 0) + (array[i] * 60000)); // minutes to milliseconds
             }
@@ -104,7 +104,7 @@ if(needChangeTZ){
             array[length - 1] = Infinity;
         }
 
-        function mapIndices (source, indices) {
+        function mapIndices(source, indices) {
             var out = [], i;
 
             for (i = 0; i < indices.length; i++) {
@@ -114,11 +114,11 @@ if(needChangeTZ){
             return out;
         }
 
-        function unpack (string) {
+        function unpack(string) {
             var data = string.split('|'),
                 offsets = data[2].split(' '),
                 indices = data[3].split(''),
-                untils  = data[4].split(' ');
+                untils = data[4].split(' ');
 
             arrayToInt(offsets);
             arrayToInt(indices);
@@ -127,11 +127,11 @@ if(needChangeTZ){
             intToUntil(untils, indices.length);
 
             return {
-                name       : data[0],
-                abbrs      : mapIndices(data[1].split(' '), indices),
-                offsets    : mapIndices(offsets, indices),
-                untils     : untils,
-                population : data[5] | 0
+                name: data[0],
+                abbrs: mapIndices(data[1].split(' '), indices),
+                offsets: mapIndices(offsets, indices),
+                untils: untils,
+                population: data[5] | 0
             };
         }
 
@@ -139,22 +139,22 @@ if(needChangeTZ){
             Zone object
         ************************************/
 
-        function Zone (packedString) {
+        function Zone(packedString) {
             if (packedString) {
                 this._set(unpack(packedString));
             }
         }
 
         Zone.prototype = {
-            _set : function (unpacked) {
-                this.name       = unpacked.name;
-                this.abbrs      = unpacked.abbrs;
-                this.untils     = unpacked.untils;
-                this.offsets    = unpacked.offsets;
+            _set: function (unpacked) {
+                this.name = unpacked.name;
+                this.abbrs = unpacked.abbrs;
+                this.untils = unpacked.untils;
+                this.offsets = unpacked.offsets;
                 this.population = unpacked.population;
             },
 
-            _index : function (timestamp) {
+            _index: function (timestamp) {
                 var target = +timestamp,
                     untils = this.untils,
                     i;
@@ -166,15 +166,15 @@ if(needChangeTZ){
                 }
             },
 
-            parse : function (timestamp) {
-                var target  = +timestamp,
+            parse: function (timestamp) {
+                var target = +timestamp,
                     offsets = this.offsets,
-                    untils  = this.untils,
-                    max     = untils.length - 1,
+                    untils = this.untils,
+                    max = untils.length - 1,
                     offset, offsetNext, offsetPrev, i;
 
                 for (i = 0; i < max; i++) {
-                    offset     = offsets[i];
+                    offset = offsets[i];
                     offsetNext = offsets[i + 1];
                     offsetPrev = offsets[i ? i - 1 : i];
 
@@ -192,16 +192,16 @@ if(needChangeTZ){
                 return offsets[max];
             },
 
-            abbr : function (mom) {
+            abbr: function (mom) {
                 return this.abbrs[this._index(mom)];
             },
 
-            offset : function (mom) {
+            offset: function (mom) {
                 logError("zone.offset has been deprecated in favor of zone.utcOffset");
                 return this.offsets[this._index(mom)];
             },
 
-            utcOffset : function (mom) {
+            utcOffset: function (mom) {
                 return this.offsets[this._index(mom)];
             }
         };
@@ -286,7 +286,7 @@ if(needChangeTZ){
             return offsets;
         }
 
-        function sortZoneScores (a, b) {
+        function sortZoneScores(a, b) {
             if (a.offsetScore !== b.offsetScore) {
                 return a.offsetScore - b.offsetScore;
             }
@@ -296,7 +296,7 @@ if(needChangeTZ){
             return b.zone.population - a.zone.population;
         }
 
-        function addToGuesses (name, offsets) {
+        function addToGuesses(name, offsets) {
             var i, offset;
             arrayToInt(offsets);
             for (i = 0; i < offsets.length; i++) {
@@ -306,7 +306,7 @@ if(needChangeTZ){
             }
         }
 
-        function guessesForUserOffsets (offsets) {
+        function guessesForUserOffsets(offsets) {
             var offsetsLength = offsets.length,
                 filteredGuesses = {},
                 out = [],
@@ -330,7 +330,7 @@ if(needChangeTZ){
             return out;
         }
 
-        function rebuildGuess () {
+        function rebuildGuess() {
 
             // use Intl API when available and returning valid time zone
             try {
@@ -365,7 +365,7 @@ if(needChangeTZ){
             return zoneScores.length > 0 ? zoneScores[0].zone.name : undefined;
         }
 
-        function guess (ignoreCache) {
+        function guess(ignoreCache) {
             if (!cachedGuess || ignoreCache) {
                 cachedGuess = rebuildGuess();
             }
@@ -376,11 +376,11 @@ if(needChangeTZ){
             Global Methods
         ************************************/
 
-        function normalizeName (name) {
+        function normalizeName(name) {
             return (name || '').toLowerCase().replace(/\//g, '_');
         }
 
-        function addZone (packed) {
+        function addZone(packed) {
             var i, name, split, normalized;
 
             if (typeof packed === "string") {
@@ -397,7 +397,7 @@ if(needChangeTZ){
             }
         }
 
-        function getZone (name, caller) {
+        function getZone(name, caller) {
             name = normalizeName(name);
 
             var zone = zones[name];
@@ -424,7 +424,7 @@ if(needChangeTZ){
             return null;
         }
 
-        function getNames () {
+        function getNames() {
             var i, out = [];
 
             for (i in names) {
@@ -436,7 +436,7 @@ if(needChangeTZ){
             return out.sort();
         }
 
-        function addLink (aliases) {
+        function addLink(aliases) {
             var i, alias, normal0, normal1;
 
             if (typeof aliases === "string") {
@@ -457,26 +457,26 @@ if(needChangeTZ){
             }
         }
 
-        function loadData (data) {
+        function loadData(data) {
             addZone(data.zones);
             addLink(data.links);
             tz.dataVersion = data.version;
         }
 
-        function zoneExists (name) {
+        function zoneExists(name) {
             if (!zoneExists.didShowError) {
                 zoneExists.didShowError = true;
-                    logError("moment.tz.zoneExists('" + name + "') has been deprecated in favor of !moment.tz.zone('" + name + "')");
+                logError("moment.tz.zoneExists('" + name + "') has been deprecated in favor of !moment.tz.zone('" + name + "')");
             }
             return !!getZone(name);
         }
 
-        function needsOffset (m) {
+        function needsOffset(m) {
             var isUnixTimestamp = (m._f === 'X' || m._f === 'x');
             return !!(m._a && (m._tzm === undefined) && !isUnixTimestamp);
         }
 
-        function logError (message) {
+        function logError(message) {
             if (typeof console !== 'undefined' && typeof console.error === 'function') {
                 console.error(message);
             }
@@ -486,11 +486,11 @@ if(needChangeTZ){
             moment.tz namespace
         ************************************/
 
-        function tz (input) {
+        function tz(input) {
             var args = Array.prototype.slice.call(arguments, 0, -1),
                 name = arguments[arguments.length - 1],
                 zone = getZone(name),
-                out  = moment.utc.apply(null, args);
+                out = moment.utc.apply(null, args);
 
             if (zone && !moment.isMoment(input) && needsOffset(out)) {
                 out.add(zone.parse(out), 'minutes');
@@ -501,23 +501,23 @@ if(needChangeTZ){
             return out;
         }
 
-        tz.version      = VERSION;
-        tz.dataVersion  = '';
-        tz._zones       = zones;
-        tz._links       = links;
-        tz._names       = names;
-        tz.add          = addZone;
-        tz.link         = addLink;
-        tz.load         = loadData;
-        tz.zone         = getZone;
-        tz.zoneExists   = zoneExists; // deprecated in 0.1.0
-        tz.guess        = guess;
-        tz.names        = getNames;
-        tz.Zone         = Zone;
-        tz.unpack       = unpack;
+        tz.version = VERSION;
+        tz.dataVersion = '';
+        tz._zones = zones;
+        tz._links = links;
+        tz._names = names;
+        tz.add = addZone;
+        tz.link = addLink;
+        tz.load = loadData;
+        tz.zone = getZone;
+        tz.zoneExists = zoneExists; // deprecated in 0.1.0
+        tz.guess = guess;
+        tz.names = getNames;
+        tz.Zone = Zone;
+        tz.unpack = unpack;
         tz.unpackBase60 = unpackBase60;
-        tz.needsOffset  = needsOffset;
-        tz.moveInvalidForward   = true;
+        tz.needsOffset = needsOffset;
+        tz.moveInvalidForward = true;
         tz.moveAmbiguousForward = false;
 
         /************************************
@@ -567,14 +567,14 @@ if(needChangeTZ){
             if (this._z) { return this._z.name; }
         };
 
-        function abbrWrap (old) {
+        function abbrWrap(old) {
             return function () {
                 if (this._z) { return this._z.abbr(this); }
                 return old.call(this);
             };
         }
 
-        function resetZoneWrap (old) {
+        function resetZoneWrap(old) {
             return function () {
                 this._z = null;
                 return old.apply(this, arguments);
@@ -583,9 +583,9 @@ if(needChangeTZ){
 
         fn.zoneName = abbrWrap(fn.zoneName);
         fn.zoneAbbr = abbrWrap(fn.zoneAbbr);
-        fn.utc      = resetZoneWrap(fn.utc);
+        fn.utc = resetZoneWrap(fn.utc);
 
-        moment.tz.setDefault = function(name) {
+        moment.tz.setDefault = function (name) {
             if (major < 2 || (major === 2 && minor < 9)) {
                 logError('Moment Timezone setDefault() requires Moment.js >= 2.9.0. You are using Moment.js ' + moment.version + '.');
             }
@@ -609,38 +609,38 @@ if(needChangeTZ){
         return moment;
     }));
     //! moment-timezone.js end
-    
+
     moment.tz.add("Asia/Tokyo|JST JDT|-90 -a0|010101010|-QJH0 QL0 1lB0 13X0 1zB0 NX0 1zB0 NX0|38e6");
     moment.tz.link("Asia/Tokyo|Japan");
     const tokyozone = moment.tz.zone("Asia/Tokyo");
     moment.defaultZone = tokyozone;
 
     // moment.tz.zone('Asia/Tokyo').utcOffset(0)) -> -540
-    const diffMin  = (new Date()).getTimezoneOffset() - moment.tz.zone('Asia/Tokyo').utcOffset(0) ;
-    const diffTimestamp =  -1 * 60 * 1000 * diffMin; //different direction
+    const diffMin = (new Date()).getTimezoneOffset() - moment.tz.zone('Asia/Tokyo').utcOffset(0);
+    const diffTimestamp = -1 * 60 * 1000 * diffMin; //different direction
     const diffSec = diffMin * 60;
     const diffHour = diffMin / 60;
 
     // for timeshift's timetable
     let oldsetScrollInit = setScrollInit;
-    setScrollInit = function(){
+    setScrollInit = function () {
         let oldGetHours = Date.prototype.getHours;
-        Date.prototype.getHours = function(){return  (24 + oldGetHours.bind(this)() +  Math.floor(diffHour)) % 24;};
+        Date.prototype.getHours = function () { return (24 + oldGetHours.bind(this)() + Math.floor(diffHour)) % 24; };
         oldsetScrollInit();
         Date.prototype.getHours = oldGetHours;
     }
 
-//    var oldSetSeekPlayTime = $.Radiko.Player.setSeekPlayTime
-//    $.Radiko.Player.setSeekPlayTime = function(startSec,endSec) {
-//        return oldSetSeekPlayTime(startSec+diffSec,endSec-diffSec)}
+    //    var oldSetSeekPlayTime = $.Radiko.Player.setSeekPlayTime
+    //    $.Radiko.Player.setSeekPlayTime = function(startSec,endSec) {
+    //        return oldSetSeekPlayTime(startSec+diffSec,endSec-diffSec)}
 
     // note: this conflicts with setSeekPlayTime's modification
     let oldonChangeCurrentTime = $.Radiko.Player.View.seekBarView.__proto__.onChangeCurrentTime;
-    $.Radiko.Player.View.seekBarView.stopListening($.Radiko.Player.Model , 'change:currentTime');
-    $.Radiko.Player.View.seekBarView.listenTo($.Radiko.Player.Model , 'change:currentTime' , function(model, currentTime){
-	// for past timeshift on non-default region -> 0
-	// other ( ongoing timeshift on default/non-default , past timeshift on default) -> diffSec
-        return oldonChangeCurrentTime(model,currentTime+( player.chasing() ? diffSec : 0 ));
+    $.Radiko.Player.View.seekBarView.stopListening($.Radiko.Player.Model, 'change:currentTime');
+    $.Radiko.Player.View.seekBarView.listenTo($.Radiko.Player.Model, 'change:currentTime', function (model, currentTime) {
+        // for past timeshift on non-default region -> 0
+        // other ( ongoing timeshift on default/non-default , past timeshift on default) -> diffSec
+        return oldonChangeCurrentTime(model, currentTime + (player.chasing() ? diffSec : 0));
     })
 
     //because ftTime is JST time
@@ -653,9 +653,9 @@ if(needChangeTZ){
     //}
 
     let oldonDragSeek = $.Radiko.Player.View.seekBarView.__proto__.onDragSeek;
-    let newonDragSeek = function(){ moment.defaultZone = null;oldonDragSeek.call($.Radiko.Player.View.seekBarView);moment.defaultZone = tokyozone;}
+    let newonDragSeek = function () { moment.defaultZone = null; oldonDragSeek.call($.Radiko.Player.View.seekBarView); moment.defaultZone = tokyozone; }
 
-    $("#seekbar").find(".knob").draggable( "option", { drag: newonDragSeek});
+    $("#seekbar").find(".knob").draggable("option", { drag: newonDragSeek });
 }
 
 
@@ -664,12 +664,12 @@ if(needChangeTZ){
 // from tsdetail -> scheduleId (for 1 day , check every 1s ) && storeWatchId (for 3 hours,check on update)
 // this watcher is the first.
 store.watch('update',
-    function(key,val,oldVal){ // if oldVal == undefined -> a new created one
-        if( /[0-9]{14}$/.test(key)){
+    function (key, val, oldVal) { // if oldVal == undefined -> a new created one
+        if (/[0-9]{14}$/.test(key)) {
             val.listened_time = 0;
             val.limit = moment(val.to, 'YYYYMMDDHHmmss').unix() + 8 * 24 * 60 * 60; //same as tsdetail.js, but will be delete after 8*2 days
             //use raw store api
-            store.storage.write(key,JSON.stringify(val));
+            store.storage.write(key, JSON.stringify(val));
         }
     }
 );
@@ -681,8 +681,8 @@ store.watch('update',
 // also bypass connectiontype check! see allocateConnection
 // to pass our generated token 
 // this may run after d2-app report premium?
-$.Radiko.login_status.areafree=1 ;
-$.Radiko.login_status.premium=1 ;
+$.Radiko.login_status.areafree = 1;
+$.Radiko.login_status.premium = 1;
 
-window.isStationInArea = function(){return true;}
+window.isStationInArea = function () { return true; }
 

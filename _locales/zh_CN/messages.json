@@ -1,36 +1,35 @@
 {
     "manifest_app_description": {
         "message": "Rajiko是一个解除radiko.jp地区限制的工具。能从大阪、长崎，甚至海外听到东京、青森等地的电台。"
-    }
-    ,"confirm_button":{
-        "message":"确认"
-    }
-    ,"popup_title":{
-        "message":"选择地区 - Rajiko"
-    }
-    ,"record_button_to_start":{
-        "message":"录音 $RADIONAME$"
-        ,"placeholders":{
-            "radioname":{
-                "content":"$1",
-                "example" : "bayfm78"
+    },
+    "confirm_button": {
+        "message": "确认"
+    },
+    "popup_title": {
+        "message": "选择地区 - Rajiko"
+    },
+    "record_button_to_start": {
+        "message": "录音 $RADIONAME$",
+        "placeholders": {
+            "radioname": {
+                "content": "$1",
+                "example": "bayfm78"
             }
         }
-    }
-    ,"record_button_to_stop":{
-        "message":"停止录音"
-    }
-    ,"record_button_to_prepare":{
-        "message":"准备录音 $RADIONAME$ "
-        ,"placeholders":{
-            "radioname":{
-                "content":"$1",
-                "example" : "bayfm78"
+    },
+    "record_button_to_stop": {
+        "message": "停止录音"
+    },
+    "record_button_to_prepare": {
+        "message": "准备录音 $RADIONAME$ ",
+        "placeholders": {
+            "radioname": {
+                "content": "$1",
+                "example": "bayfm78"
             }
         }
+    },
+    "timeshift_button": {
+        "message": "下载タイムシフト"
     }
-    ,"timeshift_button":{
-        "message":"下载タイムシフト"
-    }
-
 }

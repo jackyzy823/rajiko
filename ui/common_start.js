@@ -1,12 +1,12 @@
-chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
+chrome.storage.local.get({ "selected_areaid": "JP13" }, function (data) {
   let area_id = data["selected_areaid"];
-  function inspect(){
+  function inspect() {
     let cheat_areacheck = document.createElement("script");
     // response_handler.fail will always called no matter you're in Japan or not
     // because we block it in background.js
     // $.cookie("default_area_id") from onBeforeRequest is not quite reliable here,
     // so we use chrome.storage
-    cheat_areacheck.textContent=`
+    cheat_areacheck.textContent = `
     (function(){
       Object.defineProperty(window.navigator, 'userAgent', { value:  window.navigator.userAgent.replace(/android.*?\;/gi, "").replace(/mobile/gi, "")})
       const _origin_ajax = $.ajax;
@@ -14,7 +14,7 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
         if(options.url.startsWith("/area") || options.url.startsWith("https://api.radiko.jp/apparea/area")){
           let response_handler =  _origin_ajax(options);
           response_handler.fail = function(){
-            $.Radiko.area.id = "`+ area_id +`";
+            $.Radiko.area.id = "`+ area_id + `";
             return this;
           };
           return response_handler;
@@ -31,18 +31,18 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
 
 
     let targetPlayButton = document.getElementById('play').getElementsByTagName('i')[0];
-    let observer = new MutationObserver(function(list){
-      for(let mutation of list){
-        if(mutation.type == 'attributes' && mutation.attributeName == 'class' && !mutation.target.classList.contains('on')){
-          chrome.runtime.sendMessage({"stop-recording":true},function(){});
+    let observer = new MutationObserver(function (list) {
+      for (let mutation of list) {
+        if (mutation.type == 'attributes' && mutation.attributeName == 'class' && !mutation.target.classList.contains('on')) {
+          chrome.runtime.sendMessage({ "stop-recording": true }, function () { });
         }
       }
     });
-    observer.observe(targetPlayButton,{attributes:true});
+    observer.observe(targetPlayButton, { attributes: true });
   };
 
   var executed = false;
-  document.addEventListener("readystatechange", function(event){
+  document.addEventListener("readystatechange", function (event) {
     // complete interactive
     if (event.target.readyState !== "loading" && !executed) {
       inspect();
@@ -52,5 +52,5 @@ chrome.storage.local.get({"selected_areaid":"JP13"}, function (data) {
       document.addEventListener('DOMContentLoaded', inspect);
     }
   });
-  
+
 });
