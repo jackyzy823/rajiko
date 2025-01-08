@@ -1,7 +1,7 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Rajiko",
-  "version": "0.3.6.1",
+  "version": "3.2025.1",
   "description": "__MSG_manifest_app_description__",
   "icons": {
     "48": "Circle-icons-radio-blue-48.png",
@@ -15,16 +15,32 @@
     "webRequestBlocking",
     "downloads",
     "unlimitedStorage",
+    "declarativeNetRequest",
+    "scripting",
+    "webRequestFilterResponse"
+  ],
+  "host_permissions": [
     "*://*.radiko.jp/*",
     "*://*.smartstream.ne.jp/*",
     "*://*.radiko-cf.com/*"
   ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "dnr",
+        "enabled": true,
+        "path": "dnr.json"
+      }
+    ]
+  },
   "default_locale": "ja",
   "background": {
     "scripts": [
       "constants.js",
       "background.js"
-    ]
+    ],
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -47,10 +63,24 @@
     }
   ],
   "web_accessible_resources": [
-    "ui/inspect_start.js",
-    "response/*.html"
+    {
+      "resources": [
+        "ui/inspect_start.js"
+      ],
+      "matches": [
+        "*://*.radiko.jp/*"
+      ]
+    },
+    {
+      "resources": [
+        "response/*.html"
+      ],
+      "matches": [
+        "*://*.radiko.jp/*"
+      ]
+    }
   ],
-  "browser_action": {
+  "action": {
     "default_icon": "Circle-icons-radio-blue-48.png",
     "default_popup": "popup.html",
     "default_title": "__MSG_popup_title__"

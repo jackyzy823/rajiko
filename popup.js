@@ -1,4 +1,4 @@
-
+import { regions, areaListParRegion, radioAreaId } from "./constants.js";
 function loadArea(regionIdx) {
     let area_select = document.getElementById("rajiko-area");
     while (area_select.lastChild) {
@@ -15,7 +15,7 @@ function loadArea(regionIdx) {
 }
 
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     //define event
     let region_select = document.getElementById("rajiko-region");
     region_select.onchange = function (data) {
@@ -90,78 +90,198 @@ document.addEventListener("DOMContentLoaded", function () {
     let download_button = document.getElementById("rajiko-download");
     // only download viewing timeshift not playing 
     // recording playing first ,if not exisit recording viewing.
-    chrome.tabs.executeScript({ code: "var tmpdata = {href : window.location.href,tmpUrl : document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value, url :document.getElementById('url') && document.getElementById('url').value };tmpdata", runAt: "document_start" }, function (results) {
-        let error = chrome.runtime.lastError; // chrome:// --> will cause error but stop-recording should display whatever
-
-        let href = results && results[0].href || '';
-        let url = results && results[0].url || ''; // #RAIDO or http://m3u8list
-        let tmpUrl = results && results[0].tmpUrl || '';  // #RAIDO or http://m3u8list
 
 
-        //consider pass current_recording and timeshift list by message if not store in storage.local (slow)
-        chrome.storage.local.get({ "current_recording": false, "timeshift_list": [] }, function (data) {
-            let shouldhidden = error || ! /radiko\.jp/.test(results[0].href);
+    let localdata = await chrome.storage.local.get({ "current_recording": false, "timeshift_list": [] });
+    // Always show record-button if has current recording.
+    if (localdata["current_recording"]) {
+        record_button.hidden = false;
+        record_button.innerText = chrome.i18n.getMessage("record_button_to_stop");
+        record_button.onclick = async function (data) {
+            await chrome.runtime.sendMessage({ "stop-recording": true });
+            window.close();
+        }
+    }
 
-            //display stop whatever page
-            if (data["current_recording"]) {
-                record_button.hidden = false;
-                record_button.innerText = chrome.i18n.getMessage("record_button_to_stop");
-                record_button.onclick = function (data) {
-                    chrome.runtime.sendMessage({ "stop-recording": true }, function () {
-                        window.close();
-                    });
+    let tabs = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+        url: "*://radiko.jp/*"
+    });
+    if (tabs && tabs.length >= 1 && tabs[0]) {
+        let [tab] = tabs;
+        let inject_results = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: () => {
+                return {
+                    tmpUrl: document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value,
+                    url: document.getElementById('url') && document.getElementById('url').value
                 }
-            } else {
-                if (shouldhidden) {
-                    record_button.hidden = true;
-                } else {
-                    //not recording
-                    if (url[0] == '#') {
-                        //playing live
-                        record_button.hidden = false;
-                        record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
-                        record_button.onclick = function (data) {
-                            chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
-                                let tab = arrayOfTabs[0];
-                                if (/radiko\.jp/.test(tab.url)) {
-                                    chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id }, function () {
-                                        window.close();
-                                    });
-                                }
-                            });
-                        }
-                    } else if (tmpUrl[0] == '#' && /\/live\//.test(results[0].href)) {
-                        //viewing live
-                        record_button.hidden = false;
-                        record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
-                        record_button.onclick = function (data) {
-                            chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
-                                let tab = arrayOfTabs[0];
-                                if (/radiko\.jp/.test(tab.url)) {
-                                    chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id }, function () {
-                                        window.close();
-                                    });
-                                }
-                            });
-                        }
+            }
+        });
+        if (inject_results && inject_results.length >= 1 && inject_results[0] && !chrome.runtime.lastError) {
+            let { result } = inject_results[0];
+            let href = tab.url;
+            let url = result && result.url || ''; // #RAIDO or http://m3u8list
+            let tmpUrl = result && result.tmpUrl || '';  // #RAIDO or http://m3u8list
 
+            // only show live recoding when current no work.
+            if (!localdata["current_recording"]) {
+                if (url[0] == '#') {
+                    //playing live
+                    record_button.hidden = false;
+                    record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
+                    record_button.onclick = async function (data) {
+                        // We have tabId already.
+                        await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id });
+                        window.close();
+                    }
+                } else if (tmpUrl[0] == '#' && /\/live\//.test(href)) {
+                    //viewing live
+                    record_button.hidden = false;
+                    record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
+                    record_button.onclick = async function (data) {
+                        await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id });
+                        window.close();
                     }
                 }
             }
-            if (tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8") != -1 && /\/ts\//.test(results[0].href) && !data["timeshift_list"].includes(tmpUrl)) {
+            // TODO(mv3):this is not work currently
+            // TODO(mv3): url params start_at end_at ft to  && seek 
+            if (tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8") != -1 && /\/ts\//.test(href) && !localdata["timeshift_list"].includes(tmpUrl)) {
                 //viewing timeshift
                 download_button.hidden = false;
                 download_button.innerText = chrome.i18n.getMessage("timeshift_button");
-                download_button.onclick = function () {
-                    chrome.runtime.sendMessage({ "download-timeshift": tmpUrl }, function () {
-                        window.close();
-                    });
+                download_button.onclick = async function () {
+                    await chrome.runtime.sendMessage({ "download-timeshift": tmpUrl });
+                    window.close();
                 }
-            } else {
-                download_button.hidden = true;
             }
-        });
-    });
+
+        }
+    }
+
+
+    // // NOTE(mv3): since using tabs.query, we only match "radiko.jp"
+    // chrome.tabs.query({
+    //     active: true, currentWindow: true,
+    //     // url: "*://radiko.jp/*" 
+    // }, function (tabs) {
+    //     // if (!tabs || tabs.length < 1 || !tabs[0]) {
+    //     //     record_button.hidden = true;
+
+    //     // } else {
+    //     //     let [tab] = tabs;
+    //     //     let href = tab.url;
+    //     //     chrome.scripting.executeScript({
+    //     //         target: { tabId: tab.id },
+    //     //         func: () => {
+    //     //             return {
+    //     //                 tmpUrl: document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value,
+    //     //                 url: document.getElementById('url') && document.getElementById('url').value
+    //     //             }
+    //     //         }
+    //     //     }, function (inject_results) {
+    //     //         let error = chrome.runtime.lastError; // chrome:// --> will cause error but stop-recording should display whatever
+    //     //         if (!inject_results || inject_results.length < 1 || !inject_results[0]) {
+    //     //             return;
+    //     //         }
+    //     //         let { result } = inject_results[0];
+
+    //     //         let url = result && result.url || ''; // #RAIDO or http://m3u8list
+    //     //         let tmpUrl = result && result.tmpUrl || '';  // #RAIDO or http://m3u8list
+
+
+    //     //     });
+    //     // }
+    //     let [tab] = tabs;
+    //     chrome.scripting.executeScript({
+    //         target: { tabId: tab.id },
+    //         func: () => {
+    //             return {
+    //                 href: window.location.href,
+    //                 tmpUrl: document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value,
+    //                 url: document.getElementById('url') && document.getElementById('url').value
+    //             }
+    //         }
+    //     }, function (inject_results) {
+    //         let error = chrome.runtime.lastError; // chrome:// --> will cause error but stop-recording should display whatever
+    //         if (!inject_results || inject_results.length < 1 || !inject_results[0]) {
+    //             return;
+    //         }
+    //         let { result } = inject_results[0];
+
+    //         let href = result && result.href || '';
+    //         let url = result && result.url || ''; // #RAIDO or http://m3u8list
+    //         let tmpUrl = result && result.tmpUrl || '';  // #RAIDO or http://m3u8list
+
+
+    //         //consider pass current_recording and timeshift list by message if not store in storage.local (slow)
+    //         chrome.storage.local.get({ "current_recording": false, "timeshift_list": [] }, function (data) {
+    //             let shouldhidden = error || ! /radiko\.jp/.test(href);
+
+    //             //display stop whatever page
+    //             if (data["current_recording"]) {
+    //                 record_button.hidden = false;
+    //                 record_button.innerText = chrome.i18n.getMessage("record_button_to_stop");
+    //                 record_button.onclick = function (data) {
+    //                     chrome.runtime.sendMessage({ "stop-recording": true }, function () {
+    //                         window.close();
+    //                     });
+    //                 }
+    //             } else {
+    //                 if (shouldhidden) {
+    //                     record_button.hidden = true;
+    //                 } else {
+    //                     //not recording
+    //                     if (url[0] == '#') {
+    //                         //playing live
+    //                         record_button.hidden = false;
+    //                         record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
+    //                         record_button.onclick = function (data) {
+    //                             chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
+    //                                 let tab = arrayOfTabs[0];
+    //                                 if (/radiko\.jp/.test(tab.url)) {
+    //                                     chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id }, function () {
+    //                                         window.close();
+    //                                     });
+    //                                 }
+    //                             });
+    //                         }
+    //                     } else if (tmpUrl[0] == '#' && /\/live\//.test(href)) {
+    //                         //viewing live
+    //                         record_button.hidden = false;
+    //                         record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
+    //                         record_button.onclick = function (data) {
+    //                             chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
+    //                                 let tab = arrayOfTabs[0];
+    //                                 if (/radiko\.jp/.test(tab.url)) {
+    //                                     chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id }, function () {
+    //                                         window.close();
+    //                                     });
+    //                                 }
+    //                             });
+    //                         }
+
+    //                     }
+    //                 }
+    //             }
+    //             if (tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8") != -1 && /\/ts\//.test(href) && !data["timeshift_list"].includes(tmpUrl)) {
+    //                 //viewing timeshift
+    //                 download_button.hidden = false;
+    //                 download_button.innerText = chrome.i18n.getMessage("timeshift_button");
+    //                 download_button.onclick = function () {
+    //                     chrome.runtime.sendMessage({ "download-timeshift": tmpUrl }, function () {
+    //                         window.close();
+    //                     });
+    //                 }
+    //             } else {
+    //                 download_button.hidden = true;
+    //             }
+    //         });
+    //     });
+    // });
+
 });
 
 
