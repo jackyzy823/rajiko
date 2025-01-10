@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Rajiko",
+  "name": "Rajiko-lite",
   "version": "3.2025.1",
   "description": "__MSG_manifest_app_description__",
   "icons": {
@@ -12,12 +12,9 @@
     "cookies",
     "storage",
     "webRequest",
-    "webRequestBlocking",
     "downloads",
     "unlimitedStorage",
-    "declarativeNetRequest",
-    "scripting",
-    "webRequestFilterResponse"
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "*://*.radiko.jp/*",
@@ -35,10 +32,6 @@
   },
   "default_locale": "ja",
   "background": {
-    "scripts": [
-      "constants.js",
-      "background.js"
-    ],
     "service_worker": "background.js",
     "type": "module"
   },
@@ -65,7 +58,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "ui/inspect_start.js"
+        "ui/inspect_start.js",
+        "ui/share_redirect_inject.js"
       ],
       "matches": [
         "*://*.radiko.jp/*"

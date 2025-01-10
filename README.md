@@ -1,18 +1,26 @@
 Rajiko
 ====================
 
-Warning:
---------------------
-This addon will not work on Manifest V3 with only declarativeNetRequest API. 
+Why I do this:
+-------------------
+An overseas fan of Kalafina wanted to listen to the radio program 'Kalafina倶楽部' which was ended a few days after this extension have been developed.
 
-So if Chromium based browsers totally abandon MV2 in the future, I'll stop maintaining for these browsers.
+To **celebrate the reunition of Kalafina** at the end of 2024, I finally made Rajiko continue to support Chromium based browsers with limited features (so called Rajiko-lite).
 
 How to use:
 -------------------
 1. Install it from [Chrome webstore](https://chrome.google.com/webstore/detail/rajiko/ejcfdikabeebbgbopoagpabbdokepnff) or [Firefox addons](https://addons.mozilla.org/firefox/addon/rajiko/). Firefox for Android is also supported.
-2. Do nothing or change default area by clicking icon which only affects live area.
-3. Recording live or download timeshift by clicking icon. 
-4. Click icon or click pause button to stop recording.
+2. Do nothing (only work under Firefox) or change default area by clicking icon which only affects live area.
+3. Recording live or download timeshift by clicking icon (only work under Firefox). 
+4. Click icon or click pause button to stop recording (only work under Firefox).
+
+
+Sponsor me!
+-------------------
+[!["Ko-fi sponsor"](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/jackyzy823)
+
+You could sponsor me via [Ko-fi](https://ko-fi.com/jackyzy823) (Also the link is available in the popup menu of Rajiko)! Thank you!
+Note: For japanese or japan resident, Please don't sponsor unless you've subscribed a Radiko's [premium plan](https://radiko.jp/premium)!
 
 
 Permission Details:
@@ -27,202 +35,19 @@ Permission Details:
 8. downloads : for downloading recored audio.
 9. \*://\*.smartstream.ne.jp/\* : the site where audio stored.
 10. unlimitedStorage : for recording radio.
+11. declarativeNetRequest: modify request to pass the authentication.
 
 
 What's new:
 ----------
-+ version 0.3.6.1
++ version 3.2025.1 - **"oblivious"**
 
-  update manifest key for Firefox for Android
+    Relauch with MV3 support
 
-+ version 0.3.6
+    Version name scheme: manifest-version.year.revision
 
-   major improvement on Firefox for Android
+    Codename scheme: a song from Kalafina
 
-+ version 0.3.5
-
-   update css in popup to fix issue in chrome. Many Thanks to @fireattack.
-
-   upadte new radio-area map
-
-   sync radiko android version code 
-
-+ version 0.3.4
-
-   fix matching when urls have query param
- 
-+ version 0.3.3
-
-    fix bug on chrome by calling storage API before DOMContentLoaded
-
-+ version 0.3.2
-
-    fix area check bypass
-
-    upadte new radio-area map
-
-+ version 0.3.1
-
-    fix m3u8 endpoints
-
-    fix aac urls endpoints
-
-    fix drag issue in some cases.
-
-+ version 0.3.0
-
-    improve timezone handle.
-
-    upadte new radio-area map
-
-    sync radiko android version code 
-    
-+ version 0.2.9
-    
-    update css in popup to fix issue in chrome 94 (close #8). Many Thanks to @andykamezou for his css advise.
-
-    hijack ajax to avoid #!out issue (replace old method)
-
-    upadte new radio-area map
-
-    sync radiko android version code 
-
-+ version 0.2.7.2
-
-    since chrome do not count hash in history. revert v0.2.7.
-
-+ version 0.2.7.1
-
-    make page history correct via history.back
-
-+ version 0.2.7
-
-    bypass unclosable dialog
-
-+ version 0.2.6
-
-    make share page bypass geoblock (fix #1)
-
-    sync radiko android version code to 7.3.7
-
-+ version 0.2.5.8
-
-    upadte new radio-area map for エフエム佐賀 エフエム徳島
-
-    sync radiko android version code to 7.2.9
-
-+ version 0.2.5.7
-
-    upadte new radio-area map for エフエム秋田、Rhythm Station　エフエム山形、FM岡山、エフエム山陰、エフエム宮崎
-
-    change some radio's name
-
-+ version 0.2.5.6
-
-    upadte new radio-area map for HI-SIX(エフエム高知)
-
-    sync radiko android version code to 7.2.0
-
-+ version 0.2.5.5
-
-    fix compatible problem for Chrome 72 -
-
-+ version 0.2.5.4
-
-    fix cors issue for Chrome 76 +
-
-    sync radiko android version code to 7.1.1
-
-+ version 0.2.5.3
-
-    remove alert to avoid stuck in Chrome on Windows
-
-    sync radiko android version code to 7.0.6
-
-+ version 0.2.5.2
-
-    make extension work under incognito mode
-
-    sync radiko android version code to 6.4.4
-
-    fix download blob file problem in new version firefox
-
-+ version 0.2.5.1
-    
-    dirty fix for live recording issue caused by radiko using new  `rpaa` api for stream. (May encounter unexpected problem.Issues are welcomed.)
-
-+ version 0.2.5
-    
-    fix error caused by radiko new type api requestheader (X-Radiko-AreaId).
-
-    solved a problem caused by CORS and Disk cache.
-
-+ version 0.2.4.1
-    
-    upadte new radio-area map for FMFUKUI(FM福井)
-
-+ version 0.2.4
-
-    sync radiko android version code to 6.4.0
-
-    resolve 5s problem in some mediaplayer. Now aac are concated without id3 metadata.
-
-+ version 0.2.3
-
-    fix time display in ballon when dragging in timefree, fix dragging in different timezone (Don't know if this fix works)
-
-    update gps info from radiko android DEVELOPER_MODE
-
-+ version 0.2.2
-
-    fix timefree bypass logic.
-
-+ version 0.2.1
-    
-    Now, you can use areafree(エリアフリー) and timefree(タイムフリー) as premium(プレミアム会員)  freely without any operation.
-
-    For switching to  other area in timefree(タイムフリー) page, only click 地域変更 button in timefree(タイムフリー) page.
-
-    The "3 hours a day" limitation of timefree(タイムフリー) has been unblocked.You can listen no matter how long now. And also you can download timefree(タイムフリー) program.
-
-    "Choose Area" is only needed in displaying area in live(ライブ).
-
-    If there's any bug or problem ,please try to disable and then enable or reinstall it.If this does not help , please tell me via review page or github issue.
-
-    Update to the newest radio table [20180412].
-
-+ version 0.1.4.1
-    
-    bug fix: fix cookie error caused by different storage.local key name.
-
-    continously improve mobile ui
-
-    improve extension icon ui when recording
-
-
-+ version 0.1.4
-
-    change to responsive ui in firefox android !
-
-    fix gps info mistake
-
-    adjust to correct japan timezone via moment-timezone
-
-+ version 0.1.3
-
-    experimentally support recording radio. [Caution: this would cause slowing down popup page and increasing cpu usage if recording too long. No more than 30 minutes is recommended.]
-
-+ version 0.1.2
-    
-    fix bug in firefox
-
-+ version 0.1.1
-
-    support firefox for android
-
-+ version 0.1
-    
-    initial version
     
 Suppport List:
 ------------------
@@ -245,9 +70,6 @@ Known Issue:
 + Drag issue with timezone in timefree mode. (1.Always play the start part Wherever you drag 2.Cannot drag over time after localtime now) .The second problem may be caused by radiko which only aims atjapan user not  handling timezone problem . (solved)
 + Timefree only plays 5 seconds. (Don't know whether this is my issue or radiko's ,update :solved) 
 
-Why I do this:
--------------------
-An overseas fan of Kalafina wanted to listen to the radio program 'Kalafina倶楽部 ' which was ended a few days after this extension have been developed.
 
 Technical Details:
 ------------------
