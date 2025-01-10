@@ -128,92 +128,124 @@ function updateAreaRules(area_id, info) {
 // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
 
 
+// Register listeners synchronously. so need to store device info in session
+chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) {
+  if (msg["update-area"]) {
+    let area_id = msg["update-area"];
+
+    await chrome.storage.local.set({ selected_areaid: area_id });
+    console.log("Update area to", area_id);
+
+    let { device_info: info } = await chrome.storage.session.get("device_info");
+    if (!info) {
+      console.warn("this shouldn't happen");
+      info = genRandomInfo();
+    }
+
+    updateAreaRules(area_id, info);
+  } else if (msg["share-redirect"]) {
+    let param = msg["share-redirect"];
+    chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
+  }
+});
+
+// Register listeners synchronously. so need to store device info in session
+chrome.webRequest.onHeadersReceived.addListener(
+  async resp => {
+    let ifInit = resp.initiator && resp.initiator.toLowerCase().indexOf("chrome-extension://" + chrome.runtime.id) != -1;  //initiator since chrome 63
+    let ifTabId = resp.tabId && resp.tabId == -1; //mean this resp is not from tab
+    if (ifInit || ifTabId) {
+      return;
+    }
+
+    let token = "";
+    let offset = 0;
+    let length = 0;
+    let set = 0;
+
+    for (let i = 0; i < resp.responseHeaders.length; i++) {
+      if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
+        offset = parseInt(resp.responseHeaders[i].value);
+        set ^= 1;
+      }
+      if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keylength") {
+        length = parseInt(resp.responseHeaders[i].value);
+        set ^= 1 << 1;
+      }
+      if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-authtoken") {
+        token = resp.responseHeaders[i].value;
+        set ^= 1 << 2;
+      }
+    }
+
+    if (set != 0b111) {
+      console.warn("no enough info from auth2 response.");
+      return;
+    }
+
+    console.log("onHeadersReceived of auth1: token ", token, " offset ", offset, " length ", length);
+    let { device_info: info } = await chrome.storage.session.get("device_info");
+    if (!info) {
+      // This should not happen and is not recoverable
+      // If generate again, X-Radiko-App may not be same in auth1 and auth2 then auth will fail.
+      // If all aSmartPhone8 then ok to regenerate info?
+      console.error("no device_info in session storage");
+      return
+    }
+
+    let { selected_areaid: area_id } = await chrome.storage.local.get("selected_areaid");
+    if (!area_id) {
+      // This should not happen and is not recoverable
+      console.error("no area_id in local storage");
+      return
+    }
+
+
+    let partial = btoa(atob(APP_KEY_MAP[APP_VERSION_MAP[info.appversion]]).slice(offset, offset + length));
+    let resp2 = await fetch('https://radiko.jp/v2/api/auth2', {
+      headers: {
+        'X-Radiko-App': APP_VERSION_MAP[info.appversion],
+        'X-Radiko-App-Version': info.appversion,
+        'X-Radiko-Device': info.device,
+        'X-Radiko-User': info.userid,
+        'X-Radiko-AuthToken': token,
+        'X-Radiko-Partialkey': partial,
+        'X-Radiko-Location': genGPS(area_id),
+        'X-Radiko-Connection': "wifi",
+        // modifying UA does not work here. so we use session rules RULEID.AUTH2_FETCH.
+        'User-Agent': info.useragent
+      },
+      credentials: "omit"
+    })
+  },
+  {
+    urls: ["*://*.radiko.jp/v2/api/auth1*"]
+  }, ["responseHeaders"]
+);
+
 //main stuff
-chrome.storage.local.get({ "selected_areaid": "JP13" }).then(async data => {
-  //if not selected_areaid return default value:JP13
+chrome.storage.local.get("selected_areaid").then(async data => {
   let area_id = data["selected_areaid"];
-  let info = genRandomInfo();
-  console.log("Using ", info);
+  //if not selected_areaid use default value:JP13
+  if (!area_id) {
+    area_id = "JP13";
+    await chrome.storage.local.set({ "selected_areaid": area_id });
+  }
+  // since service worker will not persist
+  let { device_info: info } = await chrome.storage.session.get("device_info");
+  if (!info) {
+    info = genRandomInfo();
+    await chrome.storage.session.set({ "device_info": info });
+  }
+  console.log("Using ", info, " for ", area_id);
 
   updateAreaRules(area_id, info);
+  await chrome.storage.session.set({ "device_info": info });
 
   //clean previous unfinshed recording or downloading content if exists.
   // TODO(mv3): add back recording/downloading
-  chrome.storage.local.clear().then(chrome.storage.local.set({ "selected_areaid": area_id }));
+  // chrome.storage.local.clear().then(chrome.storage.local.set({ "selected_areaid": area_id }));
 
   // TODO(mv3): add back recording/downloading
   // chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" }); //clean badgetext when crash
-
-  // TODO(mv3): Register listeners synchronously. 
-  //      1) store info in session
-  chrome.runtime.onMessage.addListener(
-    async function (msg, sender, respCallback) {
-      if (msg["update-area"]) {
-        area_id = msg["update-area"];
-        await chrome.storage.local.set({ selected_areaid: area_id });
-
-        updateAreaRules(area_id, info);
-      } else if (msg["share-redirect"]) {
-        let param = msg["share-redirect"];
-        chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
-      }
-    });
-
-
-  // TODO(mv3): Register listeners synchronously. 
-  //      1) store info in session
-  chrome.webRequest.onHeadersReceived.addListener(
-    async resp => {
-      let ifInit = resp.initiator && resp.initiator.toLowerCase().indexOf("chrome-extension://" + chrome.runtime.id) != -1;  //initiator since chrome 63
-      let ifTabId = resp.tabId && resp.tabId == -1; //mean this resp is not from tab
-      if (ifInit || ifTabId) {
-        return;
-      }
-
-      let token = "";
-      let offset = 0;
-      let length = 0;
-      let set = 0;
-
-      for (let i = 0; i < resp.responseHeaders.length; i++) {
-        if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
-          offset = parseInt(resp.responseHeaders[i].value);
-          set ^= 1;
-        }
-        if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keylength") {
-          length = parseInt(resp.responseHeaders[i].value);
-          set ^= 1 << 1;
-        }
-        if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-authtoken") {
-          token = resp.responseHeaders[i].value;
-          set ^= 1 << 2;
-        }
-      }
-
-      if (set != 0b111) {
-        return;
-      }
-
-      console.log("onHeadersReceived of auth1: token ", token, " offset ", offset, " length ", length);
-      let partial = btoa(atob(APP_KEY_MAP[APP_VERSION_MAP[info.appversion]]).slice(offset, offset + length));
-      let resp2 = await fetch('https://radiko.jp/v2/api/auth2', {
-        headers: {
-          'X-Radiko-App': APP_VERSION_MAP[info.appversion],
-          'X-Radiko-App-Version': info.appversion,
-          'X-Radiko-Device': info.device,
-          'X-Radiko-User': info.userid,
-          'X-Radiko-AuthToken': token,
-          'X-Radiko-Partialkey': partial,
-          'X-Radiko-Location': genGPS(area_id),
-          'X-Radiko-Connection': "wifi",
-          // modifying UA does not work here. so we use session rules RULEID.AUTH2_FETCH.
-          'User-Agent': info.useragent
-        },
-        credentials: "omit"
-      })
-    },
-    {
-      urls: ["*://*.radiko.jp/v2/api/auth1*"]
-    }, ["responseHeaders"]
-  );
 });

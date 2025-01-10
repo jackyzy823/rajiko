@@ -1,9 +1,11 @@
 let checkOverseas = document.getElementsByClassName("messageToOverseas")
 if (checkOverseas.length != 0) {
-	window.addEventListener("message", function (evt) {
+	window.addEventListener("message", async function (evt) {
 		let param = evt.data["share-redirect"] || {};
 		if (param.t && param.station) {
-			chrome.runtime.sendMessage({ "share-redirect": param })
+			// Wake up service worker? Is this a bug?
+			// await chrome.runtime.sendMessage({});
+			await chrome.runtime.sendMessage({ "share-redirect": param });
 		}
 	});
 

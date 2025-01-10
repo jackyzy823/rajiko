@@ -29,13 +29,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     let { selected_areaid: area_id } = await chrome.storage.local.get("selected_areaid");
 
-    confirm_button.onclick = function (data) {
+    confirm_button.onclick = async function (data) {
         let area = document.getElementById("rajiko-area");
         if (area_id && area_id == area) {
             //same area;
             window.close();
         } else {
-            chrome.runtime.sendMessage({ "update-area": area.selectedOptions[0].id });
+            // Wake up service worker? Is this a bug?
+            // await chrome.runtime.sendMessage({});
+            // Send command
+            await chrome.runtime.sendMessage({ "update-area": area.selectedOptions[0].id });
             chrome.tabs.query({ active: true, currentWindow: true }, function (arrayOfTabs) {
                 if (!arrayOfTabs || arrayOfTabs.length < 1) { return }
                 let tab = arrayOfTabs[0];
