@@ -1,0 +1,496 @@
+body {
+    width: 100%
+}
+
+/*display: none*/
+/*for login button*/
+.header__utility {
+    display: none
+}
+
+/*.header__utility {padding: unset;}
+.header__utility .header__inner {height: unset;}
+.header__logo {display: none}
+.header__menu ul:nth-child(1) {display: none}
+.header__banner {display: none}
+.header__menu .btn--login {position: fixed; bottom: 75px; z-index: 1000 ;right: 20px;font-size: 0;border-radius: 200px;border: unset;
+
+height:45px;
+width: 45px;
+background-color: #f8f8f8;
+} 
+.header__menu .btn--setting .icon, .header__menu .btn--login .icon, .header__menu .btn--logout .icon {
+margin-right: 1px;
+vertical-align: -17px;
+    background-position: -314px -371px;
+    width: 15px;
+    height: 20px;
+}
+.header__menu .item--premium {display: none}
+*/
+/*
+.icon--login-02 {
+
+
+  .icon--visitor {
+    background-image: url(../images/sprite.png);
+    background-position: -473px -218px;
+    width: 30px;
+    height: 30px; }
+.icon -people {
+    background-position: -221px -126px;
+    width: 26px;
+    height: 35px;
+}
+
+
+*/
+
+
+/**/
+.header__nav-container {
+    height: unset
+}
+
+.header__nav-outer {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+.header__inner {
+    width: unset
+}
+
+.header .header__nav .item__live {
+    width: unset
+}
+
+.header .header__nav .item__timeshift {
+    width: unset
+}
+
+.header .header__nav .item__areafree {
+    width: unset
+}
+
+.header__nav .item {
+    width: 33%
+}
+
+.header__nav .item__link {
+    width: unset;
+    background: unset
+}
+
+.header__station-list {
+    display: none
+}
+
+.content .content__inner {
+    width: 100%
+}
+
+.top-main-slider {
+    display: none
+}
+
+/*Only display first 3 item live/timeshift/areafree .*/
+.header__nav .item__outer :not(:nth-child(-n+3)) {
+    display: none
+}
+
+.img-list__channel {
+    display: inline;
+    text-align: unset
+}
+
+.img-list__item {
+    float: unset;
+    height: unset;
+    width: unset;
+    padding: unset;
+    margin-top: 4px;
+    border-radius: unset;
+    margin-right: unset
+}
+
+.img-list__img {
+    float: right;
+    width: 45%;
+    line-height: unset;
+    margin: unset;
+    border-radius: unset;
+}
+
+.img-list__img img {
+    padding-top: 20px
+}
+
+.img-list__title {
+    margin-top: unset
+}
+
+.img-list__link {
+    max-height: 150px;
+    height: 150px
+}
+
+/*to avoid heightline*/
+.play {
+    display: none
+}
+
+.top-sns {
+    display: none
+}
+
+#top-info {
+    display: none
+}
+
+.footer {
+    display: none
+}
+
+.img-list {
+    margin-top: unset;
+    margin-right: unset
+}
+
+.heading-lv02 {
+    display: none
+}
+
+.content {
+    padding-top: 50px
+}
+
+/*for detail page*/
+.heading-area {
+    display: none
+}
+
+.live-detail__content {
+    width: unset
+}
+
+.live-detail__main {
+    width: unset;
+    padding-right: unset
+}
+
+#pr-image-slider {
+    display: none
+}
+
+/*for detail page*/
+.live-detail__title {
+    text-align: center
+}
+
+.live-detail__text {
+    width: unset;
+    float: unset
+}
+
+.live-detail__img {
+    float: unset;
+    margin-right: unset
+}
+
+.live-detail__img img {
+    margin: 0 auto;
+    display: block;
+    width: 100%
+}
+
+#ad-history {
+    display: none
+}
+
+.live-detail__description {
+    padding-left: 10px;
+    padding-right: 10px
+}
+
+.live-detail__cast {
+    height: unset
+}
+
+.live-detail__cast-title {
+    display: unset;
+    float: unset;
+    width: unset
+}
+
+.live-detail__cast-name {
+    width: unset;
+    float: unset
+}
+
+.tune-list {
+    margin-right: unset
+}
+
+.live-detail__sites {
+    padding-left: 10px;
+    padding-right: 10px
+}
+
+.topic-list {
+    padding-left: 10px;
+    padding-right: 10px
+}
+
+.live-detail__timeline .timeline-col {
+    width: unset;
+}
+
+/*for search div*/
+/* hide before loaded*/
+#to-search {
+    padding-bottom: 380px
+}
+
+.top-search__form .item__text {
+    width: 100%;
+    margin-right: unset;
+}
+
+.top-search__form .item__text .form__text {
+    width: 100%;
+    padding: unset;
+}
+
+.top-search__form .item__date {
+    float: left;
+    width: 50%;
+    margin-right: unset;
+}
+
+.top-search__form .item__area {
+    width: 50%
+}
+
+.top-search__form .item__title {
+    width: 35%
+}
+
+.top-search__form .item__date .ui-form-select,
+.top-search__form .item__date select {
+    width: 65%
+}
+
+.top-search__form .item__area .ui-form-select,
+.top-search__form .item__area select {
+    width: 65%
+}
+
+.top-search__form .item__submit {
+    width: 100%
+}
+
+.top-search__form .item__submit .btn {
+    width: 100%
+}
+
+.top-search__form #search-form .suggest-dropdown {
+    width: 100%
+}
+
+.search-result__list .img-list__text.separate {
+    display: none
+}
+
+.search-result__list a {
+    height: 200px;
+    max-height: 200px
+}
+
+/*.top-search__form .ui-form-select {width: 65%}*/
+.easy-select-box {
+    width: 100%
+}
+
+#search-form .esb-dropdown {
+    padding: unset;
+}
+
+#search-form .icon--cross {
+    display: none
+}
+
+/*hide other program in live page because it conflict with .img-list__link 's height*/
+/*#others-program {display: none;}
+#others-program .img-list__text {overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}*/
+#others-program .img-list__item {
+    min-height: 200px
+}
+
+#others-program .img-list__genre {
+    margin-top: 5px
+}
+
+.player-area__volume {
+    display: none;
+}
+
+/*padding left for button click*/
+#player-detail {
+    width: unset;
+    position: unset;
+    padding-left: 122px;
+}
+
+/*just make it out of screen*/
+#player-detail .tooltip {
+    left: -100px
+}
+
+/*dose not work*/
+/*TODO #to-search should pop up when click search botton or ..*/
+
+.tune-list .tune-list__item {
+    width: unset;
+    float: unset;
+    margin-left: 20px;
+}
+
+.page-timeshift .header__nav .item__link {
+    background-image: unset
+}
+
+.timeshift-detail__attention {
+    display: none
+}
+
+/*area free*/
+.premium-area {
+    padding: unset
+}
+
+.premium-area__text {
+    display: none
+}
+
+.icon--attention-02 {
+    display: none
+}
+
+.content__areafree-top .content__section .tab-list .item {
+    margin-left: 35px
+}
+
+.content__areafree-top .content__section .tab-list .item:first-child {
+    margin-left: 35px;
+}
+
+.content__areafree-top .content__section .tab-list .item__selected {
+    height: 44px;
+    border: unset;
+    background-color: #00a7e9
+}
+
+/*share*/
+#cboxLoadedContent {
+    max-width: 100%;
+    padding: unset;
+    overflow: unset
+}
+
+#cboxContent {
+    max-width: 100%
+}
+
+#cboxWrapper {
+    max-width: 98%;
+    padding-left: 1%;
+    min-width: 98%
+}
+
+#colorbox {
+    max-width: 100%
+}
+
+.colorbox__play .btn-list li a.skip-btn {
+    margin: 16px 6px 0 6px
+}
+
+.colorbox__share {
+    margin-top: 0px;
+    padding-bottom: 10px;
+    padding-top: 10px
+}
+
+/*TODO: 1.timeshift page select from time or kyoku */
+.colorbox__area-list .colorbox-area-list__item {
+    width: 33%
+}
+
+#colorbox--area-list {
+    margin: 10px
+}
+
+.timeshift-page-nav {
+    width: 100%;
+}
+
+/* For header's width fits device screen width, because of a fixed button for timetable */
+.top-slider__nav .item--next {
+    right: 10%;
+}
+
+.top-slider__nav .item--prev {
+    left: 10%;
+}
+
+.program-table__pager .item--next {
+    right: 10%;
+}
+
+.program-table__pager .item--prev {
+    left: 10%;
+}
+
+.program-table__body {
+    overflow: scroll;
+}
+
+.program-table-header__list-outer {
+    overflow: scroll;
+}
+
+.program-table__channel-wrapper {
+    overflow: unset;
+}
+
+.program-table__date-wrapper {
+    overflow: unset;
+}
+
+.timeshift-detail__sub,
+.live-detail__sub {
+    float: unset;
+    margin: auto;
+    width: 90%;
+}
+
+/*
+.program-table-header__list  {overflow: unset;width: unset;height: unset;}
+.program-table-header__list .item:first-child {margin-left: 12px;}
+*/
+/*.program-table__pager .item--prev {position: absolute; left: 0px; z-index: 1;} 
+.program-table__pager .item--next {position: absolute; right: 0; z-index: 1; }
+*/
+/*.program-table__channel-outer {  width: 100%; display: inline-flex; } 
+.program-table__items {width: 100%}
+.program-table__outer {width: 100%;}
+.program-table__channel .name img {right: unset;width: 56%}
+.program-table__body--col8 .program-table__channel {width: 11%}
+
+.program-table__date-outer {width: 100%; display: block; } 
+.program-table__pager {display: none}
+.program-table__body--col8 .program-table__date {width: 10% ;padding: 2px}
+.program-table__body--col8 .program-table__items .item-outer {width: 11%}*/
+/*.program-table-header__list-outer  {overflow: scroll;}*/

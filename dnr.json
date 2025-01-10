@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "priority": 1,
+        "action": {
+            "type": "modifyHeaders",
+            "requestHeaders": [
+                {
+                    "header": "Access-Control-Allow-Origin",
+                    "operation": "set",
+                    "value": "http://radiko.jp"
+                }
+            ]
+        },
+        "condition": {
+            "urlFilter": "*://media.radiko.jp/*.aac"
+        },
+        "_comment": "Differnce with MV2 Version: Will set even if it was set originally."
+    }
+]
