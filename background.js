@@ -124,6 +124,127 @@ function updateAreaRules(area_id, info) {
   )
 }
 
+async function setUpBonus(enabled) {
+  if (enabled === true) {
+    let required = {
+      origins: [
+        "*://*.nhk.jp/*",
+        "*://*.nhk.or.jp/*",
+        "*://*.tver.jp/*",
+        "*://edge.api.brightcove.com/*"
+      ]
+    }
+    let matched = await chrome.permissions.contains(required);
+    if (!matched) {
+      // reset to disabled
+      await chrome.storage.local.set({ "bonus_feature": false });
+      return;
+    }
+    // TODO make tver/nhk radio depends on user's choice.
+    // TODO make host permission of  tver/nhk radio optional.
+    let japan_ip = genRandomIp(JAPAN_IPS);
+    console.log("using japan ip ", japan_ip);
+    chrome.declarativeNetRequest.updateSessionRules({
+      addRules: [
+        {
+          id: RULEID.NHK_RADIO_LIVE,
+          action: {
+            type: "modifyHeaders",
+            requestHeaders: [
+              {
+                header: "X-Forwarded-For",
+                operation: "set",
+                value: japan_ip
+              }
+            ]
+          },
+          condition: {
+            // Exclude the req from extension
+            initiatorDomains: ["nhk.or.jp"],
+            urlFilter: "*://*.nhk.jp/hls/*"
+          }
+        },
+        {
+          id: RULEID.NHK_RADIO_VOD,
+          action: {
+            type: "modifyHeaders",
+            requestHeaders: [
+              {
+                header: "X-Forwarded-For",
+                operation: "set",
+                value: japan_ip
+              }
+            ]
+          },
+          condition: {
+            // Exclude the req from extension
+            initiatorDomains: ["nhk.or.jp"],
+            urlFilter: "*://vod-stream.nhk.jp/*"
+          }
+        },
+        {
+          id: RULEID.TVER,
+          action: {
+            type: "modifyHeaders",
+            requestHeaders: [
+              {
+                header: "X-Forwarded-For",
+                operation: "set",
+                value: japan_ip
+              }
+            ]
+          },
+          condition: {
+            // Exclude the req from extension
+            initiatorDomains: ["tver.jp"],
+            urlFilter: "*://edge.api.brightcove.com/playback/*/videos/*"
+          }
+        }],
+      removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
+    });
+
+    // Tver treats Chrome under Linux as AndroidPC and then askes user to use its App.
+    // NOTE: if using manifest-> "incognito": "split"
+    // (for opening url in incognito tab instead of normal tab when clicking link in popup meu under incognito window),
+    // add chrome.extension.inIncognitoContext in script id to avoid duplication.
+    chrome.runtime.getPlatformInfo(async info => {
+      if (info.os == "linux") {
+        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
+        if (result && result.length > 0) {
+          // Already registered
+          return;
+        }
+
+        chrome.scripting.registerContentScripts([
+          {
+            id: "linux_ua",
+            js: ["ui/linux_ua_inspect.js"],
+            matches: ["https://*.tver.jp/*"],
+            // Keypoint 1: run before `getEnvType` in Tver.
+            runAt: "document_start",
+            // Keypoint 2: don't isolate.
+            world: "MAIN"
+          }
+        ]);
+      }
+    });
+
+  } else {
+    // Should check if exists?
+    chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
+    });
+    chrome.runtime.getPlatformInfo(async info => {
+      if (info.os == "linux") {
+        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
+        if (result && result.length > 0) {
+          // Already registered
+          await chrome.scripting.unregisterContentScripts({ ids: ["linux_ua"] });
+        }
+      }
+    });
+  }
+}
 
 // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
 
@@ -146,6 +267,8 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
   } else if (msg["share-redirect"]) {
     let param = msg["share-redirect"];
     chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
+  } else if (msg["update-bonus"]) {
+    await setUpBonus(msg["update-bonus"] == "yes");
   }
 });
 
@@ -179,7 +302,7 @@ chrome.webRequest.onHeadersReceived.addListener(
     }
 
     if (set != 0b111) {
-      console.warn("no enough info from auth2 response.");
+      console.error("no enough info from auth2 response.");
       return;
     }
 
@@ -188,7 +311,7 @@ chrome.webRequest.onHeadersReceived.addListener(
     if (!info) {
       // This should not happen and is not recoverable
       // If generate again, X-Radiko-App may not be same in auth1 and auth2 then auth will fail.
-      // If all aSmartPhone8 then ok to regenerate info?
+      // TODO If all aSmartPhone8 then ok to regenerate info?
       console.error("no device_info in session storage");
       return
     }
@@ -223,9 +346,12 @@ chrome.webRequest.onHeadersReceived.addListener(
   }, ["responseHeaders"]
 );
 
-//main stuff
-chrome.storage.local.get("selected_areaid").then(async data => {
-  let area_id = data["selected_areaid"];
+
+async function initialize() {
+  let {
+    selected_areaid: area_id,
+    bonus_feature: bonus
+  } = await chrome.storage.local.get(["selected_areaid", "bonus_feature"]);
   //if not selected_areaid use default value:JP13
   if (!area_id) {
     area_id = "JP13";
@@ -248,92 +374,13 @@ chrome.storage.local.get("selected_areaid").then(async data => {
 
   // TODO(mv3): add back recording/downloading
   // chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" }); //clean badgetext when crash
-});
+  await setUpBonus(bonus);
+}
 
-let japan_ip = genRandomIp(JAPAN_IPS);
-console.log("using japan ip ", japan_ip);
-//TODO edit chrome/linux ua ->windows chrome ua for tver.jp
-chrome.declarativeNetRequest.updateSessionRules({
-  addRules: [
-    {
-      id: RULEID.NHK_RADIO_LIVE,
-      action: {
-        type: "modifyHeaders",
-        requestHeaders: [
-          {
-            header: "X-Forwarded-For",
-            operation: "set",
-            value: japan_ip
-          }
-        ]
-      },
-      condition: {
-        // Exclude the req from extension
-        initiatorDomains: ["nhk.or.jp"],
-        urlFilter: "*://*.nhk.jp/hls/*"
-      }
-    },
-    {
-      id: RULEID.NHK_RADIO_VOD,
-      action: {
-        type: "modifyHeaders",
-        requestHeaders: [
-          {
-            header: "X-Forwarded-For",
-            operation: "set",
-            value: japan_ip
-          }
-        ]
-      },
-      condition: {
-        // Exclude the req from extension
-        initiatorDomains: ["nhk.or.jp"],
-        urlFilter: "*://vod-stream.nhk.jp/*"
-      }
-    },
-    {
-      id: RULEID.TVER,
-      action: {
-        type: "modifyHeaders",
-        requestHeaders: [
-          {
-            header: "X-Forwarded-For",
-            operation: "set",
-            value: japan_ip
-          }
-        ]
-      },
-      condition: {
-        // Exclude the req from extension
-        initiatorDomains: ["tver.jp"],
-        urlFilter: "*://edge.api.brightcove.com/playback/*/videos/*"
-      }
-    }],
-  removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
-});
-
-// Tver treats Chrome under Linux as AndroidPC and then askes user to use its App.
-// NOTE: if using manifest-> "incognito": "split"
-// (for opening url in incognito tab instead of normal tab when clicking link in popup meu under incognito window),
-// add chrome.extension.inIncognitoContext in script id to avoid duplication.
-chrome.runtime.getPlatformInfo(async info => {
-  if (info.os == "linux") {
-    let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
-    if (result && result.length > 0) {
-      // Already registered
-      return;
-    }
-
-    chrome.scripting.registerContentScripts([
-      {
-        id: "linux_ua",
-        js: ["ui/linux_ua_inspect.js"],
-        matches: ["https://*.tver.jp/*"],
-        // Keypoint 1: run before `getEnvType` in Tver.
-        runAt: "document_start",
-        // Keypoint 2: don't isolate.
-        world: "MAIN"
-      }
-    ]);
-  }
+chrome.runtime.onInstalled.addListener(async () => {
+  await initialize();
+})
+//main stuff do only once on profile started
+chrome.runtime.onStartup.addListener(async () => {
+  await initialize();
 });

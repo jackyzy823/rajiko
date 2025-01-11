@@ -42,9 +42,9 @@
         #sponsor :visited,
         #sponsor :hover,
         #sponsor :active {
-            /* text-decoration: none; */
+            width: fit-content;
+            float: right;
             font-size: smaller;
-            text-align: right;
             color: inherit;
         }
     </style>
@@ -57,7 +57,9 @@
     <button type="submit" id="rajiko-record" class="select-style" hidden></button>
     <!-- Link will be opened on normal tab instead of incognito tab when popup menu is in incognito tab. -->
     <!-- Unless use manifest-> "incognito": "split"  -->
-    <a id="sponsor" href="https://ko-fi.com/jackyzy823" target="_blank" rel="noopener noreferrer">Sponsor me.🎉</a>
+    <div>
+        <a id="sponsor" href="https://ko-fi.com/jackyzy823" target="_blank" rel="noopener noreferrer">Sponsor me.🎉</a>
+    </div>
     <!-- UI is too difficult to me -->
 </body>
 

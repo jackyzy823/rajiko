@@ -20,7 +20,9 @@
   "host_permissions": [
     "*://*.radiko.jp/*",
     "*://*.smartstream.ne.jp/*",
-    "*://*.radiko-cf.com/*",
+    "*://*.radiko-cf.com/*"
+  ],
+  "optional_host_permissions": [
     "*://*.nhk.jp/*",
     "*://*.nhk.or.jp/*",
     "*://*.tver.jp/*",
@@ -83,6 +85,10 @@
     "default_icon": "Circle-icons-radio-blue-48.png",
     "default_popup": "popup.html",
     "default_title": "__MSG_popup_title__"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
   },
   "browser_specific_settings": {
     "gecko": {
