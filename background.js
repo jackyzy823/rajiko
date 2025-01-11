@@ -257,7 +257,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     await chrome.storage.local.set({ selected_areaid: area_id });
     console.log("Update area to", area_id);
 
-    let { device_info: info } = await chrome.storage.session.get("device_info");
+    let { device_info: info } = await chrome.storage.local.get("device_info");
     if (!info) {
       console.warn("this shouldn't happen");
       info = genRandomInfo();
@@ -307,13 +307,16 @@ chrome.webRequest.onHeadersReceived.addListener(
     }
 
     console.log("onHeadersReceived of auth1: token ", token, " offset ", offset, " length ", length);
-    let { device_info: info } = await chrome.storage.session.get("device_info");
+    let { device_info: info } = await chrome.storage.local.get("device_info");
     if (!info) {
       // This should not happen and is not recoverable
       // If generate again, X-Radiko-App may not be same in auth1 and auth2 then auth will fail.
       // TODO If all aSmartPhone8 then ok to regenerate info?
-      console.error("no device_info in session storage");
-      return
+      // TempFix: assert all device are aSmartPhone8
+      info = genRandomInfo();
+      await chrome.storage.local.set({ "device_info": info });
+      console.error("no device_info in local storage");
+      // return
     }
 
     let { selected_areaid: area_id } = await chrome.storage.local.get("selected_areaid");
@@ -358,15 +361,17 @@ async function initialize() {
     await chrome.storage.local.set({ "selected_areaid": area_id });
   }
   // since service worker will not persist
-  let { device_info: info } = await chrome.storage.session.get("device_info");
-  if (!info) {
-    info = genRandomInfo();
-    await chrome.storage.session.set({ "device_info": info });
-  }
+  let info = genRandomInfo();
+  await chrome.storage.local.set({ "device_info": info });
+  // let { device_info: info } = await chrome.storage.local.get("device_info");
+  // if (!info) {
+  //   info = genRandomInfo();
+  //   await chrome.storage.local.set({ "device_info": info });
+  // }
   console.log("Using ", info, " for ", area_id);
 
   updateAreaRules(area_id, info);
-  await chrome.storage.session.set({ "device_info": info });
+  await chrome.storage.local.set({ "device_info": info });
 
   //clean previous unfinshed recording or downloading content if exists.
   // TODO(mv3): add back recording/downloading
