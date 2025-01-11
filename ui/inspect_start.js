@@ -673,6 +673,11 @@ store.watch('update',
         }
     }
 );
+// Bypass question dialog
+if (!store.get('rdk_profile_data')) {
+    store.set('rdk_profile_data', true);
+}
+
 
 
 
