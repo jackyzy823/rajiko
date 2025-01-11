@@ -1,5 +1,5 @@
-import { RULEID, APP_VERSION_MAP, APP_KEY_MAP } from "./static.js";
-import { genRandomInfo, genGPS } from "./util.js"
+import { RULEID, APP_VERSION_MAP, APP_KEY_MAP, JAPAN_IPS } from "./static.js";
+import { genRandomInfo, genGPS, genRandomIp } from "./util.js"
 
 // TODO(mv3): use session rules which is not persitence (thus good for reducing problems)
 // TODO update rules per tab ? but how to delete?
@@ -248,4 +248,92 @@ chrome.storage.local.get("selected_areaid").then(async data => {
 
   // TODO(mv3): add back recording/downloading
   // chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" }); //clean badgetext when crash
+});
+
+let japan_ip = genRandomIp(JAPAN_IPS);
+console.log("using japan ip ", japan_ip);
+//TODO edit chrome/linux ua ->windows chrome ua for tver.jp
+chrome.declarativeNetRequest.updateSessionRules({
+  addRules: [
+    {
+      id: RULEID.NHK_RADIO_LIVE,
+      action: {
+        type: "modifyHeaders",
+        requestHeaders: [
+          {
+            header: "X-Forwarded-For",
+            operation: "set",
+            value: japan_ip
+          }
+        ]
+      },
+      condition: {
+        // Exclude the req from extension
+        initiatorDomains: ["nhk.or.jp"],
+        urlFilter: "*://*.nhk.jp/hls/*"
+      }
+    },
+    {
+      id: RULEID.NHK_RADIO_VOD,
+      action: {
+        type: "modifyHeaders",
+        requestHeaders: [
+          {
+            header: "X-Forwarded-For",
+            operation: "set",
+            value: japan_ip
+          }
+        ]
+      },
+      condition: {
+        // Exclude the req from extension
+        initiatorDomains: ["nhk.or.jp"],
+        urlFilter: "*://vod-stream.nhk.jp/*"
+      }
+    },
+    {
+      id: RULEID.TVER,
+      action: {
+        type: "modifyHeaders",
+        requestHeaders: [
+          {
+            header: "X-Forwarded-For",
+            operation: "set",
+            value: japan_ip
+          }
+        ]
+      },
+      condition: {
+        // Exclude the req from extension
+        initiatorDomains: ["tver.jp"],
+        urlFilter: "*://edge.api.brightcove.com/playback/*/videos/*"
+      }
+    }],
+  removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
+});
+
+// Tver treats Chrome under Linux as AndroidPC and then askes user to use its App.
+// NOTE: if using manifest-> "incognito": "split"
+// (for opening url in incognito tab instead of normal tab when clicking link in popup meu under incognito window),
+// add chrome.extension.inIncognitoContext in script id to avoid duplication.
+chrome.runtime.getPlatformInfo(async info => {
+  if (info.os == "linux") {
+    let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
+    if (result && result.length > 0) {
+      // Already registered
+      return;
+    }
+
+    chrome.scripting.registerContentScripts([
+      {
+        id: "linux_ua",
+        js: ["ui/linux_ua_inspect.js"],
+        matches: ["https://*.tver.jp/*"],
+        // Keypoint 1: run before `getEnvType` in Tver.
+        runAt: "document_start",
+        // Keypoint 2: don't isolate.
+        world: "MAIN"
+      }
+    ]);
+  }
 });

@@ -5,6 +5,10 @@ export const RULEID = {
     AUTH1: 5001,
     AUTH2: 5002,
     AUTH2_FETCH: 5003,
+    NHK_RADIO_LIVE: 10000,
+    NHK_RADIO_VOD: 10001,
+    TVER: 10002,
+    TVER_LINUX_UA: 10003
     // PLAYER: 10000,
 }
 
@@ -146,3 +150,6 @@ export const APP_VERSION_MAP = {
     "7.5.6": "aSmartPhone7o",
     "7.5.5": "aSmartPhone7o"
 }
+
+// https://ftp.apnic.net/stats/apnic/delegated-apnic-latest
+export const JAPAN_IPS = ["126.0.0.0/8", "133.0.0.0/8", "153.128.0.0/9", "60.64.0.0/10", "106.128.0.0/10", "180.0.0.0/10", "219.0.0.0/10"];
