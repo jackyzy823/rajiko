@@ -36,7 +36,11 @@ Permission Details:
 9. \*://\*.smartstream.ne.jp/\* : the site where audio stored.
 10. unlimitedStorage : for recording radio.
 11. declarativeNetRequest: modify request to pass the authentication.
-
+12. \*://\*.nhk.jp/\* : (bonus) support nhk radio.
+13. \*://\*.nhk.or.jp/\* : (bonus) support nhk radio.
+14. \*://\*.tver.jp/\* : (bonus) support tver.
+15. \*://edge.api.brightcove.com/\* : (bonus) tver streaming url
+16. scripting: for fixing tver not working on linux
 
 What's new:
 ----------
@@ -47,6 +51,8 @@ What's new:
     Version name scheme: manifest-version.year.revision
 
     Codename scheme: a song from Kalafina
+
+    Support NHK Radio, TVer
 
     
 Suppport List:

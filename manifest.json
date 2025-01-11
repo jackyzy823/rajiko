@@ -14,12 +14,17 @@
     "webRequest",
     "downloads",
     "unlimitedStorage",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "scripting"
   ],
   "host_permissions": [
     "*://*.radiko.jp/*",
     "*://*.smartstream.ne.jp/*",
-    "*://*.radiko-cf.com/*"
+    "*://*.radiko-cf.com/*",
+    "*://*.nhk.jp/*",
+    "*://*.nhk.or.jp/*",
+    "*://*.tver.jp/*",
+    "*://edge.api.brightcove.com/*"
   ],
   "declarative_net_request": {
     "rule_resources": [

@@ -39,3 +39,29 @@ export function genGPS(area_id) {
     long = long + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
     return lat.toFixed(6) + "," + long.toFixed(6) + ",gps";
 }
+
+function fromLong(ipl) {
+    return ((ipl >>> 24) + '.' + (ipl >> 16 & 255) + '.' + (ipl >> 8 & 255) + '.' + (ipl & 255));
+};
+
+function toLong(ip) {
+    var ipl = 0;
+    ip.split('.').forEach(octet => {
+        ipl <<= 8;
+        ipl += parseInt(octet);
+    });
+    return (ipl >>> 0);
+};
+
+
+export function genRandomIp(cidr_array) {
+    let selectedCIDR = cidr_array[(Math.floor(Math.random() * cidr_array.length)) >> 0];
+    let tmp = selectedCIDR.split('/');
+    let addr = tmp[0];
+    let maskLength = parseInt(tmp[1], 10);
+    let maskLong = (0xffffffff << (32 - maskLength)) >>> 0
+    let numberOfAddresses = Math.pow(2, 32 - maskLength);
+    let first = (toLong(addr) & maskLong) >>> 0;
+    let pick = (Math.random() * numberOfAddresses) >>> 0;
+    return fromLong(first + pick);
+}
