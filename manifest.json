@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Rajiko-lite",
-  "version": "3.2025.1.1",
+  "version": "3.2025.2",
   "description": "__MSG_manifest_app_description__",
   "icons": {
     "48": "Circle-icons-radio-blue-48.png",
@@ -15,7 +15,8 @@
     "downloads",
     "unlimitedStorage",
     "declarativeNetRequest",
-    "scripting"
+    "scripting",
+    "offscreen"
   ],
   "host_permissions": [
     "*://*.radiko.jp/*",
@@ -83,11 +84,11 @@
   ],
   "action": {
     "default_icon": "Circle-icons-radio-blue-48.png",
-    "default_popup": "popup.html",
+    "default_popup": "pages/popup.html",
     "default_title": "__MSG_popup_title__"
   },
   "options_ui": {
-    "page": "options.html",
+    "page": "pages/options.html",
     "open_in_tab": false
   },
   "browser_specific_settings": {

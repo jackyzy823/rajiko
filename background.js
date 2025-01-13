@@ -1,261 +1,20 @@
-import { RULEID, APP_VERSION_MAP, APP_KEY_MAP, JAPAN_IPS } from "./static.js";
-import { genRandomInfo, genGPS, genRandomIp } from "./util.js"
-
-// TODO(mv3): use session rules which is not persitence (thus good for reducing problems)
-// TODO update rules per tab ? but how to delete?
-// or update rules per region  and only apply to some tabs?
-function updateAreaRules(area_id, info) {
-  // TODO(mv3): should we clear dynamic rules every startup?
-  // since dynamic is persistent.
-  chrome.declarativeNetRequest.updateSessionRules(
-    {
-      addRules: [
-        {
-          // Use prepared response from `response` folder for RULEID.AREA and RULEID.AUTH2.
-          // I'm not sure why it works now.
-          // As i can recall, previously 307 Internal Redirect is not a success code for `/area` API preflight.
-          id: RULEID.AREA,
-          action: { type: "redirect", redirect: { extensionPath: "/response/area-" + area_id + ".html" } },
-          condition: { urlFilter: "*://*.radiko.jp/apparea/area*" }
-        },
-        {
-          id: RULEID.AUTH1,
-          action: {
-            type: "modifyHeaders",
-            requestHeaders: [
-              // Remove
-              {
-                header: "Accept-Language",
-                operation: "remove"
-              },
-              {
-                header: "Accept",
-                operation: "remove"
-              },
-              {
-                header: "Cookie",
-                operation: "remove"
-              },
-              {
-                header: "Referer",
-                operation: "remove"
-              },
-              // Set
-              {
-                header: "X-Radiko-User",
-                operation: "set",
-                value: info.userid
-              },
-              {
-                header: "X-Radiko-App-Version",
-                operation: "set",
-                value: info.appversion
-              },
-              {
-                header: "X-Radiko-App",
-                operation: "set",
-                value: APP_VERSION_MAP[info.appversion]
-              },
-              {
-                header: "X-Radiko-Device",
-                operation: "set",
-                value: info.device
-              },
-              {
-                header: "User-Agent",
-                operation: "set",
-                value: info.useragent
-              }
-            ],
-            responseHeaders: [
-              {
-                // to avoid too big offset cause radiko's js error
-                // Will this affect the calculation in onHeadersReceived? -> no
-                header: "x-radiko-keyoffset",
-                operation: "set",
-                value: "0"
-              }
-            ]
-          },
-          condition: {
-            // Exclude the req from extension
-            excludedInitiatorDomains: [chrome.runtime.id],
-            urlFilter: "*://radiko.jp/v2/api/auth1*"
-          }
-        },
-        {
-          id: RULEID.AUTH2,
-          action: { type: "redirect", redirect: { extensionPath: "/response/auth2-" + area_id + ".html" } },
-          condition: {
-            // Exclude the req from extension
-            excludedInitiatorDomains: [chrome.runtime.id],
-            urlFilter: "*://radiko.jp/v2/api/auth2*"
-          }
-        },
-        {
-          id: RULEID.AUTH2_FETCH,
-          action: {
-            type: "modifyHeaders",
-            requestHeaders: [
-              // Remove
-              {
-                header: "Accept-Language",
-                operation: "remove"
-              },
-              {
-                header: "Accept",
-                operation: "remove"
-              },
-              {
-                header: "User-Agent",
-                operation: "set",
-                value: info.useragent
-              }
-            ]
-          },
-          condition: {
-            // Only for extension's Fetch to remove unnecessary headers.
-            initiatorDomains: [chrome.runtime.id],
-            urlFilter: "*://radiko.jp/v2/api/auth2*"
-          }
-        }],
-      removeRuleIds: [RULEID.AREA, RULEID.AUTH1, RULEID.AUTH2, RULEID.AUTH2_FETCH]
-    }
-  )
-}
-
-async function setUpBonus(enabled) {
-  if (enabled === true) {
-    let required = {
-      origins: [
-        "*://*.nhk.jp/*",
-        "*://*.nhk.or.jp/*",
-        "*://*.tver.jp/*",
-        "*://edge.api.brightcove.com/*"
-      ]
-    }
-    let matched = await chrome.permissions.contains(required);
-    if (!matched) {
-      // reset to disabled
-      await chrome.storage.local.set({ "bonus_feature": false });
-      return;
-    }
-    // TODO make tver/nhk radio depends on user's choice.
-    // TODO make host permission of  tver/nhk radio optional.
-    let japan_ip = genRandomIp(JAPAN_IPS);
-    console.log("using japan ip ", japan_ip);
-    chrome.declarativeNetRequest.updateSessionRules({
-      addRules: [
-        {
-          id: RULEID.NHK_RADIO_LIVE,
-          action: {
-            type: "modifyHeaders",
-            requestHeaders: [
-              {
-                header: "X-Forwarded-For",
-                operation: "set",
-                value: japan_ip
-              }
-            ]
-          },
-          condition: {
-            // Exclude the req from extension
-            initiatorDomains: ["nhk.or.jp"],
-            urlFilter: "*://*.nhk.jp/hls/*"
-          }
-        },
-        {
-          id: RULEID.NHK_RADIO_VOD,
-          action: {
-            type: "modifyHeaders",
-            requestHeaders: [
-              {
-                header: "X-Forwarded-For",
-                operation: "set",
-                value: japan_ip
-              }
-            ]
-          },
-          condition: {
-            // Exclude the req from extension
-            initiatorDomains: ["nhk.or.jp"],
-            urlFilter: "*://vod-stream.nhk.jp/*"
-          }
-        },
-        {
-          id: RULEID.TVER,
-          action: {
-            type: "modifyHeaders",
-            requestHeaders: [
-              {
-                header: "X-Forwarded-For",
-                operation: "set",
-                value: japan_ip
-              }
-            ]
-          },
-          condition: {
-            // Exclude the req from extension
-            initiatorDomains: ["tver.jp"],
-            urlFilter: "*://edge.api.brightcove.com/playback/*/videos/*"
-          }
-        }],
-      removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
-    });
-
-    // Tver treats Chrome under Linux as AndroidPC and then askes user to use its App.
-    // NOTE: if using manifest-> "incognito": "split"
-    // (for opening url in incognito tab instead of normal tab when clicking link in popup meu under incognito window),
-    // add chrome.extension.inIncognitoContext in script id to avoid duplication.
-    chrome.runtime.getPlatformInfo(async info => {
-      if (info.os == "linux") {
-        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
-        if (result && result.length > 0) {
-          // Already registered
-          return;
-        }
-
-        chrome.scripting.registerContentScripts([
-          {
-            id: "linux_ua",
-            js: ["ui/linux_ua_inspect.js"],
-            matches: ["https://*.tver.jp/*"],
-            // Keypoint 1: run before `getEnvType` in Tver.
-            runAt: "document_start",
-            // Keypoint 2: don't isolate.
-            world: "MAIN"
-          }
-        ]);
-      }
-    });
-
-  } else {
-    // Should check if exists?
-    chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
-    });
-    chrome.runtime.getPlatformInfo(async info => {
-      if (info.os == "linux") {
-        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
-        if (result && result.length > 0) {
-          // Already registered
-          await chrome.scripting.unregisterContentScripts({ ids: ["linux_ua"] });
-        }
-      }
-    });
-  }
-}
+import { APP_VERSION_MAP, APP_KEY_MAP } from "./modules/static.js";
+import { genRandomInfo, genGPS, initiatorFromExtension } from "./modules/util.js"
+import { downloadtimeShift } from "./modules/timeshift.js"
+import { retrieve_token } from "./modules/auth.js"
+import { updateRadioRules, setUpBonus, updateAreaRules } from "./modules/rules.js";
+import { radioAreaId } from "./modules/constants.js";
 
 // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
 
 
-// Register listeners synchronously. so need to store device info in session
+// Register listeners synchronously. so need to store device info in local
 chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) {
   if (msg["update-area"]) {
     let area_id = msg["update-area"];
 
     await chrome.storage.local.set({ selected_areaid: area_id });
-    console.log("Update area to", area_id);
+    console.log(`Update area to ${area_id}`);
 
     let { device_info: info } = await chrome.storage.local.get("device_info");
     if (!info) {
@@ -269,17 +28,101 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
   } else if (msg["update-bonus"]) {
     await setUpBonus(msg["update-bonus"] == "yes");
+  } else if (msg["download-timeshift"]) {
+    let link = msg["download-timeshift"];
+    console.log(`start donwload timeshift ${link}`);
+
+    let { timeshift_list: list, selected_areaid: area_id } = await chrome.storage.local.get(["timeshift_list", "selected_areaid"]);
+    if (!list) {
+      list = [];
+    }
+    list.push(link);
+    await chrome.storage.local.set({ "timeshift_list": list });
+
+    chrome.action.setBadgeBackgroundColor && chrome.action.setBadgeBackgroundColor({ color: "#e73c64" });
+    chrome.action.setBadgeText && chrome.action.setBadgeText({ text: list.length.toString() });
+    downloadtimeShift(link, area_id);
   }
 });
+
+/**
+ * User could be just visiting the page, not be intent on clicking the play button.
+ * It's a bit aggreesive :( But i have no choice. Blame on MV3.
+ * 
+ * On live page, if user pause the audio and stay on a page a long time (token expired), then play. this won't be triggered.
+ * On timeshift page, it is the same.
+ */
+chrome.webRequest.onBeforeRequest.addListener(
+  async req => {
+    if (initiatorFromExtension(req)) { return }
+
+    let [radioname] = req.url.split("/").at(-1).split(".");
+    let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
+    console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
+    // if selected_areaid in radioname's avaiable area. then do nothing
+    if (radioAreaId[radioname].area.includes(selected_areaid)) {
+      return;
+    }
+
+    let [token, area_id] = await retrieve_token(radioname, selected_areaid);
+    // Should we update rules here?
+
+  },
+  {
+    urls: [
+      // This is used in live and timeshift
+      // https://radiko.jp/v3/radioweb/bansen/station/RADIONAME.xml
+      "*://*.radiko.jp/v3/radioweb/bansen/station/*.xml*"
+      // CM related request. Hope they won't remove it.
+      // Only in live page
+      // "*://*.radiko.jp/v3/feed/pc/extra/*.xml*"
+      //https://api.radiko.jp/program/v4/date/DATE/station/RADIONAME.json
+      // https://api.radiko.jp/program/v3/weekly/RADIONAME.xml
+      // maybe cached?
+      // https://radiko.jp/v2/static/station/logo/RADIONAME/224x100.png
+      // DONT USE, TOO FREQUNCEY
+      // https://radiko.jp/v3/feed/pc/cm/RADIONAME.xml?_=
+      // https://api.radiko.jp/music/api/v1/noas/RADIONAME/latest?size=20
+    ],
+  }
+);
+
+
+/**
+ * The most accurate listener for the playing event.
+ * However when it happens, it is too late to generate token if token doesn't exist and then update rules.
+ * So we can catch up the second request to m3u8 link, but the first one is 403 with wrong token.
+ * Blame on MV3
+ */
+chrome.webRequest.onBeforeRequest.addListener(
+  async req => {
+    if (initiatorFromExtension(req)) { return }
+    // let [, type, radioname] = new URL(url).hash.split("/");
+    // let [token, area_id] = await retrieve_token(radioname);
+    // TODO set up rules based on type, radioname and area_id
+
+    let [radioname] = req.url.split("/").at(-1).split(".")
+    let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
+    console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
+    // if selected_areaid in radioname's avaiable area. then do nothing
+    if (radioAreaId[radioname].area.includes(selected_areaid)) {
+      return;
+    }
+    // TOOOO LATE
+    let [token, area_id] = await retrieve_token(radioname, selected_areaid);
+    // we can catch up the second requrest , the first one is 403.
+    updateRadioRules(radioname, area_id, token);
+  },
+  {
+    // The request fetch playlist_create_url
+    urls: ["*://*.radiko.jp/v3/station/stream/pc_html5/*"]
+  }
+);
 
 // Register listeners synchronously. so need to store device info in session
 chrome.webRequest.onHeadersReceived.addListener(
   async resp => {
-    let ifInit = resp.initiator && resp.initiator.toLowerCase().indexOf("chrome-extension://" + chrome.runtime.id) != -1;  //initiator since chrome 63
-    let ifTabId = resp.tabId && resp.tabId == -1; //mean this resp is not from tab
-    if (ifInit || ifTabId) {
-      return;
-    }
+    if (initiatorFromExtension(resp)) { return }
 
     let token = "";
     let offset = 0;
@@ -306,7 +149,7 @@ chrome.webRequest.onHeadersReceived.addListener(
       return;
     }
 
-    console.log("onHeadersReceived of auth1: token ", token, " offset ", offset, " length ", length);
+    console.log(`onHeadersReceived of auth1: token ${token}, offset ${offset} length ${length}`);
     let { device_info: info } = await chrome.storage.local.get("device_info");
     if (!info) {
       // This should not happen and is not recoverable
@@ -338,11 +181,28 @@ chrome.webRequest.onHeadersReceived.addListener(
         'X-Radiko-Partialkey': partial,
         'X-Radiko-Location': genGPS(area_id),
         'X-Radiko-Connection': "wifi",
-        // modifying UA does not work here. so we use session rules RULEID.AUTH2_FETCH.
+        // modifying UA does not work here. so we use session rules RULEID.AUTH_FETCH.
         'User-Agent': info.useragent
       },
       credentials: "omit"
     })
+
+    // save or not? race condtion?
+    // browser auth1 -> extension auth1 -> browser auth2 -> extension auth2
+    // if (resp2.ok && resp2.status == 200) {
+    //   // let data = await resp2.text(); // and JP in data
+    //   let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
+    //   authTokens[area_id] = { token: token, requestTime: Date.now() };
+    //   await chrome.storage.session.set({ "auth_tokens": authTokens });
+    // }
+
+
+    // ************ TODO !!! for live out of current area?
+    // should we update the token in auth_tokens here? ...well do not help, auth only the first time , then setinterval
+    // or listen at ? https://rd-wowza-radiko.radiko-cf.com/medialist?session=XXX&station_id=CROSSFM&_=1736692279287
+    // to check should update or not
+    // maybe not necessary since medialist do not require authtoken , so won't expire.
+
   },
   {
     urls: ["*://*.radiko.jp/v2/api/auth1*"]
@@ -371,18 +231,24 @@ async function initialize() {
   console.log("Using ", info, " for ", area_id);
 
   updateAreaRules(area_id, info);
-  await chrome.storage.local.set({ "device_info": info });
+  // save after clear
+  // await chrome.storage.local.set({ "device_info": info });
 
   //clean previous unfinshed recording or downloading content if exists.
   // TODO(mv3): add back recording/downloading
-  // chrome.storage.local.clear().then(chrome.storage.local.set({ "selected_areaid": area_id }));
+  await chrome.storage.local.clear();
+  await chrome.storage.local.set({
+    "selected_areaid": area_id,
+    "device_info": info,
+    "bonus_feature": bonus,
+  });
 
   // TODO(mv3): add back recording/downloading
   // chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" }); //clean badgetext when crash
   await setUpBonus(bonus);
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (data) => {
   await initialize();
 })
 //main stuff do only once on profile started
