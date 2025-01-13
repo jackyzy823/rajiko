@@ -41,10 +41,15 @@ Permission Details:
 14. \*://\*.tver.jp/\* : (bonus) support tver.
 15. \*://edge.api.brightcove.com/\* : (bonus) tver streaming url
 16. scripting: for fixing tver not working on linux
+17. offscreen: for creating auido blob url to download
 
 What's new:
 ----------
-+ version 3.2025.1 - **"oblivious"**
++ version 3.2025.2 - **fairytale**
+
+    Re-implement features: areafree without switching area. download timeshift.
+
++ version 3.2025.1 - **oblivious**
 
     Relauch with MV3 support
 

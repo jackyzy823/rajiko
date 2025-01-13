@@ -4,12 +4,32 @@ export const RULEID = {
     AREA: 5000,
     AUTH1: 5001,
     AUTH2: 5002,
-    AUTH2_FETCH: 5003,
+    AUTH_FETCH: 5003,
     NHK_RADIO_LIVE: 10000,
     NHK_RADIO_VOD: 10001,
     TVER: 10002,
-    TVER_LINUX_UA: 10003
-    // PLAYER: 10000,
+    TVER_LINUX_UA: 10003,
+    RADIO_BASE: 20000,
+}
+
+export const TEMPLATE_RADIO_NAME = "TEMPLATE_RADIO_NAME"
+export const PLAYER_RULE_TEMPLATE = [
+    // "&" to prevent the situation like FMK take precedence of FMKAGAWA.
+    `*://*.smartstream.ne.jp/*/playlist.m3u8?station_id=${TEMPLATE_RADIO_NAME}&*`,
+    // in case station_id is the last param
+    `*://*.smartstream.ne.jp/*/playlist.m3u8?*&station_id=${TEMPLATE_RADIO_NAME}|`,
+    `*://*.radiko-cf.com/*/playlist.m3u8?station_id=${TEMPLATE_RADIO_NAME}&*`,
+    `*://*.radiko-cf.com/*/playlist.m3u8?*&station_id=${TEMPLATE_RADIO_NAME}|`,
+    `*://*.smartstream.ne.jp/${TEMPLATE_RADIO_NAME}/_definst_/simul-stream.stream/playlist.m3u8*`
+]
+
+export const BONUS_PERMISSION = {
+    origins: [
+        "*://*.nhk.jp/*",
+        "*://*.nhk.or.jp/*",
+        "*://*.tver.jp/*",
+        "*://edge.api.brightcove.com/*"
+    ]
 }
 
 //geo & device info stuff
