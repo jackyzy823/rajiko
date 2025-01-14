@@ -31,7 +31,7 @@ async function cleanuptask(link) {
     await chrome.storage.local.set({
         "timeshift_list": list,
     });
-    chrome.action.setBadgeText && chrome.action.setBadgeText({ text: list.length > 0 ? list.length.toString() : "" });
+    chrome.action.setBadgeText?.({ text: list.length > 0 ? list.length.toString() : "" });
 }
 
 export async function downloadtimeShift(link, default_area_id) {

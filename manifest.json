@@ -29,15 +29,6 @@
     "*://*.tver.jp/*",
     "*://edge.api.brightcove.com/*"
   ],
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "dnr",
-        "enabled": true,
-        "path": "dnr.json"
-      }
-    ]
-  },
   "default_locale": "ja",
   "background": {
     "service_worker": "background.js",

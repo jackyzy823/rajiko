@@ -40,8 +40,8 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     list.push(link);
     await chrome.storage.local.set({ "timeshift_list": list });
 
-    chrome.action.setBadgeBackgroundColor && chrome.action.setBadgeBackgroundColor({ color: "#e73c64" });
-    chrome.action.setBadgeText && chrome.action.setBadgeText({ text: list.length.toString() });
+    chrome.action.setBadgeBackgroundColor?.({ color: "#e73c64" });
+    chrome.action.setBadgeText?.({ text: list.length.toString() });
     downloadtimeShift(link, area_id);
   } else if (msg["start-recording"]) {
     let radioname = msg["start-recording"];
@@ -68,9 +68,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
         , tabId: msg["tabId"] //restrict to specific tabid
       }
     );
-    chrome.action.setIcon && chrome.action.setIcon({
-      path: 'Circle-icons-radio-red-48.png'
-    });
+    chrome.action.setIcon?.({ path: 'Circle-icons-radio-red-48.png' });
   }
 });
 
@@ -274,7 +272,7 @@ async function initialize() {
     "bonus_feature": bonus,
   });
   //clean badgetext when crash
-  chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" });
+  chrome.action.setBadgeText?.({ text: "" });
 
   updateAreaRules(area_id, info);
 

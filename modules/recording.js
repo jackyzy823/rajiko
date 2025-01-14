@@ -57,7 +57,8 @@ export function stream_listener_builder(radioname) {
     chrome.runtime.onMessage.addListener(async function stopme(msg, sender, respCallback) {
         if (msg["stop-recording"]) {
             chrome.runtime.onMessage.removeListener(stopme);
-            chrome.webRequest.onBeforeSendHeaders.removeListener(listener);
+            // Note: change from onBeforeSendHeaders to onCompleted
+            chrome.webRequest.onCompleted.removeListener(listener);
 
             clearInterval(heartbeatInterval);
             await chrome.storage.session.remove("last-heartbeat");
@@ -94,7 +95,7 @@ export function stream_listener_builder(radioname) {
                     filename: filename
                 });
             }
-            chrome.action.setIcon && chrome.action.setIcon({
+            chrome.action.setIcon?.({
                 path: 'Circle-icons-radio-blue-48.png'
             });
         }
