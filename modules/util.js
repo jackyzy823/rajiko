@@ -156,3 +156,24 @@ if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.run
         });
     }
 }
+
+
+// https://stackoverflow.com/questions/75527465/download-a-webpage-completely-chrome-extension-manifest-v3/75539867#75539867
+export async function getBlobUrl(blob) {
+    const url = chrome.runtime.getURL('pages/offscreen.html');
+    try {
+        await chrome.offscreen.createDocument({
+            url,
+            reasons: ['BLOBS'],
+            justification: 'MV3 requirement',
+        });
+    } catch (err) {
+        if (!err.message.startsWith('Only a single offscreen')) throw err;
+    }
+    const client = (await clients.matchAll({ includeUncontrolled: true }))
+        .find(c => c.url === url);
+    const mc = new MessageChannel();
+    client.postMessage(blob, [mc.port2]);
+    const res = await new Promise(cb => (mc.port1.onmessage = cb));
+    return res.data;
+}

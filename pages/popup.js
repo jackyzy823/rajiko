@@ -1,4 +1,4 @@
-import { regions, areaListParRegion } from "../modules/constants.js";
+import { regions, areaListParRegion, radioAreaId } from "../modules/constants.js";
 function loadArea(regionIdx) {
     let area_select = document.getElementById("rajiko-area");
     while (area_select.lastChild) {
@@ -85,9 +85,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
 
-    let localdata = await chrome.storage.local.get({ "timeshift_list": [] });
-
     let download_button = document.getElementById("rajiko-download");
+    let record_button = document.getElementById("rajiko-record");
+
+    let { timeshift_list: timeshift_list } = await chrome.storage.local.get({ "timeshift_list": [] });
+    let { current_recording: current_recording } = await chrome.storage.session.get("current_recording");
+
+    if (current_recording) {
+        record_button.hidden = false;
+        record_button.innerText = chrome.i18n.getMessage("record_button_to_stop");
+        record_button.onclick = async function (data) {
+            await chrome.runtime.sendMessage({ "stop-recording": true });
+            window.close();
+        }
+    }
+
     let tabs = await chrome.tabs.query({
         active: true,
         currentWindow: true,
@@ -110,10 +122,32 @@ document.addEventListener("DOMContentLoaded", async function () {
             let url = result && result.url || ''; // #RADIO or http://m3u8list
             let tmpUrl = result && result.tmpUrl || '';  // #RADIO or http://m3u8list
 
-
+            // only show live recoding when current no work.
+            if (!current_recording) {
+                if (url[0] == '#') {
+                    //playing live
+                    record_button.hidden = false;
+                    record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
+                    record_button.onclick = async function (data) {
+                        // We have tabId already.
+                        await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id });
+                        window.close();
+                    }
+                } else if (tmpUrl[0] == '#' && /\/live\//.test(href)) {
+                    //viewing live
+                    // TODO this may not work , since service worker's life time issue....
+                    // We should keep service worker alive now.... send a param keepalive ...?
+                    record_button.hidden = false;
+                    record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
+                    record_button.onclick = async function (data) {
+                        await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id });
+                        window.close();
+                    }
+                }
+            }
             if (tmpUrl.indexOf("https://radiko.jp/v2/api/ts/playlist.m3u8") != -1 && /\/ts\//.test(href)) {
                 let stripedLink = stripM3u8link(tmpUrl);
-                if (!localdata["timeshift_list"].includes(stripedLink)) {
+                if (!timeshift_list.includes(stripedLink)) {
                     //viewing timeshift
                     download_button.hidden = false;
                     download_button.innerText = chrome.i18n.getMessage("timeshift_button");
