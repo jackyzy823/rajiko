@@ -5,7 +5,7 @@ Why I do this:
 -------------------
 An overseas fan of Kalafina wanted to listen to the radio program 'Kalafina倶楽部' which was ended a few days after this extension have been developed.
 
-To **celebrate the reunition of Kalafina** at the end of 2024, I finally made Rajiko continue to support Chromium based browsers with limited features (so called Rajiko-lite).
+To **celebrate the reunion of Kalafina** at the end of 2024, I finally made Rajiko continue to support Chromium based browsers with limited features (so called Rajiko-lite).
 
 How to use:
 -------------------
