@@ -4,6 +4,7 @@ import { downloadtimeShift } from "./modules/timeshift.js"
 import { retrieve_token } from "./modules/auth.js"
 import { updateRadioRules, setUpBonus, updateAreaRules } from "./modules/rules.js";
 import { radioAreaId } from "./modules/constants.js";
+import { stream_listener_builder } from "./modules/recording.js"
 
 // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
 
@@ -42,6 +43,34 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     chrome.action.setBadgeBackgroundColor && chrome.action.setBadgeBackgroundColor({ color: "#e73c64" });
     chrome.action.setBadgeText && chrome.action.setBadgeText({ text: list.length.toString() });
     downloadtimeShift(link, area_id);
+  } else if (msg["start-recording"]) {
+    let radioname = msg["start-recording"];
+    console.log(`Strart recording ${radioname}`);
+    // store in session, for popup menu get current recording's radioname
+    await chrome.storage.session.set({
+      "current_recording": radioname
+    });
+
+    // We need service worker to keepalive here.
+    // Because user can prepare to record and after 30s (the service work became inactive), click play button
+
+    // DO when aac request is completed
+    chrome.webRequest.onCompleted.addListener(
+      // create a listener function
+      stream_listener_builder(radioname),
+      {
+        urls: [
+          `*://*.smartstream.ne.jp/${radioname}/*.aac*`,
+          "*://rpaa.smartstream.ne.jp/segments/*.aac*",
+          `*://*.radiko-cf.com/segments/*/*/${radioname}/*.aac*`,
+          `*://*.smartstream.ne.jp/segments/*/*/${radioname}/*.aac*`
+        ]
+        , tabId: msg["tabId"] //restrict to specific tabid
+      }
+    );
+    chrome.action.setIcon && chrome.action.setIcon({
+      path: 'Circle-icons-radio-red-48.png'
+    });
   }
 });
 
@@ -72,17 +101,28 @@ chrome.webRequest.onBeforeRequest.addListener(
     urls: [
       // This is used in live and timeshift
       // https://radiko.jp/v3/radioweb/bansen/station/RADIONAME.xml
-      "*://*.radiko.jp/v3/radioweb/bansen/station/*.xml*"
-      // CM related request. Hope they won't remove it.
+      "*://*.radiko.jp/v3/radioweb/bansen/station/*.xml*",
+
+      // Domain name is GCP_API_DOMAIN
+      // https://api.radiko.jp/program/v3/weekly/RADIONAME.xml
+      // This is usable, but we only use one to avoid fetch token twice since these reuqests are very closed.
+      // "*://*.radiko.jp/program/v3/weekly/*.xml*"
+
       // Only in live page
       // "*://*.radiko.jp/v3/feed/pc/extra/*.xml*"
+
+      // Not all radio have v4 API
       //https://api.radiko.jp/program/v4/date/DATE/station/RADIONAME.json
-      // https://api.radiko.jp/program/v3/weekly/RADIONAME.xml
+
       // maybe cached?
       // https://radiko.jp/v2/static/station/logo/RADIONAME/224x100.png
+
       // DONT USE, TOO FREQUNCEY
       // https://radiko.jp/v3/feed/pc/cm/RADIONAME.xml?_=
+      // Only in live page
       // https://api.radiko.jp/music/api/v1/noas/RADIONAME/latest?size=20
+      // Only in timeshift page
+      // https://api.radiko.jp/music/api/v1/noas/RADIONAME?
     ],
   }
 );
@@ -108,7 +148,7 @@ chrome.webRequest.onBeforeRequest.addListener(
     if (radioAreaId[radioname].area.includes(selected_areaid)) {
       return;
     }
-    // TOOOO LATE
+    // Too LATE
     let [token, area_id] = await retrieve_token(radioname, selected_areaid);
     // we can catch up the second requrest , the first one is 403.
     updateRadioRules(radioname, area_id, token);
@@ -220,31 +260,24 @@ async function initialize() {
     area_id = "JP13";
     await chrome.storage.local.set({ "selected_areaid": area_id });
   }
-  // since service worker will not persist
+  // Re-generate device info every initalization
+  // WHY use storage.local instead of storage.session for device info.
+  // Ref: https://issues.chromium.org/issues/389232707
   let info = genRandomInfo();
-  await chrome.storage.local.set({ "device_info": info });
-  // let { device_info: info } = await chrome.storage.local.get("device_info");
-  // if (!info) {
-  //   info = genRandomInfo();
-  //   await chrome.storage.local.set({ "device_info": info });
-  // }
   console.log("Using ", info, " for ", area_id);
 
-  updateAreaRules(area_id, info);
-  // save after clear
-  // await chrome.storage.local.set({ "device_info": info });
-
   //clean previous unfinshed recording or downloading content if exists.
-  // TODO(mv3): add back recording/downloading
   await chrome.storage.local.clear();
   await chrome.storage.local.set({
     "selected_areaid": area_id,
     "device_info": info,
     "bonus_feature": bonus,
   });
+  //clean badgetext when crash
+  chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" });
 
-  // TODO(mv3): add back recording/downloading
-  // chrome.action.setBadgeText && chrome.action.setBadgeText({ text: "" }); //clean badgetext when crash
+  updateAreaRules(area_id, info);
+
   await setUpBonus(bonus);
 }
 

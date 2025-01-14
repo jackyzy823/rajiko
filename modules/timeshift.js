@@ -1,5 +1,5 @@
 
-import { parseAAC, ab2str, str2ab } from "./util.js"
+import { parseAAC, ab2str, str2ab, getBlobUrl } from "./util.js"
 import { retrieve_token } from "./auth.js"
 
 
@@ -33,26 +33,6 @@ async function cleanuptask(link) {
     });
     chrome.action.setBadgeText && chrome.action.setBadgeText({ text: list.length > 0 ? list.length.toString() : "" });
 }
-// https://stackoverflow.com/questions/75527465/download-a-webpage-completely-chrome-extension-manifest-v3/75539867#75539867
-async function getBlobUrl(blob) {
-    const url = chrome.runtime.getURL('pages/offscreen.html');
-    try {
-        await chrome.offscreen.createDocument({
-            url,
-            reasons: ['BLOBS'],
-            justification: 'MV3 requirement',
-        });
-    } catch (err) {
-        if (!err.message.startsWith('Only a single offscreen')) throw err;
-    }
-    const client = (await clients.matchAll({ includeUncontrolled: true }))
-        .find(c => c.url === url);
-    const mc = new MessageChannel();
-    client.postMessage(blob, [mc.port2]);
-    const res = await new Promise(cb => (mc.port1.onmessage = cb));
-    return res.data;
-}
-
 
 export async function downloadtimeShift(link, default_area_id) {
     let radioname, from, to;
@@ -134,10 +114,6 @@ export async function downloadtimeShift(link, default_area_id) {
         // Blame on MV3 and service worker.
         // Must create blob url in offscreen docuemnt.
         let audiourl = await getBlobUrl(audiodata);
-        let downloadId = await chrome.downloads.download({
-            url: audiourl,
-            filename: filename
-        });
         chrome.downloads.onChanged.addListener(async function handler(delta) {
             if (delta.id == downloadId && delta.state && delta.state.current === "complete") {
                 chrome.downloads.onChanged.removeListener(handler);
@@ -147,7 +123,10 @@ export async function downloadtimeShift(link, default_area_id) {
                 await chrome.offscreen.closeDocument();
             }
         });
-
+        let downloadId = await chrome.downloads.download({
+            url: audiourl,
+            filename: filename
+        });
 
     } catch ({ name, message }) {
         console.warn(name, message);
