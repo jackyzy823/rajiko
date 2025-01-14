@@ -6,6 +6,7 @@ import { genRandomIp } from "./util.js"
  * The max rule number is radioIndex.length * PLAYER_RULE_TEMPLATE.length
  * For now it is 109 * 5 = 540
  * TODO what about rule expired?
+ * TODO what if there's a new radio. Fetch https://radiko.jp/index/RADIONAME then parse DOM in offscreen
  */
 export function updateRadioRules(radioname, area_id, token) {
     let idx = radioIndex.indexOf(radioname);
@@ -168,12 +169,17 @@ export function updateAreaRules(area_id, info) {
         {
             addRules: [
                 {
-                    // Use prepared response from `response` folder for RULEID.AREA and RULEID.AUTH2.
+                    // Use prepared response from `response` folder for RULEID.APPAREA, RULEID.AREA and RULEID.AUTH2.
                     // I'm not sure why it works now.
                     // As i can recall, previously 307 Internal Redirect is not a success code for `/area` API preflight.
-                    id: RULEID.AREA,
+                    id: RULEID.APPAREA,
                     action: { type: "redirect", redirect: { extensionPath: "/response/area-" + area_id + ".html" } },
                     condition: { urlFilter: "*://*.radiko.jp/apparea/area*" }
+                },
+                {
+                    id: RULEID.AREA,
+                    action: { type: "redirect", redirect: { extensionPath: "/response/area-" + area_id + ".html" } },
+                    condition: { urlFilter: "*://radiko.jp/area*" }
                 },
                 {
                     id: RULEID.AUTH1,
@@ -276,7 +282,7 @@ export function updateAreaRules(area_id, info) {
                         urlFilter: "*://radiko.jp/v2/api/auth*"
                     }
                 }],
-            removeRuleIds: [RULEID.AREA, RULEID.AUTH1, RULEID.AUTH2, RULEID.AUTH_FETCH]
+            removeRuleIds: [RULEID.APPAREA, RULEID.AREA, RULEID.AUTH1, RULEID.AUTH2, RULEID.AUTH_FETCH]
         }
     )
 }

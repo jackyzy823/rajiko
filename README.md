@@ -47,7 +47,11 @@ What's new:
 ----------
 + version 3.2025.2 - **fairytale**
 
-    Re-implement features: areafree without switching area. download timeshift.
+    Re-implement: areafree without switching area.
+    
+    Re-implement: download timeshift.
+
+    Re-implement: recording.
 
 + version 3.2025.1 - **oblivious**
 
