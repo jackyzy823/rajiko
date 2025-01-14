@@ -8,7 +8,6 @@ import { stream_listener_builder } from "./modules/recording.js"
 
 // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
 
-
 // Register listeners synchronously. so need to store device info in local
 chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) {
   if (msg["update-area"]) {
@@ -46,13 +45,11 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
   } else if (msg["start-recording"]) {
     let radioname = msg["start-recording"];
     console.log(`Strart recording ${radioname}`);
-    // store in session, for popup menu get current recording's radioname
-    await chrome.storage.session.set({
-      "current_recording": radioname
-    });
+    // store in session, for popup menu to check if has running recording and  get current recording's radioname
+    await chrome.storage.session.set({ "current_recording": radioname });
 
     // We need service worker to keepalive here.
-    // Because user can prepare to record and after 30s (the service work became inactive), click play button
+    // Because user can prepare to record and after 30s (the service work became inactive), then click play button.
 
     // DO when aac request is completed
     chrome.webRequest.onCompleted.addListener(
@@ -86,14 +83,13 @@ chrome.webRequest.onBeforeRequest.addListener(
     let [radioname] = req.url.split("/").at(-1).split(".");
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
     console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
-    // if selected_areaid in radioname's avaiable area. then do nothing
+
     if (radioAreaId[radioname].area.includes(selected_areaid)) {
       return;
     }
 
     let [token, area_id] = await retrieve_token(radioname, selected_areaid);
-    // Should we update rules here?
-
+    // We update rules in `"*://*.radiko.jp/v3/station/stream/pc_html5/*"` listener.
   },
   {
     urls: [
@@ -135,20 +131,16 @@ chrome.webRequest.onBeforeRequest.addListener(
 chrome.webRequest.onBeforeRequest.addListener(
   async req => {
     if (initiatorFromExtension(req)) { return }
-    // let [, type, radioname] = new URL(url).hash.split("/");
-    // let [token, area_id] = await retrieve_token(radioname);
-    // TODO set up rules based on type, radioname and area_id
 
     let [radioname] = req.url.split("/").at(-1).split(".")
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
     console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
-    // if selected_areaid in radioname's avaiable area. then do nothing
+
     if (radioAreaId[radioname].area.includes(selected_areaid)) {
       return;
     }
     // Too LATE
     let [token, area_id] = await retrieve_token(radioname, selected_areaid);
-    // we can catch up the second requrest , the first one is 403.
     updateRadioRules(radioname, area_id, token);
   },
   {
@@ -223,24 +215,9 @@ chrome.webRequest.onHeadersReceived.addListener(
         'User-Agent': info.useragent
       },
       credentials: "omit"
-    })
+    });
 
-    // save or not? race condtion?
-    // browser auth1 -> extension auth1 -> browser auth2 -> extension auth2
-    // if (resp2.ok && resp2.status == 200) {
-    //   // let data = await resp2.text(); // and JP in data
-    //   let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
-    //   authTokens[area_id] = { token: token, requestTime: Date.now() };
-    //   await chrome.storage.session.set({ "auth_tokens": authTokens });
-    // }
-
-
-    // ************ TODO !!! for live out of current area?
-    // should we update the token in auth_tokens here? ...well do not help, auth only the first time , then setinterval
-    // or listen at ? https://rd-wowza-radiko.radiko-cf.com/medialist?session=XXX&station_id=CROSSFM&_=1736692279287
-    // to check should update or not
-    // maybe not necessary since medialist do not require authtoken , so won't expire.
-
+    // Don't save the token from default_area_id to avoid race condition.
   },
   {
     urls: ["*://*.radiko.jp/v2/api/auth1*"]
@@ -259,8 +236,8 @@ async function initialize() {
     await chrome.storage.local.set({ "selected_areaid": area_id });
   }
   // Re-generate device info every initalization
-  // WHY use storage.local instead of storage.session for device info.
-  // Ref: https://issues.chromium.org/issues/389232707
+  // Why use storage.local instead of storage.session for device info?
+  // See issue: https://issues.chromium.org/issues/389232707
   let info = genRandomInfo();
   console.log("Using ", info, " for ", area_id);
 
@@ -271,7 +248,7 @@ async function initialize() {
     "device_info": info,
     "bonus_feature": bonus,
   });
-  //clean badgetext when crash
+
   chrome.action.setBadgeText?.({ text: "" });
 
   updateAreaRules(area_id, info);

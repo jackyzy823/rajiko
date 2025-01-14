@@ -75,8 +75,8 @@ export function initiatorFromExtension(r) {
     return false;
 }
 
-//aac parse stuff
-//parse hls packed audio (id3 tags and data)
+// aac parse stuff
+// parse hls packed audio (id3 tags and data)
 // return id3 tag size and timestamp of this packed audio if success else return [0,0]
 export function parseAAC(data) { //data -> Arraybuffer
     let processing = new DataView(data);
@@ -92,11 +92,12 @@ export function parseAAC(data) { //data -> Arraybuffer
     return [id3tagsize, timestamp];
 }
 
-export var ab2str;
-export var str2ab;
+// TODO split to Firefox and Chrome version
+export let ab2str;
+export let str2ab;
 
 if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.runtime.id)) {  //see webextension-polyfill
-    // for chrome
+    // for Chrome
     //see chroumium bug:  https://bugs.chromium.org/p/chromium/issues/detail?id=831062
     ab2str = function ab2str(buf, offset) {
         return String.fromCharCode.apply(null, new Uint8Array(buf, offset)); //uint16 will raise must multiple of 2  error 
@@ -111,7 +112,7 @@ if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.run
         return buf;
     }
 } else {
-    //for firefox save memory via Uint16Array , use pkcs5 for padding.
+    //for Firefox save memory via Uint16Array , use pkcs5 for padding.
     ab2str = function ab2str(buf, offset) {
         let len = buf.byteLength - offset;
         let padding = len % 8 == 0 ? 8 : len % 8;

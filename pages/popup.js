@@ -129,14 +129,12 @@ document.addEventListener("DOMContentLoaded", async function () {
                     record_button.hidden = false;
                     record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
                     record_button.onclick = async function (data) {
-                        // We have tabId already.
                         await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id });
                         window.close();
                     }
                 } else if (tmpUrl[0] == '#' && /\/live\//.test(href)) {
                     //viewing live
-                    // TODO this may not work , since service worker's life time issue....
-                    // We should keep service worker alive now.... send a param keepalive ...?
+                    //Should care about service worker's lifecycle.
                     record_button.hidden = false;
                     record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
                     record_button.onclick = async function (data) {

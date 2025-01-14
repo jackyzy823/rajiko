@@ -4,7 +4,7 @@ import { str2ab, ab2str, parseAAC, getBlobUrl, initiatorFromExtension } from "./
  * Return datetime string in Asia/Tokyo timezone!
  */
 function timestamp2Filename(t) {
-    // Intl format to '2025/01/14 18:48:48'
+    // Intl format to 'YYYY/MM/dd hh:mm:ss'
     return Intl.DateTimeFormat("ja",
         {
             timeZone: "Asia/Tokyo",

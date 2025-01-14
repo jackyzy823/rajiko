@@ -66,8 +66,10 @@ export async function downloadtimeShift(link, default_area_id) {
     if (!response.ok || response.status == 403 || resp == "expired") {
         // are you trying to download timeshift older than 7 days?
         // perhaps someone is logged in as timefreeplus member :)
-        // but i don't know how Radiko validate membership, maybe `lsid` or `authtoken`?
-        // and API show expired , seems that this API do not support older than 7days.
+        // but i don't know how Radiko validates membership, maybe `lsid` or `authtoken`?
+
+        // radiko.jp/v2/api/ts/playlist.m3u8 API show expired
+        // seems that this API do not support older than 7days.
         // but other playlist_create_url show forbidden
         // so will this work for timefreeplus member?
         await cleanuptask(link);
@@ -78,14 +80,14 @@ export async function downloadtimeShift(link, default_area_id) {
     })[0];
 
     let response2 = await fetch(detailLink);
-    // response failed? response.ok response.status
+
     let resp2 = await response2.text();
     let links = resp2.split('\n').filter(function (d) {
         return d[0] != '#' && d.trim() != '';
     });
 
+    // Map limit solutions:
     // https://stackoverflow.com/a/60622224 interesting solution but no error handle in the middle and not await-able
-    // or https://stackoverflow.com/a/73517935
 
     let keyList = null; // links.map((v, idx, _) => filename + '_' + idx);
 
