@@ -31,9 +31,7 @@ export function genRandomInfo() {
 }
 
 export function genGPS(area_id) {
-    let latlong = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
-    let lat = latlong[0];
-    let long = latlong[1];
+    let [lat, long] = coordinates[areaList[parseInt(area_id.substr(2)) - 1]];
     // +/- 0 ~ 0.025 --> 0 ~ 1.5' ->  +/-  0 ~ 2.77/2.13km
     lat = lat + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
     long = long + Math.random() / 40.0 * (Math.random() > 0.5 ? 1 : -1);
@@ -92,11 +90,14 @@ export function parseAAC(data) { //data -> Arraybuffer
     return [id3tagsize, timestamp];
 }
 
+export function isFirefox() {
+    return globalThis.browser && globalThis.browser.runtime && globalThis.browser.runtime.id;
+}
 // TODO split to Firefox and Chrome version
 export let ab2str;
 export let str2ab;
 
-if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.runtime.id)) {  //see webextension-polyfill
+if (!isFirefox()) {  //see webextension-polyfill
     // for Chrome
     //see chroumium bug:  https://bugs.chromium.org/p/chromium/issues/detail?id=831062
     ab2str = function ab2str(buf, offset) {
@@ -161,20 +162,34 @@ if (!(globalThis.browser && globalThis.browser.runtime && globalThis.browser.run
 
 // https://stackoverflow.com/questions/75527465/download-a-webpage-completely-chrome-extension-manifest-v3/75539867#75539867
 export async function getBlobUrl(blob) {
-    const url = chrome.runtime.getURL('pages/offscreen.html');
-    try {
-        await chrome.offscreen.createDocument({
-            url,
-            reasons: ['BLOBS'],
-            justification: 'MV3 requirement',
-        });
-    } catch (err) {
-        if (!err.message.startsWith('Only a single offscreen')) throw err;
+    if (!isFirefox()) {
+        const url = chrome.runtime.getURL('pages/offscreen.html');
+        try {
+            await chrome.offscreen.createDocument({
+                url,
+                reasons: ['BLOBS'],
+                justification: 'MV3 requirement',
+            });
+        } catch (err) {
+            if (!err.message.startsWith('Only a single offscreen')) throw err;
+        }
+        const client = (await clients.matchAll({ includeUncontrolled: true }))
+            .find(c => c.url === url);
+        const mc = new MessageChannel();
+        client.postMessage(blob, [mc.port2]);
+        const res = await new Promise(cb => (mc.port1.onmessage = cb));
+        return res.data;
+    } else {
+        return URL.createObjectURL(blob);
     }
-    const client = (await clients.matchAll({ includeUncontrolled: true }))
-        .find(c => c.url === url);
-    const mc = new MessageChannel();
-    client.postMessage(blob, [mc.port2]);
-    const res = await new Promise(cb => (mc.port1.onmessage = cb));
-    return res.data;
+}
+
+export async function revokeBlobUrl(blob) {
+    if (!isFirefox()) {
+        // TODO should we pass message to offscreen to free blob via URL.revokeObjectURL(blob);
+        // or just closing the document is enough?
+        await chrome.offscreen.closeDocument();
+    } else {
+        URL.revokeObjectURL(blob);
+    }
 }

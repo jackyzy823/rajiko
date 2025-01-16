@@ -1,6 +1,6 @@
 import { BONUS_PERMISSION } from "../modules/static.js";
+import { isFirefox } from "../modules/util.js";
 
-BONUS_PERMISSION
 document.addEventListener("DOMContentLoaded", async function () {
     let { bonus_feature: bonus_feature } = await chrome.storage.local.get({ "bonus_feature": false });
     let bonus = document.getElementById("bonus");
@@ -13,10 +13,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (bonus.checked) {
             let matched = await chrome.permissions.contains(BONUS_PERMISSION);
             if (!matched) {
-                // Need user gestures.
-                let permitted = await chrome.permissions.request(BONUS_PERMISSION)
-                if (!permitted) {
-                    return
+                if (isFirefox()) {
+                    document.getElementById("firefox_permissions_instruction").hidden = false;
+                    alert(chrome.i18n.getMessage("firefox_optional_permissions_alert"));
+                } else {
+                    // Need user gestures.
+                    let permitted = await chrome.permissions.request(BONUS_PERMISSION)
+                    if (!permitted) {
+                        return;
+                    }
                 }
             }
         }
