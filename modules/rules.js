@@ -1,6 +1,6 @@
 import { radioIndex } from "./constants.js"
 import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, BONUS_PERMISSION, JAPAN_IPS, APP_VERSION_MAP } from "./static.js";
-import { genRandomIp } from "./util.js"
+import { genRandomIp, isFirefox } from "./util.js"
 
 /**
  * The max rule number is radioIndex.length * PLAYER_RULE_TEMPLATE.length
@@ -46,11 +46,13 @@ export function updateRadioRules(radioname, area_id, token) {
 
 /**
  * Rules for TVer and NHK Radio.
+ * These rules apply on Firefox and Chrome.
  */
 export async function setUpBonus(enabled) {
     if (enabled === true) {
         let matched = await chrome.permissions.contains(BONUS_PERMISSION);
-        if (!matched) {
+        // In Firefox, set up rules and options even permission request failed.
+        if (!matched && !isFirefox()) {
             // reset to disabled
             await chrome.storage.local.set({ "bonus_feature": false });
             return;
@@ -116,46 +118,50 @@ export async function setUpBonus(enabled) {
             removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
         });
 
+
         // Tver treats Chrome under Linux as AndroidPC and then askes user to use its App.
         // NOTE: if using manifest-> "incognito": "split"
         // (for opening url in incognito tab instead of normal tab when clicking link in popup meu under incognito window),
         // add chrome.extension.inIncognitoContext in script id to avoid duplication.
-        chrome.runtime.getPlatformInfo(async info => {
-            if (info.os == "linux") {
-                let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
-                if (result && result.length > 0) {
-                    // Already registered
-                    return;
-                }
-
-                chrome.scripting.registerContentScripts([
-                    {
-                        id: "linux_ua",
-                        js: ["ui/linux_ua_inspect.js"],
-                        matches: ["https://*.tver.jp/*"],
-                        // Keypoint 1: run before `getEnvType` in Tver.
-                        runAt: "document_start",
-                        // Keypoint 2: don't isolate.
-                        world: "MAIN"
+        if (!isFirefox()) {
+            chrome.runtime.getPlatformInfo(async info => {
+                if (info.os == "linux") {
+                    let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["chrome_linux_ua"] });
+                    if (result && result.length > 0) {
+                        // Already registered
+                        return;
                     }
-                ]);
-            }
-        });
 
+                    chrome.scripting.registerContentScripts([
+                        {
+                            id: "chrome_linux_ua",
+                            js: ["ui/chrome_linux_ua_inspect.js"],
+                            matches: ["https://*.tver.jp/*"],
+                            // Keypoint 1: run before `getEnvType` in Tver.
+                            runAt: "document_start",
+                            // Keypoint 2: don't isolate.
+                            world: "MAIN"
+                        }
+                    ]);
+                }
+            });
+        }
     } else {
         // Should check if exists?
         chrome.declarativeNetRequest.updateSessionRules({
             removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
         });
-        chrome.runtime.getPlatformInfo(async info => {
-            if (info.os == "linux") {
-                let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["linux_ua"] });
-                if (result && result.length > 0) {
-                    // Already registered
-                    await chrome.scripting.unregisterContentScripts({ ids: ["linux_ua"] });
+        if (!isFirefox()) {
+            chrome.runtime.getPlatformInfo(async info => {
+                if (info.os == "linux") {
+                    let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["chrome_linux_ua"] });
+                    if (result && result.length > 0) {
+                        // Already registered
+                        await chrome.scripting.unregisterContentScripts({ ids: ["chrome_linux_ua"] });
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }
 
@@ -234,6 +240,7 @@ export function updateAreaRules(area_id, info) {
                             {
                                 // to avoid too big offset causing radiko's js error
                                 // Will this affect the calculation in onHeadersReceived? -> no
+                                // Note: yes on Firefox , so we don't use area rules in firefox.
                                 header: "x-radiko-keyoffset",
                                 operation: "set",
                                 value: "0"

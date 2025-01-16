@@ -1,5 +1,5 @@
 
-import { parseAAC, ab2str, str2ab, getBlobUrl } from "./util.js"
+import { parseAAC, ab2str, str2ab, getBlobUrl, revokeBlobUrl } from "./util.js"
 import { retrieve_token } from "./auth.js"
 
 
@@ -120,9 +120,8 @@ export async function downloadtimeShift(link, default_area_id) {
             if (delta.id == downloadId && delta.state && delta.state.current === "complete") {
                 chrome.downloads.onChanged.removeListener(handler);
                 await chrome.storage.local.remove(keyList);
-                // TODO should we pass message to offscreen to free blob via URL.revokeObjectURL(audiourl);
-                // or just closing the document is enough?
-                await chrome.offscreen.closeDocument();
+
+                await revokeBlobUrl(audiourl);
             }
         });
         let downloadId = await chrome.downloads.download({

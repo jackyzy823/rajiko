@@ -1,4 +1,4 @@
-import { str2ab, ab2str, parseAAC, getBlobUrl, initiatorFromExtension } from "./util.js"
+import { str2ab, ab2str, parseAAC, getBlobUrl, revokeBlobUrl, initiatorFromExtension } from "./util.js"
 
 /**
  * Return datetime string in Asia/Tokyo timezone!
@@ -85,9 +85,8 @@ export function stream_listener_builder(radioname) {
                         chrome.downloads.onChanged.removeListener(handler);
                         await chrome.storage.local.remove(keyList);
                         await chrome.storage.session.remove("current_recording");
-                        // TODO should we pass message to offscreen to free blob via URL.revokeObjectURL(audiourl);
-                        // or just closing the document is enough?
-                        await chrome.offscreen.closeDocument();
+
+                        await revokeBlobUrl(audiourl);
                     }
                 });
                 let downloadId = await chrome.downloads.download({

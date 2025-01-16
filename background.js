@@ -1,12 +1,17 @@
-import { APP_VERSION_MAP, APP_KEY_MAP } from "./modules/static.js";
-import { genRandomInfo, genGPS, initiatorFromExtension } from "./modules/util.js"
+import { APP_VERSION_MAP, APP_KEY_MAP, IGNORELIST } from "./modules/static.js";
+import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox } from "./modules/util.js"
 import { downloadtimeShift } from "./modules/timeshift.js"
 import { retrieve_token } from "./modules/auth.js"
 import { updateRadioRules, setUpBonus, updateAreaRules } from "./modules/rules.js";
-import { radioAreaId } from "./modules/constants.js";
+import { radioAreaId, areaMap, areaList, areaSuffixList } from "./modules/constants.js";
 import { stream_listener_builder } from "./modules/recording.js"
 
+// try {
+// Even with declarativeNetRequestFeedback and extensions.dnr.feedback,
+// onRuleMatchedDebug is still not work under Firefox.
 // chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
+// } catch { }
+
 
 // Register listeners synchronously. so need to store device info in local
 chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) {
@@ -22,11 +27,14 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
       info = genRandomInfo();
     }
 
-    updateAreaRules(area_id, info);
+    if (!isFirefox()) {
+      updateAreaRules(area_id, info);
+    }
   } else if (msg["share-redirect"]) {
     let param = msg["share-redirect"];
     chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
   } else if (msg["update-bonus"]) {
+    // This works for firefox too
     await setUpBonus(msg["update-bonus"] == "yes");
   } else if (msg["download-timeshift"]) {
     let link = msg["download-timeshift"];
@@ -52,6 +60,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     // Because user can prepare to record and after 30s (the service work became inactive), then click play button.
 
     // DO when aac request is completed
+    //TODO Firefox listen on what? onCompleted or onBeforeSendHeaders
     chrome.webRequest.onCompleted.addListener(
       // create a listener function
       stream_listener_builder(radioname),
@@ -76,50 +85,52 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
  * On live page, if user pause the audio and stay on a page a long time (token expired), then play. this won't be triggered.
  * On timeshift page, it is the same.
  */
-chrome.webRequest.onBeforeRequest.addListener(
-  async req => {
-    if (initiatorFromExtension(req)) { return }
+if (!isFirefox()) {
+  chrome.webRequest.onBeforeRequest.addListener(
+    async req => {
+      if (initiatorFromExtension(req)) { return; }
 
-    let [radioname] = req.url.split("/").at(-1).split(".");
-    let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
-    console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
+      let [radioname] = req.url.split("/").at(-1).split(".");
+      let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
+      console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
 
-    if (radioAreaId[radioname].area.includes(selected_areaid)) {
-      return;
+      if (radioAreaId[radioname].area.includes(selected_areaid)) {
+        return;
+      }
+
+      let [token, area_id] = await retrieve_token(radioname, selected_areaid);
+      // We update rules in `"*://*.radiko.jp/v3/station/stream/pc_html5/*"` listener.
+    },
+    {
+      urls: [
+        // This is used in live and timeshift
+        // https://radiko.jp/v3/radioweb/bansen/station/RADIONAME.xml
+        "*://*.radiko.jp/v3/radioweb/bansen/station/*.xml*",
+
+        // Domain name is GCP_API_DOMAIN
+        // https://api.radiko.jp/program/v3/weekly/RADIONAME.xml
+        // This is usable, but we only use one to avoid fetch token twice since these reuqests are very closed.
+        // "*://*.radiko.jp/program/v3/weekly/*.xml*"
+
+        // Only in live page
+        // "*://*.radiko.jp/v3/feed/pc/extra/*.xml*"
+
+        // Not all radio have v4 API
+        //https://api.radiko.jp/program/v4/date/DATE/station/RADIONAME.json
+
+        // maybe cached?
+        // https://radiko.jp/v2/static/station/logo/RADIONAME/224x100.png
+
+        // DONT USE, TOO FREQUNCEY
+        // https://radiko.jp/v3/feed/pc/cm/RADIONAME.xml?_=
+        // Only in live page
+        // https://api.radiko.jp/music/api/v1/noas/RADIONAME/latest?size=20
+        // Only in timeshift page
+        // https://api.radiko.jp/music/api/v1/noas/RADIONAME?
+      ],
     }
-
-    let [token, area_id] = await retrieve_token(radioname, selected_areaid);
-    // We update rules in `"*://*.radiko.jp/v3/station/stream/pc_html5/*"` listener.
-  },
-  {
-    urls: [
-      // This is used in live and timeshift
-      // https://radiko.jp/v3/radioweb/bansen/station/RADIONAME.xml
-      "*://*.radiko.jp/v3/radioweb/bansen/station/*.xml*",
-
-      // Domain name is GCP_API_DOMAIN
-      // https://api.radiko.jp/program/v3/weekly/RADIONAME.xml
-      // This is usable, but we only use one to avoid fetch token twice since these reuqests are very closed.
-      // "*://*.radiko.jp/program/v3/weekly/*.xml*"
-
-      // Only in live page
-      // "*://*.radiko.jp/v3/feed/pc/extra/*.xml*"
-
-      // Not all radio have v4 API
-      //https://api.radiko.jp/program/v4/date/DATE/station/RADIONAME.json
-
-      // maybe cached?
-      // https://radiko.jp/v2/static/station/logo/RADIONAME/224x100.png
-
-      // DONT USE, TOO FREQUNCEY
-      // https://radiko.jp/v3/feed/pc/cm/RADIONAME.xml?_=
-      // Only in live page
-      // https://api.radiko.jp/music/api/v1/noas/RADIONAME/latest?size=20
-      // Only in timeshift page
-      // https://api.radiko.jp/music/api/v1/noas/RADIONAME?
-    ],
-  }
-);
+  );
+}
 
 
 /**
@@ -130,7 +141,7 @@ chrome.webRequest.onBeforeRequest.addListener(
  */
 chrome.webRequest.onBeforeRequest.addListener(
   async req => {
-    if (initiatorFromExtension(req)) { return }
+    if (initiatorFromExtension(req)) { return; }
 
     let [radioname] = req.url.split("/").at(-1).split(".")
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
@@ -141,18 +152,21 @@ chrome.webRequest.onBeforeRequest.addListener(
     }
     // Too LATE
     let [token, area_id] = await retrieve_token(radioname, selected_areaid);
-    updateRadioRules(radioname, area_id, token);
+    if (!isFirefox()) {
+      updateRadioRules(radioname, area_id, token);
+    }
   },
   {
     // The request fetch playlist_create_url
     urls: ["*://*.radiko.jp/v3/station/stream/pc_html5/*"]
-  }
+  },
+  isFirefox() ? ["blocking"] : []
 );
 
 // Register listeners synchronously. so need to store device info in session
 chrome.webRequest.onHeadersReceived.addListener(
   async resp => {
-    if (initiatorFromExtension(resp)) { return }
+    if (initiatorFromExtension(resp)) { return; }
 
     let token = "";
     let offset = 0;
@@ -196,7 +210,7 @@ chrome.webRequest.onHeadersReceived.addListener(
     if (!area_id) {
       // This should not happen and is not recoverable
       console.error("no area_id in local storage");
-      return
+      return;
     }
 
 
@@ -221,7 +235,9 @@ chrome.webRequest.onHeadersReceived.addListener(
   },
   {
     urls: ["*://*.radiko.jp/v2/api/auth1*"]
-  }, ["responseHeaders"]
+  },
+  // Is here blocking necessary?
+  isFirefox() ? ["blocking", "responseHeaders"] : ["responseHeaders"]
 );
 
 
@@ -251,7 +267,9 @@ async function initialize() {
 
   chrome.action.setBadgeText?.({ text: "" });
 
-  updateAreaRules(area_id, info);
+  if (!isFirefox()) {
+    updateAreaRules(area_id, info);
+  }
 
   await setUpBonus(bonus);
 }
@@ -263,3 +281,160 @@ chrome.runtime.onInstalled.addListener(async (data) => {
 chrome.runtime.onStartup.addListener(async () => {
   await initialize();
 });
+
+/**
+ * 
+ * Firefox Listeners
+ * 
+ */
+if (isFirefox()) {
+  // Set request header in auth1
+  chrome.webRequest.onBeforeSendHeaders.addListener(async req => {
+    if (initiatorFromExtension(req)) {
+      // TODO if from ext, then remove Accept-Language,Accept,User-Agent
+      // like RULEID.AUTH_FETCH 
+      return;
+    }
+    let { device_info: info } = await chrome.storage.local.get("device_info");
+    if (!info) {
+      // This should not happen and is not recoverable
+      // If generate again, X-Radiko-App may not be same in auth1 and auth2 then auth will fail.
+      // TODO If all aSmartPhone8 then ok to regenerate info?
+      // TempFix: assert all device are aSmartPhone8
+      info = genRandomInfo();
+      await chrome.storage.local.set({ "device_info": info });
+      console.error("no device_info in local storage");
+      // return
+    }
+
+    req.requestHeaders = req.requestHeaders.filter(function (x) {
+      return !IGNORELIST.includes(x.name.toLowerCase());
+    });
+
+    req.requestHeaders.push({
+      name: "X-Radiko-User",
+      value: info.userid
+    });
+    req.requestHeaders.push({
+      name: "X-Radiko-App-Version",
+      value: info.appversion
+    });
+    req.requestHeaders.push({
+      name: "X-Radiko-App",
+      value: APP_VERSION_MAP[info.appversion],
+    });
+    req.requestHeaders.push({
+      name: "X-Radiko-Device",
+      value: info.device
+    });
+    req.requestHeaders.push({
+      name: "User-Agent",
+      value: info.useragent
+    });
+    return {
+      requestHeaders: req.requestHeaders
+    };
+  }, {
+    urls: ["*://*.radiko.jp/v2/api/auth1*"]
+  }, ["blocking", "requestHeaders"]);
+
+  // Fix response header in auth1
+  chrome.webRequest.onHeadersReceived.addListener(async resp => {
+    if (initiatorFromExtension(resp)) { return; }
+    for (let i = 0; i < resp.responseHeaders.length; i++) {
+      if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
+        resp.responseHeaders[i].value = "0"; //to avoid too big offset cause radiko's js error
+      }
+    }
+    return {
+      responseHeaders: resp.responseHeaders
+    };
+  }, {
+    urls: ["*://*.radiko.jp/v2/api/auth1*"]
+  }, ["blocking", "responseHeaders"]);
+
+  // Set area response content
+  chrome.webRequest.onBeforeRequest.addListener(async req => {
+    let filter = browser.webRequest.filterResponseData(req.requestId);
+
+    filter.onstop = async event => {
+      let { selected_areaid: area_id } = await chrome.storage.local.get("selected_areaid");
+      // Template document.write('<span class=\"JP27\">OSAKA JAPAN</span>');
+      let encoder = new TextEncoder();
+      filter.write(encoder.encode(`document.write('<span class="${area_id}">${areaMap[area_id]} JAPAN</span>');`));
+      filter.close();
+    };
+
+    return {};
+  }, {
+    // webRequest support "*://*.radiko.jp/area*" to match "https://radiko.jp/area"
+    // But declarativeNetRequest don't, it only support "*://radiko.jp/area*"
+    urls: ["*://*.radiko.jp/area*", "*://*.radiko.jp/apparea/area*"]
+  }, ["blocking"]);
+
+  // Set browser's auth2 response content
+  chrome.webRequest.onBeforeRequest.addListener(async req => {
+    if (initiatorFromExtension(req)) {
+      // TODO add permission: requestHeaders
+      // TODO if from ext, then remove Accept-Language,Accept,User-Agent
+      // like RULEID.AUTH_FETCH 
+      return;
+    }
+    let filter = browser.webRequest.filterResponseData(req.requestId);
+
+    filter.onstop = async event => {
+      let { selected_areaid: area_id } = await chrome.storage.local.get("selected_areaid");
+      let encoder = new TextEncoder();
+      let area_id_num = parseInt(area_id.substr(2)) - 1;
+      filter.write(encoder.encode(`${area_id},${areaList[area_id_num]}${areaSuffixList[area_id_num]},${areaMap[area_id].toLowerCase()} Japan`));
+      filter.close();
+    };
+
+    return {};
+  }, {
+    urls: ["*://radiko.jp/v2/api/auth2*"]
+  }, ["blocking"]);
+
+  // THE correct way to set authtoken to m3u8
+  chrome.webRequest.onBeforeSendHeaders.addListener(async req => {
+    if (initiatorFromExtension(req)) { return; }
+    let radioname;
+    (new URL(req.url)).search.slice(1).split('&').map(function (kv) {
+      let s = kv.split('=');
+      switch (s[0]) {
+        case 'station_id':
+          radioname = s[1];
+          break;
+      }
+    });
+    let { selected_areaid: selected_areaid } = await chrome.storage.local.get("selected_areaid");
+    if (radioAreaId[radioname].area.includes(selected_areaid)) {
+      return {};
+    }
+
+    // Good timing! Firefox!
+    let [token, area_id] = await retrieve_token(radioname, selected_areaid);
+
+    req.requestHeaders = req.requestHeaders.filter(function (x) {
+      return !["x-radiko-authtoken", "x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
+    });
+    req.requestHeaders.push({
+      name: "X-Radiko-AuthToken",
+      value: token
+    });
+    req.requestHeaders.push({
+      name: "X-Radiko-AreaId",
+      value: area_id
+    });
+
+    return {
+      requestHeaders: req.requestHeaders
+    };
+
+  }, {
+    urls: ["*://radiko.jp/v2/api/ts/playlist.m3u8?*" /*for timeshift*/
+      , "*://*.smartstream.ne.jp/*/playlist.m3u8?*" // some new apis
+      , "*://*.radiko-cf.com/*/playlist.m3u8?*"
+    ]
+  }, ["blocking", "requestHeaders"]);
+}

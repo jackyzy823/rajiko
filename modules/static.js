@@ -9,9 +9,10 @@ export const RULEID = {
     NHK_RADIO_LIVE: 10000,
     NHK_RADIO_VOD: 10001,
     TVER: 10002,
-    TVER_LINUX_UA: 10003,
     RADIO_BASE: 20000,
 }
+
+export const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device", "x-radiko-partialkey"];
 
 export const TEMPLATE_RADIO_NAME = "TEMPLATE_RADIO_NAME"
 export const PLAYER_RULE_TEMPLATE = [

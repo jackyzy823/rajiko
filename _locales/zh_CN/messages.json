@@ -31,5 +31,8 @@
     },
     "timeshift_button": {
         "message": "下载タイムシフト"
+    },
+    "firefox_optional_permissions_alert": {
+        "message": "由于Firefox的限制，您需要手动启用站点权限才能使用此功能。"
     }
 }

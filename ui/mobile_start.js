@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
 // To bypass Radiko.Device.isMobile check when reloading on #! paths.
 function changeMobileUA() {
   let change_mobile_ua = document.createElement("script");
+  // TODO supported in Firefox MV3 or not ?
   change_mobile_ua.textContent = `(function(){Object.defineProperty(window.navigator, 'userAgent', { value:  window.navigator.userAgent.replace(/android.*?\;/gi, "").replace(/mobile/gi, "")});})();`
   document.head.appendChild(change_mobile_ua);
 };

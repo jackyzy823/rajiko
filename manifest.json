@@ -16,7 +16,13 @@
     "unlimitedStorage",
     "declarativeNetRequest",
     "scripting",
-    "offscreen"
+    // manifest.json allows comments
+    // https://discourse.mozilla.org/t/manifest-json-should-mention-it-allows-comments/27529/3
+    // Chrome only
+    "offscreen",
+    // Firefox only
+    "webRequestBlocking",
+    "webRequestFilterResponse"
   ],
   "host_permissions": [
     "*://*.radiko.jp/*",
@@ -32,6 +38,9 @@
   "default_locale": "ja",
   "background": {
     "service_worker": "background.js",
+    "scripts": [
+      "background.js"
+    ],
     "type": "module"
   },
   "content_scripts": [
@@ -64,6 +73,7 @@
         "*://*.radiko.jp/*"
       ]
     },
+    // Only for Chrome
     {
       "resources": [
         "response/*.html"
