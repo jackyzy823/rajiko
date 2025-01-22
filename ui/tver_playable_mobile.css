@@ -1,0 +1,4 @@
+/* For Firefox Android TVer .player_host__CCajQ  remove min-width: 512px; */
+div[class^="player_host"] {
+    min-width: unset !important;
+}

@@ -132,17 +132,20 @@ export async function setUpBonus(enabled) {
                 return;
             }
 
-            chrome.scripting.registerContentScripts([
-                {
-                    id: "tver_playable_ua",
-                    js: ["ui/tver_playable_ua_inspect.js"],
-                    matches: ["https://*.tver.jp/*"],
-                    // Keypoint 1: run before `getEnvType` in Tver.
-                    runAt: "document_start",
-                    // Keypoint 2: don't isolate.
-                    world: "MAIN"
-                }
-            ]);
+            let script = {
+                id: "tver_playable_ua",
+                js: ["ui/tver_playable_ua_inspect.js"],
+                matches: ["https://*.tver.jp/*"],
+                // Keypoint 1: run before `getEnvType` in Tver.
+                runAt: "document_start",
+                // Keypoint 2: don't isolate.
+                world: "MAIN"
+            }
+            if ((info.os == "android" && isFirefox())) {
+                script.css = ["ui/tver_playable_mobile.css"];
+            }
+
+            chrome.scripting.registerContentScripts([script]);
         }
 
     } else {
