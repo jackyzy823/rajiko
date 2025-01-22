@@ -123,44 +123,40 @@ export async function setUpBonus(enabled) {
         // NOTE: if using manifest-> "incognito": "split"
         // (for opening url in incognito tab instead of normal tab when clicking link in popup meu under incognito window),
         // add chrome.extension.inIncognitoContext in script id to avoid duplication.
-        if (!isFirefox()) {
-            chrome.runtime.getPlatformInfo(async info => {
-                if (info.os == "linux") {
-                    let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["chrome_linux_ua"] });
-                    if (result && result.length > 0) {
-                        // Already registered
-                        return;
-                    }
+        let info = await chrome.runtime.getPlatformInfo();
 
-                    chrome.scripting.registerContentScripts([
-                        {
-                            id: "chrome_linux_ua",
-                            js: ["ui/chrome_linux_ua_inspect.js"],
-                            matches: ["https://*.tver.jp/*"],
-                            // Keypoint 1: run before `getEnvType` in Tver.
-                            runAt: "document_start",
-                            // Keypoint 2: don't isolate.
-                            world: "MAIN"
-                        }
-                    ]);
+        if (info.os == "linux" || (info.os == "android" && isFirefox())) {
+            let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["tver_playable_ua"] });
+            if (result && result.length > 0) {
+                // Already registered
+                return;
+            }
+
+            chrome.scripting.registerContentScripts([
+                {
+                    id: "tver_playable_ua",
+                    js: ["ui/tver_playable_ua_inspect.js"],
+                    matches: ["https://*.tver.jp/*"],
+                    // Keypoint 1: run before `getEnvType` in Tver.
+                    runAt: "document_start",
+                    // Keypoint 2: don't isolate.
+                    world: "MAIN"
                 }
-            });
+            ]);
         }
+
     } else {
         // Should check if exists?
         chrome.declarativeNetRequest.updateSessionRules({
             removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
         });
-        if (!isFirefox()) {
-            chrome.runtime.getPlatformInfo(async info => {
-                if (info.os == "linux") {
-                    let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["chrome_linux_ua"] });
-                    if (result && result.length > 0) {
-                        // Already registered
-                        await chrome.scripting.unregisterContentScripts({ ids: ["chrome_linux_ua"] });
-                    }
-                }
-            });
+        let info = await chrome.runtime.getPlatformInfo();
+        if (info.os == "linux" || (info.os == "android" && isFirefox())) {
+            let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["tver_playable_ua"] });
+            if (result && result.length > 0) {
+                // Already registered
+                await chrome.scripting.unregisterContentScripts({ ids: ["tver_playable_ua"] });
+            }
         }
     }
 }

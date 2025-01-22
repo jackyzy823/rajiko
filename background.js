@@ -269,7 +269,31 @@ async function initialize() {
 
   if (!isFirefox()) {
     updateAreaRules(area_id, info);
+  } else {
+    // Firefox mobile    
+    let info = await chrome.runtime.getPlatformInfo();
+    if (info.os == "android") {
+      let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["radiko_mobile"] });
+      if (!(result && result.length > 0)) {
+        // Not registered yet
+        chrome.scripting.registerContentScripts([
+          {
+            id: "radiko_mobile",
+            js: ["ui/mobile_start.js"],
+            css: ["ui/mobile.css"],
+            matches: ["https://*.radiko.jp/*"],
+            runAt: "document_start",
+            // Keypoint 2: don't isolate.
+            world: "MAIN"
+          }
+        ]);
+      }
+    }
+
   }
+
+
+
 
   await setUpBonus(bonus);
 }
