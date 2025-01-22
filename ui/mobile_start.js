@@ -27,7 +27,10 @@ document.addEventListener("DOMContentLoaded", function (event) {
 // To bypass Radiko.Device.isMobile check when reloading on #! paths.
 function changeMobileUA() {
   let change_mobile_ua = document.createElement("script");
-  // TODO supported in Firefox MV3 or not ?
+  // inline script supported in Firefox MV3? Yes. Because:
+  // and runtime.getURL -> no
+  // Ref: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/scripting/ExecutionWorld
+  // Scripts in this environment do not have any access to APIs that are only available to content scripts.
   change_mobile_ua.textContent = `(function(){Object.defineProperty(window.navigator, 'userAgent', { value:  window.navigator.userAgent.replace(/android.*?\;/gi, "").replace(/mobile/gi, "")});})();`
   document.head.appendChild(change_mobile_ua);
 };

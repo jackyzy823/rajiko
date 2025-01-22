@@ -125,7 +125,8 @@ export async function setUpBonus(enabled) {
         // add chrome.extension.inIncognitoContext in script id to avoid duplication.
         let info = await chrome.runtime.getPlatformInfo();
 
-        if (info.os == "linux" || (info.os == "android" && isFirefox())) {
+        // Edge for Android can install extensions too.
+        if (info.os == "linux" || info.os == "android") {
             let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["tver_playable_ua"] });
             if (result && result.length > 0) {
                 // Already registered
@@ -141,7 +142,8 @@ export async function setUpBonus(enabled) {
                 // Keypoint 2: don't isolate.
                 world: "MAIN"
             }
-            if ((info.os == "android" && isFirefox())) {
+            // Edge for Android can install extensions too.
+            if ((info.os == "android")) {
                 script.css = ["ui/tver_playable_mobile.css"];
             }
 
@@ -154,7 +156,8 @@ export async function setUpBonus(enabled) {
             removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
         });
         let info = await chrome.runtime.getPlatformInfo();
-        if (info.os == "linux" || (info.os == "android" && isFirefox())) {
+        // Edge for Android can install extensions too.
+        if (info.os == "linux" || info.os == "android") {
             let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["tver_playable_ua"] });
             if (result && result.length > 0) {
                 // Already registered
@@ -293,3 +296,29 @@ export function updateAreaRules(area_id, info) {
     )
 }
 
+
+/**
+ * script for tver on mobile
+ * Edge for Android can install extensions too.
+ */
+export async function setUpMobileRadiko() {
+    let platform = await chrome.runtime.getPlatformInfo();
+    if (platform.os == "android") {
+        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["radiko_mobile"] });
+        if (result && result.length > 0) {
+            // Already registered
+            return;
+        }
+        chrome.scripting.registerContentScripts([
+            {
+                id: "radiko_mobile",
+                js: ["ui/mobile_start.js"],
+                css: ["ui/mobile.css"],
+                matches: ["https://*.radiko.jp/*"],
+                runAt: "document_start",
+                // Keypoint 2: don't isolate.
+                world: "MAIN"
+            }
+        ]);
+    }
+}
