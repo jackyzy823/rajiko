@@ -49,6 +49,13 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2025.5 - **ARIA**
+
+    Improve mobile usability
+
+    Support recochoku.jp
+
+
 + version 3.2025.3 - **sprinter**
 
     Implement MV3 on Firefox
