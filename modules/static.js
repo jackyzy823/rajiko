@@ -9,6 +9,7 @@ export const RULEID = {
     NHK_RADIO_LIVE: 10000,
     NHK_RADIO_VOD: 10001,
     TVER: 10002,
+    RECOCHOKU_USERAGENT: 10003,
     RADIO_BASE: 20000,
 }
 
@@ -34,6 +35,11 @@ export const BONUS_PERMISSION = {
     ]
 }
 
+export const RECOCHOKU_PERMISSION = {
+    origins: [
+        "*://*.recochoku.jp/*",
+    ]
+}
 //geo & device info stuff
 //data source (capital of prefectures): https://www.benricho.org/chimei/latlng_data.html  
 //data source :  jp.radiko.Player.V6FragmentAreaCheck.freeloc_init

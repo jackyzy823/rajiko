@@ -39,12 +39,13 @@ Permission Details:
 12. \*://\*.nhk.jp/\* : (bonus) support nhk radio.
 13. \*://\*.nhk.or.jp/\* : (bonus) support nhk radio.
 14. \*://\*.tver.jp/\* : (bonus) support tver.
-15. \*://edge.api.brightcove.com/\* : (bonus) tver streaming url
-16. scripting: for fixing tver not working on linux
-17. offscreen: (Chrome only)for creating auido blob url to download
+15. \*://edge.api.brightcove.com/\* : (bonus) tver streaming url.
+16. scripting: for fixing tver not working on linux.
+17. offscreen: (Chrome only)for creating auido blob url to download.
 18. \*://\*.radiko-cf.com/\*": the site where audio stored.
 19. webRequestBlocking: (Firefox only) modify request to pass the authentication.
 20. webRequestFilterResponse: (Firefox only) modify response to pass the area checkk authentication.
+21. \*://\*.recochoku.jp/\* : (bonus) support recochoku.jp.
 
 What's new:
 ----------

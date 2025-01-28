@@ -33,7 +33,8 @@
     "*://*.nhk.jp/*",
     "*://*.nhk.or.jp/*",
     "*://*.tver.jp/*",
-    "*://edge.api.brightcove.com/*"
+    "*://edge.api.brightcove.com/*",
+    "*://*.recochoku.jp/*"
   ],
   "default_locale": "ja",
   "background": {

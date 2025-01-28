@@ -1,5 +1,5 @@
 import { radioIndex } from "./constants.js"
-import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, BONUS_PERMISSION, JAPAN_IPS, APP_VERSION_MAP } from "./static.js";
+import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, BONUS_PERMISSION, JAPAN_IPS, APP_VERSION_MAP, RECOCHOKU_PERMISSION } from "./static.js";
 import { genRandomIp, isFirefox } from "./util.js"
 
 /**
@@ -147,7 +147,7 @@ export async function setUpBonus(enabled) {
                 script.css = ["ui/tver_playable_mobile.css"];
             }
 
-            chrome.scripting.registerContentScripts([script]);
+            await chrome.scripting.registerContentScripts([script]);
         }
 
     } else {
@@ -309,7 +309,7 @@ export async function setUpMobileRadiko() {
             // Already registered
             return;
         }
-        chrome.scripting.registerContentScripts([
+        await chrome.scripting.registerContentScripts([
             {
                 id: "radiko_mobile",
                 js: ["ui/mobile_start.js"],
@@ -320,5 +320,69 @@ export async function setUpMobileRadiko() {
                 world: "MAIN"
             }
         ]);
+    }
+}
+
+export async function setUpRecochokuUserAgent(enabled) {
+    if (enabled === true) {
+        let matched = await chrome.permissions.contains(RECOCHOKU_PERMISSION);
+        // In Firefox, set up rules and options even permission request failed.
+        if (!matched && !isFirefox()) {
+            // reset to disabled
+            await chrome.storage.local.set({ "recochoku_ua": false });
+            return;
+        }
+
+        chrome.declarativeNetRequest.updateSessionRules({
+            addRules: [
+                {
+                    id: RULEID.RECOCHOKU_USERAGENT,
+                    action: {
+                        type: "modifyHeaders",
+                        requestHeaders: [
+                            {
+                                header: "User-Agent",
+                                operation: "set",
+                                // or "wget"
+                                value: "curl"
+                            }
+                        ]
+                    },
+                    condition: {
+                        // main_frame.
+                        // css/js is also blocked.
+                        // and https://recochoku.jp/trial/music
+                        resourceTypes: ["main_frame", "stylesheet", "script", "xmlhttprequest", "image"],
+                        requestDomains: ["recochoku.jp"],
+                    }
+                }
+            ],
+            removeRuleIds: [RULEID.RECOCHOKU_USERAGENT]
+        });
+
+
+        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["recochoku_header_caution"] });
+        if (result && result.length > 0) {
+            // Already registered
+            return;
+        }
+
+        await chrome.scripting.registerContentScripts([{
+            id: "recochoku_header_caution",
+            matches: ["https://*.recochoku.jp/*"],
+            css: ["ui/recochoku_header_caution.css"],
+            runAt: "document_start",
+        }]);
+
+    } else {
+        chrome.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: [RULEID.RECOCHOKU_USERAGENT]
+        });
+
+        let result = await chrome.scripting.getRegisteredContentScripts({ ids: ["recochoku_header_caution"] });
+        if (result && result.length > 0) {
+            // Already registered
+            await chrome.scripting.unregisterContentScripts({ ids: ["recochoku_header_caution"] });
+        }
     }
 }

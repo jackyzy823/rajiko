@@ -2,14 +2,14 @@ import { APP_VERSION_MAP, APP_KEY_MAP, IGNORELIST } from "./modules/static.js";
 import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox } from "./modules/util.js"
 import { downloadtimeShift } from "./modules/timeshift.js"
 import { retrieve_token } from "./modules/auth.js"
-import { updateRadioRules, setUpBonus, updateAreaRules, setUpMobileRadiko } from "./modules/rules.js";
+import { updateRadioRules, setUpBonus, updateAreaRules, setUpMobileRadiko, setUpRecochokuUserAgent } from "./modules/rules.js";
 import { radioAreaId, areaMap, areaList, areaSuffixList } from "./modules/constants.js";
 import { stream_listener_builder } from "./modules/recording.js"
 
 // try {
-// Even with declarativeNetRequestFeedback and extensions.dnr.feedback,
-// onRuleMatchedDebug is still not work under Firefox.
-// chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
+//   // Even with declarativeNetRequestFeedback and extensions.dnr.feedback,
+//   // onRuleMatchedDebug is still not work under Firefox.
+//   chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(info => console.log(info));
 // } catch { }
 
 
@@ -36,6 +36,8 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
   } else if (msg["update-bonus"]) {
     // This works for firefox too
     await setUpBonus(msg["update-bonus"] == "yes");
+  } else if (msg["update-recochoku"]) {
+    await setUpRecochokuUserAgent(msg["update-recochoku"] == "yes")
   } else if (msg["download-timeshift"]) {
     let link = msg["download-timeshift"];
     console.log(`start donwload timeshift ${link}`);
@@ -244,26 +246,29 @@ chrome.webRequest.onHeadersReceived.addListener(
 async function initialize() {
   let {
     selected_areaid: area_id,
-    bonus_feature: bonus
-  } = await chrome.storage.local.get(["selected_areaid", "bonus_feature"]);
+    bonus_feature: bonus,
+    recochoku_ua: recochoku_ua
+  } = await chrome.storage.local.get(["selected_areaid", "bonus_feature", "recochoku_ua"]);
   //if not selected_areaid use default value:JP13
-  if (!area_id) {
-    area_id = "JP13";
-    await chrome.storage.local.set({ "selected_areaid": area_id });
-  }
-  // Re-generate device info every initalization
-  // Why use storage.local instead of storage.session for device info?
-  // See issue: https://issues.chromium.org/issues/389232707
-  let info = genRandomInfo();
-  console.log("Using ", info, " for ", area_id);
+  if (!area_id) { area_id = "JP13"; }
+  if (!bonus) { bonus = false; }
+  if (!recochoku_ua) { recochoku_ua = false; }
 
   //clean previous unfinshed recording or downloading content if exists.
   await chrome.storage.local.clear();
   await chrome.storage.local.set({
     "selected_areaid": area_id,
-    "device_info": info,
     "bonus_feature": bonus,
+    "recochoku_ua": recochoku_ua,
   });
+
+  // Re-generate device info every initalization
+  // Why use storage.local instead of storage.session for device info?
+  // See issue: https://issues.chromium.org/issues/389232707
+  let info = genRandomInfo();
+  console.log("Using ", info, " for ", area_id);
+  await chrome.storage.local.set({ "device_info": info });
+
 
   chrome.action.setBadgeText?.({ text: "" });
 
@@ -272,6 +277,7 @@ async function initialize() {
   }
 
   await setUpBonus(bonus);
+  await setUpRecochokuUserAgent(recochoku_ua);
   await setUpMobileRadiko();
 }
 
