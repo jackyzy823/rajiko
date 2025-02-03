@@ -693,4 +693,8 @@ $.Radiko.login_status.premium = 1;
 // $.Radiko.login_status.timefreeplus = 1;
 
 window.isStationInArea = function () { return true; }
-
+// `Preroll` is CM/AD related
+// See onChunkListLoaded case 'AD-TYPE':
+// 0 is for premium, so i think it is no-ad
+// 2 maybe has AD
+window.getPrerollParam = () => { return '0'; }
