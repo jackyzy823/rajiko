@@ -406,15 +406,7 @@ if (isFirefox()) {
   // THE correct way to set authtoken to m3u8
   chrome.webRequest.onBeforeSendHeaders.addListener(async req => {
     if (initiatorFromExtension(req)) { return; }
-    let radioname;
-    (new URL(req.url)).search.slice(1).split('&').map(function (kv) {
-      let s = kv.split('=');
-      switch (s[0]) {
-        case 'station_id':
-          radioname = s[1];
-          break;
-      }
-    });
+    let radioname = (new URL(req.url)).searchParams.get("station_id");
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get("selected_areaid");
     if (radioAreaId[radioname].area.includes(selected_areaid)) {
       return {};

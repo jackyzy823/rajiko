@@ -17,15 +17,7 @@ function loadArea(regionIdx) {
 // Looks not necessary for `tmpUrl`, timeshift only change `url`
 function stripM3u8link(link) {
     let m3u8link = new URL(link);
-    m3u8link.search = "?" + m3u8link.search.slice(1).split('&').filter((kv) => {
-        let [k, v] = kv.split('=');
-        if (["seek"].includes(k)) {
-            return false;
-        } else {
-            return true
-        }
-
-    }).join("&");
+    m3u8link.searchParams.delete("seek");
     return m3u8link.toString();
 }
 

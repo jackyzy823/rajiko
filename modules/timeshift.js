@@ -35,21 +35,11 @@ async function cleanuptask(link) {
 }
 
 export async function downloadtimeShift(link, default_area_id) {
-    let radioname, from, to;
-    (new URL(link)).search.slice(1).split('&').map(kv => {
-        let [k, v] = kv.split('=');
-        switch (k) {
-            case 'station_id':
-                radioname = v;
-                break;
-            case 'ft':
-                from = v;
-                break;
-            case 'to':
-                to = v;
-                break;
-        }
-    });
+    let searchParams = (new URL(link)).searchParams;
+    let radioname = searchParams.get("station_id");
+    let from = searchParams.get("ft");
+    let to = searchParams.get("to");
+
     let filename = radioname + '_' + from + '_' + to + '.aac';
     console.log(`timeshift file ${filename}`);
     let [token, area_id] = await retrieve_token(radioname, default_area_id);
