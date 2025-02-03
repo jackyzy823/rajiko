@@ -276,9 +276,10 @@ async function initialize() {
     updateAreaRules(area_id, info);
   }
 
-  await setUpBonus(bonus);
-  await setUpRecochokuUserAgent(recochoku_ua);
-  await setUpMobileRadiko();
+  // Wired bug under incognito:split , contentscript id duplication?
+  try { await setUpBonus(bonus); } catch (ex) { console.warn(ex) }
+  try { await setUpRecochokuUserAgent(recochoku_ua); } catch (ex) { console.warn(ex) }
+  try { await setUpMobileRadiko(); } catch (ex) { console.warn(ex) }
 }
 
 chrome.runtime.onInstalled.addListener(async (data) => {
