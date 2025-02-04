@@ -239,8 +239,12 @@ chrome.webRequest.onHeadersReceived.addListener(
       },
     });
 
-    // TODO: re-consider for tf30
-    // Don't save the token from default_area_id to avoid race condition.
+    // <del>Don't</del> save the token from default_area_id <del>to avoid race condition.</del>
+    if (resp2.status == 200) {
+      let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
+      authTokens[area_id] = { token: token, requestTime: Date.now() };
+      await chrome.storage.session.set({ "auth_tokens": authTokens });
+    }
   },
   {
     urls: ["*://*.radiko.jp/v2/api/auth1*"]
