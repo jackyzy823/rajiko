@@ -126,3 +126,12 @@ async function apk_auth(area_id, info) {
     // await chrome.storage.session.set({ "auth_tokens": authTokens });
 
 }
+
+// Seem from yt-dlp-rajiko
+async function auth_check(token) {
+    let resp = await fetch("https://radiko.jp/v2/api/auth_check", { headers: { 'X-Radiko-AuthToken': token } });
+    if (resp.status == 401) { return false; }
+    let text = await resp.text();
+    if (text != "OK") { return false; }
+    return true;
+}
