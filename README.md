@@ -13,6 +13,7 @@ How to use:
 2. Do nothing or change default area by clicking icon which only affects live area.
 3. Recording live or download timeshift by clicking icon. 
 4. Click icon or click pause button to stop recording.
+5. If you have a timefree30 plan (or double plan), you could download timefree30 timeshift after logged in. (Note: for Firefox private mode, you need to login in normal mode too)
 
 
 Sponsor me!
@@ -49,6 +50,11 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2025.6 - **serenato**
+
+    Thanks to the help of a sponsor, implemented timeshift30 download. Note: You need login Radiko premium account with timeshift30 plan or double plan! For firefox private mode user: you need to login Radiko premium account in normal mode to download timeshift30. (This is a firefox defect.)
+
+
 + version 3.2025.5 - **ARIA**
 
     Improve mobile usability
