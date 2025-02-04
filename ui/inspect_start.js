@@ -689,9 +689,6 @@ if (!store.get('rdk_profile_data')) {
 $.Radiko.login_status.areafree = 1;
 $.Radiko.login_status.premium = 1;
 
-// 30days is not bypass-able.
-// $.Radiko.login_status.timefreeplus = 1;
-
 window.isStationInArea = function () { return true; }
 // `Preroll` is CM/AD related
 // See onChunkListLoaded case 'AD-TYPE':

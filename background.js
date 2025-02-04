@@ -217,6 +217,13 @@ chrome.webRequest.onHeadersReceived.addListener(
 
 
     let partial = btoa(atob(APP_KEY_MAP[APP_VERSION_MAP[info.appversion]]).slice(offset, offset + length));
+    // Allow cookie in header
+    // However if in incognito:spanning, private window will load cookie from normal window (and you can't choose which cookie store to use)
+    // But firefox doesn't support incognito:split
+    // https://github.com/Tampermonkey/tampermonkey/issues/816
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1380812
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1670278
+    // ** So firefox user should be warned **
     let resp2 = await fetch('https://radiko.jp/v2/api/auth2', {
       headers: {
         'X-Radiko-App': APP_VERSION_MAP[info.appversion],
@@ -230,9 +237,9 @@ chrome.webRequest.onHeadersReceived.addListener(
         // modifying UA does not work here. so we use session rules RULEID.AUTH_FETCH.
         'User-Agent': info.useragent
       },
-      credentials: "omit"
     });
 
+    // TODO: re-consider for tf30
     // Don't save the token from default_area_id to avoid race condition.
   },
   {

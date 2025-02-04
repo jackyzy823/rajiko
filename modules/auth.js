@@ -4,6 +4,8 @@ import { genRandomInfo, genGPS } from "./util.js"
 
 /**
  * The max lifetime of a token is 90 mins. and Radiko web will refresh it after 70mins (42e5).
+ *
+ * Auth token generated with premium radiko_session cookie can access the tf30 resource.
  */
 export async function retrieve_token(radioname, default_area_id) {
     let availableArea = radioAreaId[radioname].area;
@@ -39,7 +41,6 @@ export async function retrieve_token(radioname, default_area_id) {
                 'X-Radiko-Device': info.device,
                 'X-Radiko-User': info.userid,
             },
-            credentials: "omit"
         });
 
         let token = auth1.headers.get('x-radiko-authtoken')
@@ -56,7 +57,6 @@ export async function retrieve_token(radioname, default_area_id) {
                 'X-Radiko-Partialkey': partial,
                 'X-Radiko-Location': genGPS(pickArea),
             },
-            credentials: "omit"
         })
         if (auth2.status == 200) {
             authTokens[pickArea] = { token: token, requestTime: Date.now() };
@@ -91,8 +91,7 @@ async function apk_auth(area_id, info) {
             "User-Agent": ua
         },
         body: JSON.stringify({ "app_id": rapp, "app_version": info.appversion, "user_id": info.userid.slice(0, 16), "device": "android" }
-        ),
-        credentials: "omit"
+        )
     });
     // Response sample {"app_type":"android","auth_token_info":{"auth_token":"<auth_token>","expires_at":"2025-01-01T00:00:00+09:00"},"delay":15,"key_length":16,"key_offset":18319,"tet_type":"android"}
     // `expires_at` shows -> 90 mins lifetime
@@ -117,8 +116,7 @@ async function apk_auth(area_id, info) {
         body: JSON.stringify({
             "auth_token": token, "partial_key": partial, "connection": "wifi",
             "location": { "latitude": lat, "longitude": lang }
-        }),
-        credentials: "omit"
+        })
     });
     // Intersting error message: (when i pass string in lat,lang)
     // message	"json error: json: cannot unmarshal string into Go struct field Location.location.latitude of type float64"
