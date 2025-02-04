@@ -1,4 +1,6 @@
 import { regions, areaListParRegion, radioAreaId } from "../modules/constants.js";
+import { isFirefox } from "../modules/util.js";
+
 function loadArea(regionIdx) {
     let area_select = document.getElementById("rajiko-area");
     while (area_select.lastChild) {
@@ -102,17 +104,30 @@ document.addEventListener("DOMContentLoaded", async function () {
         let inject_results = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: () => {
-                return {
+                let result = {
+                    hasTimeFreePlusAuthority: $.Radiko.login_status.timefreeplus,
                     tmpUrl: document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value,
                     url: document.getElementById('url') && document.getElementById('url').value
                 }
-            }
+                if (result.tmpUrl) {
+                    let ft = (new URL(result.tmpUrl)).searchParams.get("ft")
+                    if (ft) {
+                        let businessDate = window.Radiko.Date.calcBusinessDate(moment(ft, 'YYYYMMDDHHmmss').toDate());
+                        result.needsTimeFreePlusAuthority = window.Radiko.Utility.needsTimeFreePlusAuthority(businessDate);
+                    }
+                }
+                return result;
+            },
+            // to access $
+            world: "MAIN"
         });
         if (inject_results && inject_results.length >= 1 && inject_results[0] && !chrome.runtime.lastError) {
             let { result } = inject_results[0];
             let href = tab.url;
             let url = result && result.url || ''; // #RADIO or http://m3u8list
             let tmpUrl = result && result.tmpUrl || '';  // #RADIO or http://m3u8list
+            let needsTimeFreePlusAuthority = result && result.needsTimeFreePlusAuthority || false;
+            let hasTimeFreePlusAuthority = result && result.hasTimeFreePlusAuthority || false;
 
             // only show live recoding when current no work.
             if (!current_recording) {
@@ -142,8 +157,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                     download_button.hidden = false;
                     download_button.innerText = chrome.i18n.getMessage("timeshift_button");
                     download_button.onclick = async function () {
-                        await chrome.runtime.sendMessage({ "download-timeshift": stripedLink });
+                        await chrome.runtime.sendMessage({ "download-timeshift": { link: stripedLink, tf30: needsTimeFreePlusAuthority } });
                         window.close();
+                    }
+
+                    if (isFirefox() && chrome.extension.inIncognitoContext && hasTimeFreePlusAuthority && needsTimeFreePlusAuthority) {
+                        let hint = document.getElementById("firefox-tf30-incognito");
+                        hint.textContent = chrome.i18n.getMessage("firefox_tf30_incognito");
+                        hint.hidden = false;
                     }
                 }
             }

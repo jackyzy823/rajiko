@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
   } else if (msg["update-recochoku"]) {
     await setUpRecochokuUserAgent(msg["update-recochoku"] == "yes")
   } else if (msg["download-timeshift"]) {
-    let link = msg["download-timeshift"];
+    let { link: link, tf30: tf30 } = msg["download-timeshift"];
     console.log(`start donwload timeshift ${link}`);
 
     let { timeshift_list: list, selected_areaid: area_id } = await chrome.storage.local.get(["timeshift_list", "selected_areaid"]);
@@ -51,7 +51,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
 
     chrome.action.setBadgeBackgroundColor?.({ color: "#e73c64" });
     chrome.action.setBadgeText?.({ text: list.length.toString() });
-    downloadtimeShift(link, area_id);
+    downloadtimeShift(link, area_id, tf30);
   } else if (msg["start-recording"]) {
     let radioname = msg["start-recording"];
     console.log(`Strart recording ${radioname}`);

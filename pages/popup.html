@@ -46,6 +46,11 @@
             font-size: smaller;
             color: inherit;
         }
+
+        #firefox-tf30-incognito {
+            font-size: 12px;
+            word-break: break-all;
+        }
     </style>
 </head>
 
@@ -55,6 +60,10 @@
     <button type="submit" id="rajiko-confirm" class="select-style"></button>
     <button type="submit" id="rajiko-record" class="select-style" hidden></button>
     <button type="submit" id="rajiko-download" class="select-style" hidden></button>
+    <div>
+        <!-- Ugly Errr -->
+        <span id="firefox-tf30-incognito" hidden></span>
+    </div>
     <!-- Link will be opened on normal tab instead of incognito tab when popup menu is in incognito tab. -->
     <!-- Unless use manifest-> "incognito": "split"  -->
     <div>
