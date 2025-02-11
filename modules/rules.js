@@ -1,6 +1,6 @@
 import { radioIndex } from "./constants.js"
 import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, BONUS_PERMISSION, JAPAN_IPS, APP_VERSION_MAP, RECOCHOKU_PERMISSION } from "./static.js";
-import { genRandomIp, isFirefox } from "./util.js"
+import { genRandomIp } from "./util.js"
 
 /**
  * The max rule number is radioIndex.length * PLAYER_RULE_TEMPLATE.length
@@ -51,8 +51,7 @@ export function updateRadioRules(radioname, area_id, token) {
 export async function setUpBonus(enabled) {
     if (enabled === true) {
         let matched = await chrome.permissions.contains(BONUS_PERMISSION);
-        // In Firefox, set up rules and options even permission request failed.
-        if (!matched && !isFirefox()) {
+        if (!matched) {
             // reset to disabled
             await chrome.storage.local.set({ "bonus_feature": false });
             return;
@@ -326,8 +325,7 @@ export async function setUpMobileRadiko() {
 export async function setUpRecochokuUserAgent(enabled) {
     if (enabled === true) {
         let matched = await chrome.permissions.contains(RECOCHOKU_PERMISSION);
-        // In Firefox, set up rules and options even permission request failed.
-        if (!matched && !isFirefox()) {
+        if (!matched) {
             // reset to disabled
             await chrome.storage.local.set({ "recochoku_ua": false });
             return;

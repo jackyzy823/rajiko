@@ -32,9 +32,6 @@
     "timeshift_button": {
         "message": "Download Timeshift"
     },
-    "firefox_optional_permissions_alert": {
-        "message": "Due to the limitation of Firefox, you need to manually enable site permissions for this feature."
-    },
     "firefox_tf30_incognito": {
         "message": "Due to the limitation of Firefox, you need to login Radiko member in normal mode as well to download timefree30 program under private mode."
     }
