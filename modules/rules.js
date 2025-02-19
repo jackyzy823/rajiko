@@ -297,7 +297,7 @@ export function updateAreaRules(area_id, info) {
 
 
 /**
- * script for tver on mobile
+ * script for rajiko on mobile
  * Edge for Android can install extensions too.
  */
 export async function setUpMobileRadiko() {
