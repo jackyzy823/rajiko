@@ -39,8 +39,8 @@ Permission Details:
 11. declarativeNetRequest: modify request to pass the authentication.
 12. \*://\*.nhk.jp/\* : (bonus) support nhk radio.
 13. \*://\*.nhk.or.jp/\* : (bonus) support nhk radio.
-14. \*://\*.tver.jp/\* : (bonus) support tver.
-15. \*://edge.api.brightcove.com/\* : (bonus) tver streaming url.
+14. \*://\*.tver.jp/\* : (deprecated) (bonus) support tver.
+15. \*://edge.api.brightcove.com/\* : (deprecated) (bonus) tver streaming url.
 16. scripting: for fixing tver not working on linux.
 17. offscreen: (Chrome only)for creating auido blob url to download.
 18. \*://\*.radiko-cf.com/\*": the site where audio stored.
@@ -50,6 +50,12 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2025.7 - **seventh heaven**
+
+    Fix firefox option permission request
+
+    Remove TVer geo-bypass support due to media endpoint changed (but reserve the fix for TVer under linux and TVer width under Android)
+
 + version 3.2025.6 - **serenato**
 
     Thanks to the help of a sponsor, implemented timeshift30 download. Note: You need login Radiko premium account with timeshift30 plan or double plan! For firefox private mode user: you need to login Radiko premium account in normal mode to download timeshift30. (This is a firefox defect.)
