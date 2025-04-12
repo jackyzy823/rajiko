@@ -50,6 +50,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2025.8 - **sandpiper**
+
+    Split nhkradio and tver options
+
 + version 3.2025.7 - **seventh heaven**
 
     Fix firefox option permission request

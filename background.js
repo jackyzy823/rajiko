@@ -2,7 +2,7 @@ import { APP_VERSION_MAP, APP_KEY_MAP, IGNORELIST } from "./modules/static.js";
 import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox } from "./modules/util.js"
 import { downloadtimeShift } from "./modules/timeshift.js"
 import { retrieve_token } from "./modules/auth.js"
-import { updateRadioRules, setUpBonus, updateAreaRules, setUpMobileRadiko, setUpRecochokuUserAgent } from "./modules/rules.js";
+import { updateRadioRules, setUpNHKRadio, setUpTVer, updateAreaRules, setUpMobileRadiko, setUpRecochokuUserAgent } from "./modules/rules.js";
 import { radioAreaId, areaMap, areaList, areaSuffixList } from "./modules/constants.js";
 import { stream_listener_builder } from "./modules/recording.js"
 
@@ -33,11 +33,13 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
   } else if (msg["share-redirect"]) {
     let param = msg["share-redirect"];
     chrome.tabs.update(sender.tab.id, { "url": "https://radiko.jp/#!/ts/" + param.station + "/" + param.t });
-  } else if (msg["update-bonus"]) {
+  } else if (msg["update-nhkradio"]) {
     // This works for firefox too
-    await setUpBonus(msg["update-bonus"] == "yes");
+    await setUpNHKRadio(msg["update-nhkradio"] == "yes");
   } else if (msg["update-recochoku"]) {
     await setUpRecochokuUserAgent(msg["update-recochoku"] == "yes")
+  } else if (msg["update-tver"]) {
+    await setUpTVer(msg["update-tver"] == "yes")
   } else if (msg["download-timeshift"]) {
     let { link: link, tf30: tf30 } = msg["download-timeshift"];
     console.log(`start donwload timeshift ${link}`);
@@ -258,19 +260,29 @@ async function initialize() {
   let {
     selected_areaid: area_id,
     bonus_feature: bonus,
-    recochoku_ua: recochoku_ua
-  } = await chrome.storage.local.get(["selected_areaid", "bonus_feature", "recochoku_ua"]);
+    recochoku_ua: recochoku_ua,
+    nhkradio_bypass: nhkradio_bypass,
+    tver_fix: tver_fix
+  } = await chrome.storage.local.get(["selected_areaid", "bonus_feature", "recochoku_ua", "nhkradio_bypass", "tver_fix"]);
   //if not selected_areaid use default value:JP13
   if (!area_id) { area_id = "JP13"; }
-  if (!bonus) { bonus = false; }
   if (!recochoku_ua) { recochoku_ua = false; }
+  if (!nhkradio_bypass) { nhkradio_bypass = false; }
+  if (!tver_fix) { tver_fix = false; }
+  // TODO: remove after several (like 5?) releases.
+  if (!bonus) { bonus = false; } else {
+    // Migration old bonus_feature key to tver_fix and nhkradio_bypass
+    tver_fix = true;
+    nhkradio_bypass = true;
+  }
 
   //clean previous unfinshed recording or downloading content if exists.
   await chrome.storage.local.clear();
   await chrome.storage.local.set({
     "selected_areaid": area_id,
-    "bonus_feature": bonus,
     "recochoku_ua": recochoku_ua,
+    "tver_fix": tver_fix,
+    "nhkradio_bypass": nhkradio_bypass,
   });
 
   // Re-generate device info every initalization
@@ -288,7 +300,8 @@ async function initialize() {
   }
 
   // Wired bug under incognito:split , contentscript id duplication?
-  try { await setUpBonus(bonus); } catch (ex) { console.warn(ex) }
+  try { await setUpNHKRadio(nhkradio_bypass); } catch (ex) { console.warn(ex) }
+  try { await setUpTVer(tver_fix); } catch (ex) { console.warn(ex) }
   try { await setUpRecochokuUserAgent(recochoku_ua); } catch (ex) { console.warn(ex) }
   try { await setUpMobileRadiko(); } catch (ex) { console.warn(ex) }
 }

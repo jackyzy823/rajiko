@@ -1,5 +1,5 @@
 import { radioIndex } from "./constants.js"
-import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, BONUS_PERMISSION, JAPAN_IPS, APP_VERSION_MAP, RECOCHOKU_PERMISSION } from "./static.js";
+import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, NHK_PERMISSION, JAPAN_IPS, APP_VERSION_MAP, RECOCHOKU_PERMISSION, TVER_PERMISSION } from "./static.js";
 import { genRandomIp } from "./util.js"
 
 /**
@@ -45,15 +45,15 @@ export function updateRadioRules(radioname, area_id, token) {
 }
 
 /**
- * Rules for TVer and NHK Radio.
+ * Rules for NHK Radio.
  * These rules apply on Firefox and Chrome.
  */
-export async function setUpBonus(enabled) {
+export async function setUpNHKRadio(enabled) {
     if (enabled === true) {
-        let matched = await chrome.permissions.contains(BONUS_PERMISSION);
+        let matched = await chrome.permissions.contains(NHK_PERMISSION);
         if (!matched) {
             // reset to disabled
-            await chrome.storage.local.set({ "bonus_feature": false });
+            await chrome.storage.local.set({ "nhkradio_bypass": false });
             return;
         }
         let japan_ip = genRandomIp(JAPAN_IPS);
@@ -95,28 +95,31 @@ export async function setUpBonus(enabled) {
                         initiatorDomains: ["nhk.or.jp"],
                         urlFilter: "*://vod-stream.nhk.jp/*"
                     }
-                },
-                {
-                    id: RULEID.TVER,
-                    action: {
-                        type: "modifyHeaders",
-                        requestHeaders: [
-                            {
-                                header: "X-Forwarded-For",
-                                operation: "set",
-                                value: japan_ip
-                            }
-                        ]
-                    },
-                    condition: {
-                        // To not break up other sites using brightcove CDN.
-                        initiatorDomains: ["tver.jp"],
-                        urlFilter: "*://edge.api.brightcove.com/playback/*/videos/*"
-                    }
                 }],
-            removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
+            removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD]
         });
 
+    } else {
+        // Should check if exists?
+        chrome.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD]
+        });
+    }
+}
+
+
+/**
+ * Rules for TVer UI fix.
+ * These rules apply on Firefox and Chrome.
+ */
+export async function setUpTVer(enabled) {
+    if (enabled === true) {
+        let matched = await chrome.permissions.contains(TVER_PERMISSION);
+        if (!matched) {
+            // reset to disabled
+            await chrome.storage.local.set({ "tver_fix": false });
+            return;
+        }
 
         // Tver treats Chrome under Linux as AndroidPC and then askes user to use its App.
         // NOTE: if using manifest-> "incognito": "split"
@@ -150,10 +153,6 @@ export async function setUpBonus(enabled) {
         }
 
     } else {
-        // Should check if exists?
-        chrome.declarativeNetRequest.updateSessionRules({
-            removeRuleIds: [RULEID.NHK_RADIO_LIVE, RULEID.NHK_RADIO_VOD, RULEID.TVER]
-        });
         let info = await chrome.runtime.getPlatformInfo();
         // Edge for Android can install extensions too.
         if (info.os == "linux" || info.os == "android") {

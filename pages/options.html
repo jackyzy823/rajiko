@@ -20,20 +20,40 @@
         .options label span {
             vertical-align: middle;
         }
+
+        .options ul {
+            list-style: none;
+            padding-left: 0;
+        }
     </style>
 </head>
 
 <body>
     <!-- TODO UI -->
     <div class="options">
-        <label for="bonus">
-            <input type="checkbox" id="bonus">
-            <span>Bypass NHK Radio Geo-Blocking</span>
-        </label>
-        <label for="recochoku">
-            <input type="checkbox" id="recochoku">
-            <span>Modify User-Agent to view recochoku.jp</span>
-        </label>
+        <ul>
+            <li>
+                <label for="nhkradio">
+                    <input type="checkbox" id="nhkradio">
+                    <span>Bypass NHK Radio Geo-Blocking</span>
+                </label>
+            </li>
+            <li>
+                <label for="recochoku">
+                    <input type="checkbox" id="recochoku">
+                    <span>Modify User-Agent to view recochoku.jp</span>
+                </label>
+            </li>
+            <li>
+                <label for="tver">
+                    <input type="checkbox" id="tver">
+                    <span>Make TVer work under linux and fix TVer UI under Android</span>
+                </label>
+            </li>
+        </ul>
+
+
+
     </div>
 </body>
 

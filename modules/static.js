@@ -8,7 +8,7 @@ export const RULEID = {
     AUTH_FETCH: 5004,
     NHK_RADIO_LIVE: 10000,
     NHK_RADIO_VOD: 10001,
-    TVER: 10002,
+    // (Deprecated) TVER: 10002,
     RECOCHOKU_USERAGENT: 10003,
     RADIO_BASE: 20000,
 }
@@ -26,12 +26,16 @@ export const PLAYER_RULE_TEMPLATE = [
     `*://*.smartstream.ne.jp/${TEMPLATE_RADIO_NAME}/_definst_/simul-stream.stream/playlist.m3u8*`
 ]
 
-export const BONUS_PERMISSION = {
+export const NHK_PERMISSION = {
     origins: [
         "*://*.nhk.jp/*",
-        "*://*.nhk.or.jp/*",
+        "*://*.nhk.or.jp/*"
+    ]
+}
+
+export const TVER_PERMISSION = {
+    origins: [
         "*://*.tver.jp/*",
-        "*://edge.api.brightcove.com/*"
     ]
 }
 
