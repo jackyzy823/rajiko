@@ -295,15 +295,13 @@ Suppport List:
 ------------------
 + firefox latest
 
-+ chrome latest
-
-+ chromium latest
-
-+ yandex browser latest
++ chromium like browser latest
 
 + firefox for android latest
 
 + kiwi browser for android
+
++ Edge browser for android (UI modification seems not work)
 
 Known Issue:
 ---------------
