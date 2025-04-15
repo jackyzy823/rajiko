@@ -109,13 +109,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                     tmpUrl: document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value,
                     url: document.getElementById('url') && document.getElementById('url').value
                 }
-                if (result.tmpUrl) {
-                    let ft = (new URL(result.tmpUrl)).searchParams.get("ft")
-                    if (ft) {
-                        let businessDate = window.Radiko.Date.calcBusinessDate(moment(ft, 'YYYYMMDDHHmmss').toDate());
-                        result.needsTimeFreePlusAuthority = window.Radiko.Utility.needsTimeFreePlusAuthority(businessDate);
+                try {
+                    if (result.tmpUrl && result.tmpUrl[0] != "#") {
+                        let ft = (new URL(result.tmpUrl)).searchParams.get("ft")
+                        if (ft) {
+                            let businessDate = window.Radiko.Date.calcBusinessDate(moment(ft, 'YYYYMMDDHHmmss').toDate());
+                            result.needsTimeFreePlusAuthority = window.Radiko.Utility.needsTimeFreePlusAuthority(businessDate);
+                        }
                     }
-                }
+                } catch { };
                 return result;
             },
             // to access $

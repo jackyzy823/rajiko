@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     downloadtimeShift(link, area_id, tf30);
   } else if (msg["start-recording"]) {
     let radioname = msg["start-recording"];
-    console.log(`Strart recording ${radioname}`);
+    console.log(`Start recording ${radioname}`);
     // store in session, for popup menu to check if has running recording and  get current recording's radioname
     await chrome.storage.session.set({ "current_recording": radioname });
 

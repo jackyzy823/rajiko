@@ -50,6 +50,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2025.9 - **I have a dream**
+
+    Fix live recording bug when getting from_time.
+
 + version 3.2025.8 - **sandpiper**
 
     Split nhkradio and tver options
