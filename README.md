@@ -50,6 +50,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2025.10 - **ring your bell**
+
+    Update for special radio station: MAJAL
+
 + version 3.2025.9 - **I have a dream**
 
     Fix live recording bug when getting from_time.
