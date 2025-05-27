@@ -1,6 +1,5 @@
 import { APP_VERSION_MAP, APP_KEY_MAP } from "./static.js";
-import { radioAreaId } from "./constants.js"
-import { genRandomInfo, genGPS } from "./util.js"
+import { genRandomInfo, genGPS, radioAreaId } from "./util.js"
 
 /**
  * The max lifetime of a token is 90 mins. and Radiko web will refresh it after 70mins (42e5).
@@ -8,7 +7,7 @@ import { genRandomInfo, genGPS } from "./util.js"
  * Auth token generated with premium radiko_session cookie can access the tf30 resource.
  */
 export async function retrieve_token(radioname, default_area_id) {
-    let availableArea = radioAreaId[radioname].area;
+    let availableArea = (await radioAreaId.get(radioname)).area;
     let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
 
     let hadTokenArea = availableArea.filter((area) => {

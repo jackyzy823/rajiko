@@ -1,15 +1,15 @@
-import { radioIndex } from "./constants.js"
 import { PLAYER_RULE_TEMPLATE, TEMPLATE_RADIO_NAME, RULEID, NHK_PERMISSION, JAPAN_IPS, APP_VERSION_MAP, RECOCHOKU_PERMISSION, TVER_PERMISSION } from "./static.js";
-import { genRandomIp } from "./util.js"
+import { genRandomIp, radioAreaId } from "./util.js"
 
 /**
- * The max rule number is radioIndex.length * PLAYER_RULE_TEMPLATE.length
- * For now it is 109 * 5 = 540
+ * The max rule number is ( radioAreaId.constant's length + radioAreaId.dynamic's length ) * PLAYER_RULE_TEMPLATE.length
+ * For now it is 110 * 5 = 550
  * TODO what about rule expired?
  * TODO what if there's a new radio. Fetch https://radiko.jp/index/RADIONAME then parse DOM in offscreen
  */
 export function updateRadioRules(radioname, area_id, token) {
-    let idx = radioIndex.indexOf(radioname);
+    let idx = radioAreaId.index(radioname);
+    if (idx == -1) { return; }
     let rules = { addRules: [], removeRuleIds: [] };
     let rules_count = PLAYER_RULE_TEMPLATE.length;
 
