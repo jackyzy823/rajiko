@@ -1,4 +1,4 @@
-import { areaList } from "./constants.js"
+import { areaList,radioAreaIdConstant } from "./constants.js"
 import { coordinates, VERSION_MAP, MODEL_LIST, APP_VERSION_MAP } from "./static.js"
 
 export function genRandomInfo() {
@@ -191,5 +191,46 @@ export async function revokeBlobUrl(blob) {
         await chrome.offscreen.closeDocument();
     } else {
         URL.revokeObjectURL(blob);
+    }
+}
+
+export const radioAreaId = {
+    async get(key) {
+        if (key in this.constant) {
+            return this.constant[key];
+        }
+
+        console.log("missing key for radio");
+
+        // Hope this will never be used.
+
+        // Should we update the dynamic one periodly?
+        if (key in this.dynamic) {
+            console.log("dynmiac radio");
+            return this.dynamic[key];
+        }
+        // The radio is newly added or temp one
+
+        // Thanks to @garret1317 for this API
+        let resp = await fetch("https://radiko.jp/api/stations/batchGetStations?stationId=" + key)
+        let info = await resp.json();
+
+        if (info.ok) {
+            // info.stationList[0].id should  ==  key
+            this.dynamic[key] = {
+                "name": info.stationList[0].name,
+                "area": info.stationList[0].prefecturesList
+            };
+            console.log("fetch key and update dynamic");
+            return this.dynamic[key];
+        }
+    },
+    constant: radioAreaIdConstant,
+    dynamic: {},
+    // This is only used in updateRadioRules For calcuating RULEID
+    // at this time we won't update dynamic, since it is updated before the call of updateRadioRules (like check selected area is included in areas)
+    index(key) {
+        let arr = Object.keys(this.constant).concat(Object.keys(this.dynamic))
+        return arr.indexOf(key)
     }
 }

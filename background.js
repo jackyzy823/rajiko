@@ -1,9 +1,9 @@
 import { APP_VERSION_MAP, APP_KEY_MAP, IGNORELIST } from "./modules/static.js";
-import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox } from "./modules/util.js"
+import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox, radioAreaId } from "./modules/util.js"
 import { downloadtimeShift } from "./modules/timeshift.js"
 import { retrieve_token } from "./modules/auth.js"
 import { updateRadioRules, setUpNHKRadio, setUpTVer, updateAreaRules, setUpMobileRadiko, setUpRecochokuUserAgent } from "./modules/rules.js";
-import { radioAreaId, areaMap, areaList, areaSuffixList } from "./modules/constants.js";
+import { areaMap, areaList, areaSuffixList } from "./modules/constants.js";
 import { stream_listener_builder } from "./modules/recording.js"
 
 // try {
@@ -98,7 +98,7 @@ if (!isFirefox()) {
       let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
       console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
 
-      if (radioAreaId[radioname].area.includes(selected_areaid)) {
+      if ((await radioAreaId.get(radioname)).area.includes(selected_areaid)) {
         return;
       }
 
@@ -151,7 +151,7 @@ chrome.webRequest.onBeforeRequest.addListener(
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get(["selected_areaid"]);
     console.log(`Hit ${req.url} radioname ${radioname} , area ${selected_areaid}`);
 
-    if (radioAreaId[radioname].area.includes(selected_areaid)) {
+    if ((await radioAreaId.get(radioname)).area.includes(selected_areaid)) {
       return;
     }
     // Too LATE
@@ -432,7 +432,7 @@ if (isFirefox()) {
     if (initiatorFromExtension(req)) { return; }
     let radioname = (new URL(req.url)).searchParams.get("station_id");
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get("selected_areaid");
-    if (radioAreaId[radioname].area.includes(selected_areaid)) {
+    if ((await radioAreaId.get(radioname)).area.includes(selected_areaid)) {
       return {};
     }
 

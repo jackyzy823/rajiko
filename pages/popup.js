@@ -1,5 +1,5 @@
-import { regions, areaListParRegion, radioAreaId } from "../modules/constants.js";
-import { isFirefox } from "../modules/util.js";
+import { regions, areaListParRegion } from "../modules/constants.js";
+import { isFirefox, radioAreaId } from "../modules/util.js";
 
 function loadArea(regionIdx) {
     let area_select = document.getElementById("rajiko-area");
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (url[0] == '#') {
                     //playing live
                     record_button.hidden = false;
-                    record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
+                    record_button.innerText = chrome.i18n.getMessage("record_button_to_start", (await radioAreaId.get(url.slice(1))).name);
                     record_button.onclick = async function (data) {
                         await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id });
                         window.close();
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     //viewing live
                     //Should care about service worker's lifecycle.
                     record_button.hidden = false;
-                    record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
+                    record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", (await radioAreaId.get(tmpUrl.slice(1))).name);
                     record_button.onclick = async function (data) {
                         await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id });
                         window.close();
