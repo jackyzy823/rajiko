@@ -50,6 +50,12 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2026.1 - **moonfesta**
+
+    Update radio map
+
+    Fix Chrome 144+, `browser` namespace problem.
+
 + version 3.2025.10 - **ring your bell**
 
     Update for special radio station: MAJAL
