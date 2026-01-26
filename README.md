@@ -50,6 +50,12 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2026.2 - **Magia**
+
+    Fix timeshift download issue
+
+    Add data_collection_permissions in Firefox manifest
+
 + version 3.2026.1 - **moonfesta**
 
     Update radio map

@@ -1,8 +1,5 @@
-
 import { parseAAC, ab2str, str2ab, getBlobUrl, revokeBlobUrl } from "./util.js"
 import { retrieve_token } from "./auth.js"
-
-
 
 // https://stackoverflow.com/a/73517935
 async function worker(arr, func, limit = 5) {
@@ -21,7 +18,6 @@ async function worker(arr, func, limit = 5) {
     await Promise.all(workers);
     return results;
 }
-
 
 async function cleanuptask(link) {
     let { timeshift_list: list } = await chrome.storage.local.get({ "timeshift_list": [] });
@@ -107,6 +103,8 @@ function seek(dt, l) {
 }
 
 /**
+ *  @20260126 It looks like https://radiko.jp/v2/api/ts/playlist.m3u8 endpoint no longer works (returns 404), so we must switch to new style endpoint which is used in tf30 programs already.
+ *
  *  It looks like only https://radiko.jp/v2/api/ts/playlist.m3u8 API, returns full aac list
  *  intermediate url: https://radiko.jp/v2/api/ts/chunklist/xxxxx.m3u8
  *  Other endpoint returns `l` seconds.
@@ -137,68 +135,42 @@ export async function downloadtimeShift(link, default_area_id, tf30) {
     */
     // if (isTimefreePlus(from)) {
     // Use the value from Radiko site.
-    if (tf30) {
-        // from yt-dlp-rajiko: the max accepted seek value.
-        const FIXED_SEEK = 300;
-        // whatever token has tf30 or not , just make a try
-        let url = new URL(await playlist_create_url(radioname));
-        let param = url.searchParams;
-        param.set("lsid", (() => {
-            let hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
-            let s = '';
-            for (let i = 0; i < 32; i++) {
-                s += hex[(Math.floor(Math.random() * hex.length)) >> 0];
-            }
-            return s;
-        })());
-        param.set("station_id", radioname);
-        param.set("l", FIXED_SEEK);
-        param.set("start_at", from);
-        param.set("end_at", to);
-        // b for station in area , c for not ,see `connectionType`
-        param.set("type", "b");
-        // These are not necessary (but we should look the same)
-        param.set("ft", from);
-        param.set("to", to);
 
-        // new style method like recording
-        for (
-            // Init
-            let end_date = toDate(to), seek_str = from, seek_date = toDate(from);
-            // Condtion
-            seek_date < end_date;
-            // Increment
-            [seek_date, seek_str] = seek(seek_date, FIXED_SEEK)
-        ) {
-            param.set("seek", seek_str);
-
-            let response = await fetch(url.toString(), {
-                headers: {
-                    'X-Radiko-AreaId': area_id,
-                    'X-Radiko-AuthToken': token
-                }
-            });
-
-            let resp = await response.text();
-            if (!response.ok || response.status == 403 || resp == "expired") {
-                await cleanuptask(link);
-                return;
-            }
-            let detailLink = resp.split('\n').filter(function (d) {
-                return d[0] != '#' && d.trim() != '';
-            })[0];
-
-            let response2 = await fetch(detailLink);
-
-            let resp2 = await response2.text();
-            let partLinks = resp2.split('\n').filter(function (d) {
-                return d[0] != '#' && d.trim() != '';
-            });
-            links.push(...partLinks);
+    // from yt-dlp-rajiko: the max accepted seek value.
+    const FIXED_SEEK = 300;
+    // whatever token has tf30 or not , just make a try
+    let url = new URL(await playlist_create_url(radioname));
+    let param = url.searchParams;
+    param.set("lsid", (() => {
+        let hex = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+        let s = '';
+        for (let i = 0; i < 32; i++) {
+            s += hex[(Math.floor(Math.random() * hex.length)) >> 0];
         }
+        return s;
+    })());
+    param.set("station_id", radioname);
+    param.set("l", FIXED_SEEK);
+    param.set("start_at", from);
+    param.set("end_at", to);
+    // b for station in area , c for not ,see `connectionType`
+    param.set("type", "b");
+    // These are not necessary (but we should look the same)
+    param.set("ft", from);
+    param.set("to", to);
 
-    } else {
-        let response = await fetch(link, {
+    // new style method like recording
+    for (
+        // Init
+        let end_date = toDate(to), seek_str = from, seek_date = toDate(from);
+        // Condtion
+        seek_date < end_date;
+        // Increment
+        [seek_date, seek_str] = seek(seek_date, FIXED_SEEK)
+    ) {
+        param.set("seek", seek_str);
+
+        let response = await fetch(url.toString(), {
             headers: {
                 'X-Radiko-AreaId': area_id,
                 'X-Radiko-AuthToken': token
@@ -206,7 +178,6 @@ export async function downloadtimeShift(link, default_area_id, tf30) {
         });
 
         let resp = await response.text();
-
         if (!response.ok || response.status == 403 || resp == "expired") {
             await cleanuptask(link);
             return;
@@ -218,10 +189,10 @@ export async function downloadtimeShift(link, default_area_id, tf30) {
         let response2 = await fetch(detailLink);
 
         let resp2 = await response2.text();
-        links = resp2.split('\n').filter(function (d) {
+        let partLinks = resp2.split('\n').filter(function (d) {
             return d[0] != '#' && d.trim() != '';
         });
-
+        links.push(...partLinks);
     }
 
     // Map limit solutions:
