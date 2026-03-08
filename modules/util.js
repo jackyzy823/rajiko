@@ -93,14 +93,19 @@ export function parseAAC(data) { //data -> Arraybuffer
 export function isFirefox() {
     // https://developer.chrome.com/docs/extensions/reference/api
     // Update for Chrome 144: Beginning in Chrome 144, all Chrome Extension APIs are also available under the browser namespace (e.g. browser.tabs.create({})). This is an alias for the chrome namespace (e.g. chrome.tabs.create({})) provided for compatibility with other browsers that use the browser namespace for their extension APIs.
+    // <Update>: docs change version 144 to version 146
+
+    // Ref: https://issues.chromium.org/issues/401226626
+    // Ref: https://issues.chromium.org/issues/40753031
+    // Ref: https://issues.chromium.org/issues/41483013
+    // Ref: https://issues.chromium.org/issues/475255714
 
     // According to https://groups.google.com/a/chromium.org/g/chromium-extensions/c/gK1Sd57p4go/m/ZLsLz7GSAwAJ
+    // Object Difference: While the APIs are the same, chrome and browser are different objects. Setting browser.my_custom_var does not automatically set chrome.my_custom_var (and vice versa).
     // Check: /Chrom(ium|e)/.test(navigator.userAgent)
 
-    // Or ?
-    // Check globalThis.browser.getBrowserInfo API exists?
-
-    // Or just split to Firefox and Chrome two variants.
+    // Or Check globalThis.browser.getBrowserInfo API exists?
+    // Or just split to Firefox and Chrome two variants and conditionally include/build
 
     return globalThis.browser && globalThis.browser.runtime && globalThis.browser.runtime.id && globalThis.browser.runtime.getBrowserInfo;
 }
