@@ -50,6 +50,12 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2026.3 - **heavenly blue**
+
+    Correctly display download history in Firefox Incognito mode.
+
+    Increase firefox mobile min version requirement for data_collection_permissions.
+
 + version 3.2026.2 - **Magia**
 
     Fix timeshift download issue
