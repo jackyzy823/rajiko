@@ -42,6 +42,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     await setUpTVer(msg["update-tver"] == "yes")
   } else if (msg["download-timeshift"]) {
     let { link: link, tf30: tf30 } = msg["download-timeshift"];
+    let incognito = msg["incognito"];
     console.log(`start donwload timeshift ${link}`);
 
     let { timeshift_list: list, selected_areaid: area_id } = await chrome.storage.local.get(["timeshift_list", "selected_areaid"]);
@@ -53,9 +54,10 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
 
     chrome.action.setBadgeBackgroundColor?.({ color: "#e73c64" });
     chrome.action.setBadgeText?.({ text: list.length.toString() });
-    downloadtimeShift(link, area_id, tf30);
+    downloadtimeShift(link, area_id, tf30, incognito);
   } else if (msg["start-recording"]) {
     let radioname = msg["start-recording"];
+    let incognito = msg["incognito"];
     console.log(`Start recording ${radioname}`);
     // store in session, for popup menu to check if has running recording and  get current recording's radioname
     await chrome.storage.session.set({ "current_recording": radioname });
@@ -67,7 +69,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     //TODO Firefox listen on what? onCompleted or onBeforeSendHeaders
     chrome.webRequest.onCompleted.addListener(
       // create a listener function
-      stream_listener_builder(radioname),
+      stream_listener_builder(radioname, incognito),
       {
         urls: [
           `*://*.smartstream.ne.jp/${radioname}/*.aac*`,

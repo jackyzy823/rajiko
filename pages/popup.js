@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     record_button.hidden = false;
                     record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
                     record_button.onclick = async function (data) {
-                        await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id });
+                        await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id, "incognito": chrome.extension.inIncognitoContext });
                         window.close();
                     }
                 } else if (tmpUrl[0] == '#' && /\/live\//.test(href)) {
@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     record_button.hidden = false;
                     record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
                     record_button.onclick = async function (data) {
-                        await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id });
+                        await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id, "incognito": chrome.extension.inIncognitoContext });
                         window.close();
                     }
                 }
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     download_button.hidden = false;
                     download_button.innerText = chrome.i18n.getMessage("timeshift_button");
                     download_button.onclick = async function () {
-                        await chrome.runtime.sendMessage({ "download-timeshift": { link: stripedLink, tf30: needsTimeFreePlusAuthority } });
+                        await chrome.runtime.sendMessage({ "download-timeshift": { link: stripedLink, tf30: needsTimeFreePlusAuthority }, "incognito": chrome.extension.inIncognitoContext });
                         window.close();
                     }
 

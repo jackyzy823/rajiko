@@ -1,4 +1,4 @@
-import { parseAAC, ab2str, str2ab, getBlobUrl, revokeBlobUrl } from "./util.js"
+import { parseAAC, ab2str, str2ab, getBlobUrl, revokeBlobUrl, isFirefox } from "./util.js"
 import { retrieve_token } from "./auth.js"
 
 // https://stackoverflow.com/a/73517935
@@ -118,7 +118,7 @@ function seek(dt, l) {
  *
  *  Some program at girigiri 7 days , https://radiko.jp/v2/api/ts/playlist.m3u8 still work, but new api not work?
  */
-export async function downloadtimeShift(link, default_area_id, tf30) {
+export async function downloadtimeShift(link, default_area_id, tf30, incognito) {
     let searchParams = (new URL(link)).searchParams;
     let radioname = searchParams.get("station_id");
     let from = searchParams.get("ft");
@@ -233,10 +233,14 @@ export async function downloadtimeShift(link, default_area_id, tf30) {
                 await revokeBlobUrl(audiourl);
             }
         });
-        let downloadId = await chrome.downloads.download({
+        let downloadOptions = {
             url: audiourl,
             filename: filename
-        });
+        };
+        if (isFirefox() && incognito) {
+            downloadOptions.incognito = true;
+        }
+        let downloadId = await chrome.downloads.download(downloadOptions);
 
     } catch ({ name, message }) {
         console.warn(name, message);

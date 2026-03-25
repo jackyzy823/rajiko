@@ -1,4 +1,4 @@
-import { str2ab, ab2str, parseAAC, getBlobUrl, revokeBlobUrl, initiatorFromExtension } from "./util.js"
+import { str2ab, ab2str, parseAAC, getBlobUrl, revokeBlobUrl, initiatorFromExtension, isFirefox } from "./util.js"
 
 /**
  * Return datetime string in Asia/Tokyo timezone!
@@ -13,7 +13,7 @@ function timestamp2Filename(t) {
         }).format(new Date(t)).replaceAll("/", "").replaceAll(":", "").replaceAll(" ", "");
 }
 
-export function stream_listener_builder(radioname) {
+export function stream_listener_builder(radioname, incognito) {
     // Mostly for preparing recording.
     // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension/
     // Chrome blog: The service worker terminates after 30 seconds of inactivity. (Receiving an event or calling an extension API resets this timer).
@@ -89,10 +89,14 @@ export function stream_listener_builder(radioname) {
                         await revokeBlobUrl(audiourl);
                     }
                 });
-                let downloadId = await chrome.downloads.download({
+                let downloadOptions = {
                     url: audiourl,
                     filename: filename
-                });
+                };
+                if (isFirefox() && incognito) {
+                    downloadOptions.incognito = true;
+                }
+                let downloadId = await chrome.downloads.download(downloadOptions);
             }
             chrome.action.setIcon?.({
                 path: 'Circle-icons-radio-blue-48.png'
