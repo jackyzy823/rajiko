@@ -13,7 +13,7 @@ export const RULEID = {
     RADIO_BASE: 20000,
 }
 
-export const IGNORELIST = ["accept-language", "accept", "cookie", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device", "x-radiko-partialkey"];
+export const IGNORELIST = ["accept-language", "accept", "referer", "x-radiko-user", "x-radiko-app-version", "x-radiko-app", "x-radiko-device", "x-radiko-partialkey"];
 
 export const TEMPLATE_RADIO_NAME = "TEMPLATE_RADIO_NAME"
 export const PLAYER_RULE_TEMPLATE = [
@@ -25,6 +25,9 @@ export const PLAYER_RULE_TEMPLATE = [
     `*://*.radiko-cf.com/*/playlist.m3u8?*&station_id=${TEMPLATE_RADIO_NAME}|`,
     `*://*.smartstream.ne.jp/${TEMPLATE_RADIO_NAME}/_definst_/simul-stream.stream/playlist.m3u8*`
 ]
+
+// for modify cookie in fetch
+export const COOKIE_INTERCEPT = "Cookie-Intercept";
 
 export const NHK_PERMISSION = {
     origins: [

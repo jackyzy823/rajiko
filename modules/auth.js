@@ -1,15 +1,21 @@
-import { APP_VERSION_MAP, APP_KEY_MAP } from "./static.js";
+import { APP_VERSION_MAP, APP_KEY_MAP, COOKIE_INTERCEPT } from "./static.js";
 import { radioAreaId } from "./constants.js"
-import { genRandomInfo, genGPS } from "./util.js"
+import { genRandomInfo, genGPS, isFirefox, cookieString } from "./util.js"
 
 /**
  * The max lifetime of a token is 90 mins. and Radiko web will refresh it after 70mins (42e5).
  *
  * Auth token generated with premium radiko_session cookie can access the tf30 resource.
  */
-export async function retrieve_token(radioname, default_area_id) {
+export async function retrieve_token(radioname, default_area_id, firefox_quirks) {
     let availableArea = radioAreaId[radioname].area;
     let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
+    let { incognito: incognito, cookieStoreId: cookieStoreId } = firefox_quirks;
+    if (isFirefox() && incognito) {
+        let cookies = await chrome.cookies.getAll({ storeId: cookieStoreId, domain: "radiko.jp" });
+        // scope hoisting
+        var firefoxIncognitoCookie = cookieString(cookies);
+    }
 
     let hadTokenArea = availableArea.filter((area) => {
         return !!authTokens[area] && ((Date.now() - authTokens[area].requestTime) < 42e5);
@@ -34,30 +40,39 @@ export async function retrieve_token(radioname, default_area_id) {
 
         let info = genRandomInfo();
         let rapp = APP_VERSION_MAP[info.appversion];
-        let auth1 = await fetch("https://radiko.jp/v2/api/auth1", {
-            headers: {
-                'X-Radiko-App': rapp,
-                'X-Radiko-App-Version': info.appversion,
-                'X-Radiko-Device': info.device,
-                'X-Radiko-User': info.userid,
-            },
-        });
+        let auth1Headers = {
+            'X-Radiko-App': rapp,
+            'X-Radiko-App-Version': info.appversion,
+            'X-Radiko-Device': info.device,
+            'X-Radiko-User': info.userid,
+        };
+
+        if (firefoxIncognitoCookie) {
+            auth1Headers[COOKIE_INTERCEPT] = firefoxIncognitoCookie;
+        }
+
+        let auth1 = await fetch("https://radiko.jp/v2/api/auth1", { headers : auth1Headers });
 
         let token = auth1.headers.get('x-radiko-authtoken')
         let offset = parseInt(auth1.headers.get('x-radiko-keyoffset'));
         let length = parseInt(auth1.headers.get('x-radiko-keylength'));
         let partial = btoa(atob(APP_KEY_MAP[rapp]).slice(offset, offset + length));
-        let auth2 = await fetch('https://radiko.jp/v2/api/auth2', {
-            headers: {
-                'X-Radiko-App': rapp,
-                'X-Radiko-App-Version': info.appversion,
-                'X-Radiko-Device': info.device,
-                'X-Radiko-User': info.userid,
-                'X-Radiko-AuthToken': token,
-                'X-Radiko-Partialkey': partial,
-                'X-Radiko-Location': genGPS(pickArea),
-            },
-        })
+
+        let auth2Headers = {
+            'X-Radiko-App': rapp,
+            'X-Radiko-App-Version': info.appversion,
+            'X-Radiko-Device': info.device,
+            'X-Radiko-User': info.userid,
+            'X-Radiko-AuthToken': token,
+            'X-Radiko-Partialkey': partial,
+            'X-Radiko-Location': genGPS(pickArea),
+        };
+
+        if (firefoxIncognitoCookie) {
+            auth2Headers[COOKIE_INTERCEPT] = firefoxIncognitoCookie;
+        }
+
+        let auth2 = await fetch('https://radiko.jp/v2/api/auth2', { headers: auth2Headers });
         if (auth2.status == 200) {
             authTokens[pickArea] = { token: token, requestTime: Date.now() };
             await chrome.storage.session.set({ "auth_tokens": authTokens });

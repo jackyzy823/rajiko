@@ -209,3 +209,10 @@ export async function revokeBlobUrl(blob) {
         URL.revokeObjectURL(blob);
     }
 }
+
+export function cookieString(cookies) {
+    return cookies.reduce((base, val, idx, arr) => {
+        // the last one don't have ';'
+        return base + val.name + '=' + val.value + ( idx < arr.length -1 ? '; '  : '' );
+    }, '');
+}

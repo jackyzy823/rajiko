@@ -31,8 +31,5 @@
     },
     "timeshift_button": {
         "message": "下载タイムシフト"
-    },
-    "firefox_tf30_incognito": {
-        "message": "由于Firefox的限制，您需要在普通模式下也登录 Radiko 会员才能在隐私模式下下载 timeshift30。"
     }
 }

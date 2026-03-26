@@ -202,10 +202,6 @@ export function updateAreaRules(area_id, info) {
                                 operation: "remove"
                             },
                             {
-                                header: "Cookie",
-                                operation: "remove"
-                            },
-                            {
                                 header: "Referer",
                                 operation: "remove"
                             },

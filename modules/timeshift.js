@@ -118,15 +118,16 @@ function seek(dt, l) {
  *
  *  Some program at girigiri 7 days , https://radiko.jp/v2/api/ts/playlist.m3u8 still work, but new api not work?
  */
-export async function downloadtimeShift(link, default_area_id, tf30, incognito) {
+export async function downloadtimeShift(link, default_area_id, tf30, firefox_quirks) {
     let searchParams = (new URL(link)).searchParams;
     let radioname = searchParams.get("station_id");
     let from = searchParams.get("ft");
     let to = searchParams.get("to");
+    let { incognito: incognito, cookieStoreId: cookieStoreId } = firefox_quirks;
 
     let filename = radioname + '_' + from + '_' + to + '.aac';
     console.log(`timeshift file ${filename}`);
-    let [token, area_id] = await retrieve_token(radioname, default_area_id);
+    let [token, area_id] = await retrieve_token(radioname, default_area_id, firefox_quirks);
 
     let links = [];
 
@@ -170,6 +171,8 @@ export async function downloadtimeShift(link, default_area_id, tf30, incognito) 
     ) {
         param.set("seek", seek_str);
 
+        // No need to set cookie: radiko_session here
+        // since authtoken is authenciated with cookie already.
         let response = await fetch(url.toString(), {
             headers: {
                 'X-Radiko-AreaId': area_id,

@@ -105,7 +105,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             target: { tabId: tab.id },
             func: () => {
                 let result = {
-                    hasTimeFreePlusAuthority: $.Radiko.login_status.timefreeplus,
                     tmpUrl: document.getElementById('tmpUrl') && document.getElementById('tmpUrl').value,
                     url: document.getElementById('url') && document.getElementById('url').value
                 }
@@ -129,7 +128,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             let url = result && result.url || ''; // #RADIO or http://m3u8list
             let tmpUrl = result && result.tmpUrl || '';  // #RADIO or http://m3u8list
             let needsTimeFreePlusAuthority = result && result.needsTimeFreePlusAuthority || false;
-            let hasTimeFreePlusAuthority = result && result.hasTimeFreePlusAuthority || false;
 
             // only show live recoding when current no work.
             if (!current_recording) {
@@ -138,7 +136,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     record_button.hidden = false;
                     record_button.innerText = chrome.i18n.getMessage("record_button_to_start", radioAreaId[url.slice(1)].name);
                     record_button.onclick = async function (data) {
-                        await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id, "incognito": chrome.extension.inIncognitoContext });
+                        await chrome.runtime.sendMessage({ "start-recording": url.slice(1), "tabId": tab.id, "firefox_quirks": { "incognito": chrome.extension.inIncognitoContext, "cookieStoreId": tab.cookieStoreId } });
                         window.close();
                     }
                 } else if (tmpUrl[0] == '#' && /\/live\//.test(href)) {
@@ -147,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     record_button.hidden = false;
                     record_button.innerText = chrome.i18n.getMessage("record_button_to_prepare", radioAreaId[tmpUrl.slice(1)].name);
                     record_button.onclick = async function (data) {
-                        await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id, "incognito": chrome.extension.inIncognitoContext });
+                        await chrome.runtime.sendMessage({ "start-recording": tmpUrl.slice(1), "tabId": tab.id, "firefox_quirks": { "incognito": chrome.extension.inIncognitoContext, "cookieStoreId": tab.cookieStoreId } });
                         window.close();
                     }
                 }
@@ -159,14 +157,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                     download_button.hidden = false;
                     download_button.innerText = chrome.i18n.getMessage("timeshift_button");
                     download_button.onclick = async function () {
-                        await chrome.runtime.sendMessage({ "download-timeshift": { link: stripedLink, tf30: needsTimeFreePlusAuthority }, "incognito": chrome.extension.inIncognitoContext });
+                        await chrome.runtime.sendMessage({ "download-timeshift": { link: stripedLink, tf30: needsTimeFreePlusAuthority }, "firefox_quirks": { "incognito": chrome.extension.inIncognitoContext, "cookieStoreId": tab.cookieStoreId } });
                         window.close();
-                    }
-
-                    if (isFirefox() && chrome.extension.inIncognitoContext && hasTimeFreePlusAuthority && needsTimeFreePlusAuthority) {
-                        let hint = document.getElementById("firefox-tf30-incognito");
-                        hint.textContent = chrome.i18n.getMessage("firefox_tf30_incognito");
-                        hint.hidden = false;
                     }
                 }
             }
