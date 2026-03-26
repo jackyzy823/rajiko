@@ -1,15 +1,13 @@
 import { areaList } from "./constants.js"
-import { coordinates, VERSION_MAP, MODEL_LIST, APP_VERSION_MAP } from "./static.js"
+import { coordinates, VERSION_MAP, MODEL_LIST, APP_VERSION_MAP, USER_AGENT } from "./static.js"
 
 export function genRandomInfo() {
     let version = Object.keys(VERSION_MAP)[(Math.floor(Math.random() * Object.keys(VERSION_MAP).length)) >> 0];
     let sdk = VERSION_MAP[version].sdk;
-    let build = VERSION_MAP[version].builds[(Math.floor(Math.random() * VERSION_MAP[version].builds.length)) >> 0];
     //Dalvik/2.1.0 (Linux; U; Android %VERSION%; %MODEL%/%BUILD%)
     //X-Radiko-Device: %SDKVERSION%.%NORMALIZEMODEL%
     let model = MODEL_LIST[(Math.floor(Math.random() * MODEL_LIST.length)) >> 0];
     let device = sdk + "." + model;
-    let useragent = "Dalvik/2.1.0 (Linux; U; Android " + version + "; " + model + "/" + build + ")";
 
     let appversion = Object.keys(APP_VERSION_MAP)[(Math.floor(Math.random() * Object.keys(APP_VERSION_MAP).length)) >> 0];
 
@@ -25,7 +23,7 @@ export function genRandomInfo() {
     return {
         appversion: appversion,
         userid: userid,
-        useragent: useragent,
+        useragent: USER_AGENT,
         device: device
     }
 }

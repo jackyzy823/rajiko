@@ -120,12 +120,14 @@ export const VERSION_MAP = {
     "13.0.0": { sdk: "33", builds: ["TQ3C.230805.001.B2", "TQ3A.230805.001.A2", "TQ3A.230705.001.A1", "TQ2B.230505.005.A1", "TQ2A.230505.002", "TQ2A.230405.003.E1"] },
     "14.0.0": { sdk: "34", builds: ["AP2A.240805.005.S4", "AD1A.240905.004", "AP2A.240905.003", "AD1A.240530.047", "AD1A.240530.030", "AP2A.240805.005"] },
     "15.0.0": { sdk: "35", builds: ["AP4A.250105.002.B1", "AP4A.250105.002.A1", "AP4A.241205.013", "AP3A.241005.015"] },
+    "16.0.0": { sdk: "36", builds: ["BP2A.250605.031.A2", "BP2A.250605.031.A3", "BP3A.250905.014", "BP4A.251205.006"] },
 };
 
 
 
 // Accroding to https://github.com/garret1317/yt-dlp-rajiko/commit/a456d358c8b66c5fcd399433f2b67989bccabf38#diff-41d5c0f9d7d0ab88dd3cbdcb6c6d12b57b5d2a4d7c732d1eda3ee66749197cadL88
 // Radiko v8+ use hardcoded useragent.
+// so model_list and version map only used in x-radiko-device
 export const MODEL_LIST = ["SC-02H", "SCV33", "SM-G935F", "SM-G935X", "SM-G935W8", "SM-G935K", "SM-G935L", "SM-G935S", "SAMSUNG-SM-G935A", "SM-G935VC", "SM-G9350", "SM-G935P", "SM-G935T", "SM-G935U", "SM-G935R4", "SM-G935V", "SC-02J", "SCV36", "SM-G950F", "SM-G950N", "SM-G950W", "SM-G9500", "SM-G9508", "SM-G950U", "SM-G950U1", "SM-G892A", "SM-G892U", "SC-03J", "SCV35", "SM-G955F", "SM-G955N", "SM-G955W", "SM-G9550", "SM-G955U", "SM-G955U1", "SM-G960F", "SM-G960N", "SM-G9600", "SM-G9608", "SM-G960W", "SM-G960U", "SM-G960U1", "SM-G965F", "SM-G965N", "SM-G9650", "SM-G965W", "SM-G965U", "SM-G965U1"
     //Samsung galaxy s7+
     , "SC-01J", "SCV34", "SM-N930F", "SM-N930X", "SM-N930K", "SM-N930L", "SM-N930S", "SM-N930R7", "SAMSUNG-SM-N930A", "SM-N930W8", "SM-N9300", "SGH-N037", "SM-N930R6", "SM-N930P", "SM-N930VL", "SM-N930T", "SM-N930U", "SM-N930R4", "SM-N930V", "SC-01K", "SCV37", "SM-N950F", "SM-N950N", "SM-N950XN", "SM-N950U", "SM-N9500", "SM-N9508", "SM-N950W", "SM-N950U1"
@@ -136,11 +138,14 @@ export const MODEL_LIST = ["SC-02H", "SCV33", "SM-G935F", "SM-G935X", "SM-G935W8
     //sony xperia z series
     , "605SH", "SH-03J", "SHV39", "701SH", "SH-M06"
     //sharp
-    , "101F", "201F", "202F", "301F", "IS12F", "F-03D", "F-03E", "M01", "M305", "M357", "M555", "M555", "F-11D", "F-06E", "EM01F", "F-05E", "FJT21", "F-01D", "FAR70B", "FAR7", "F-04E", "F-02E", "F-10D", "F-05D", "FJL22", "ISW11F", "ISW13F", "FJL21", "F-074", "F-07D"
+    , "F-51A", "101F", "201F", "202F", "301F", "IS12F", "F-03D", "F-03E", "M01", "M305", "M357", "M555", "M555", "F-11D", "F-06E", "EM01F", "F-05E", "FJT21", "F-01D", "FAR70B", "FAR7", "F-04E", "F-02E", "F-10D", "F-05D", "FJL22", "ISW11F", "ISW13F", "FJL21", "F-074", "F-07D"
     //fujitu arrows
-    , "G9FPL", "GWKK3", "GHL1X", "G0DZQ", "G82U8", "GP4BC", "GE2AE", "GVU6C", "GQML3", "GX7AS", "GB62Z", "G1AZG", "GLUOG", "G8VOU", "GB7N6", "G9S9B16", "G1F8F", "G4S1M", "GD1YQ", "GTT9Q"
+    , "GV0BP", "GM66V", "GYPW4", "GN4F5", "GL066", "G3Y12", "GC15S", "GQ57S", "GWVK6", "G1B60", "G576D", "GE9DP", "GZPFO", "GOB96", "G9FPL", "GWKK3", "GHL1X", "G0DZQ", "G82U8", "GP4BC", "GE2AE", "GVU6C", "GQML3", "GX7AS", "GB62Z", "G1AZG", "GLUOG", "G8VOU", "GB7N6", "G9S9B16", "G1F8F", "G4S1M", "GD1YQ", "GTT9Q"
     // pixel
 ];
+
+// from lib/arm64-v8a/libapp.so
+export const USER_AGENT = "Mozilla/5.0 (Linux; Android 10; Pixel 4 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.87 Mobile Safari/537.36";
 
 
 // Farewell aSmartPhone7a and aSmartPhone7o
@@ -156,6 +161,26 @@ export const APP_KEY_MAP = {
 
 // Min version should follow  https://radiko.jp/res/app/update/config.json from https://radiko.jp/res/app/config/aSmartPhone7a.xml
 export const APP_VERSION_MAP = {
+    "8.4.1": "aSmartPhone8",
+    "8.3.12": "aSmartPhone8",
+    "8.3.11": "aSmartPhone8",
+    "8.3.10": "aSmartPhone8",
+    "8.3.9": "aSmartPhone8",
+    "8.3.8": "aSmartPhone8",
+    "8.3.7": "aSmartPhone8",
+    "8.3.6": "aSmartPhone8",
+    "8.3.5": "aSmartPhone8",
+    "8.3.4": "aSmartPhone8",
+    "8.3.3": "aSmartPhone8",
+    "8.3.2": "aSmartPhone8",
+    "8.3.1": "aSmartPhone8",
+    "8.3.0": "aSmartPhone8",
+    "8.2.10": "aSmartPhone8",
+    "8.2.9": "aSmartPhone8",
+    "8.2.8": "aSmartPhone8",
+    "8.2.7": "aSmartPhone8",
+    "8.2.6": "aSmartPhone8",
+    "8.2.5": "aSmartPhone8",
     "8.2.4": "aSmartPhone8",
     "8.2.2": "aSmartPhone8",
     "8.2.1": "aSmartPhone8",
