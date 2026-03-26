@@ -13,7 +13,7 @@ function timestamp2Filename(t) {
         }).format(new Date(t)).replaceAll("/", "").replaceAll(":", "").replaceAll(" ", "");
 }
 
-export function stream_listener_builder(radioname, incognito) {
+export function stream_listener_builder(radioname, firefox_quirks) {
     // Mostly for preparing recording.
     // https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension/
     // Chrome blog: The service worker terminates after 30 seconds of inactivity. (Receiving an event or calling an extension API resets this timer).
@@ -93,7 +93,7 @@ export function stream_listener_builder(radioname, incognito) {
                     url: audiourl,
                     filename: filename
                 };
-                if (isFirefox() && incognito) {
+                if (isFirefox() && firefox_quirks["incognito"]) {
                     downloadOptions.incognito = true;
                 }
                 let downloadId = await chrome.downloads.download(downloadOptions);

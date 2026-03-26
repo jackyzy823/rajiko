@@ -31,8 +31,5 @@
     },
     "timeshift_button": {
         "message": "Download Timeshift"
-    },
-    "firefox_tf30_incognito": {
-        "message": "Due to the limitation of Firefox, you need to login Radiko member in normal mode as well to download timefree30 program under private mode."
     }
 }

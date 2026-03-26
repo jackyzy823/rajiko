@@ -31,8 +31,5 @@
     },
     "timeshift_button": {
         "message": "タイムシフト ダウンロード"
-    },
-    "firefox_tf30_incognito": {
-        "message": "Firefox の制限により、プライベート モードでタイムフリー30をダウンロードするには、通常モードでもRadikoメンバーにログインする必要があります。"
     }
 }
