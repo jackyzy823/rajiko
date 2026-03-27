@@ -278,22 +278,15 @@ chrome.webRequest.onHeadersReceived.addListener(
 async function initialize() {
   let {
     selected_areaid: area_id,
-    bonus_feature: bonus,
     recochoku_ua: recochoku_ua,
     nhkradio_bypass: nhkradio_bypass,
     tver_fix: tver_fix
-  } = await chrome.storage.local.get(["selected_areaid", "bonus_feature", "recochoku_ua", "nhkradio_bypass", "tver_fix"]);
+  } = await chrome.storage.local.get(["selected_areaid", "recochoku_ua", "nhkradio_bypass", "tver_fix"]);
   //if not selected_areaid use default value:JP13
   if (!area_id) { area_id = "JP13"; }
   if (!recochoku_ua) { recochoku_ua = false; }
   if (!nhkradio_bypass) { nhkradio_bypass = false; }
   if (!tver_fix) { tver_fix = false; }
-  // TODO: remove after several (like 5?) releases.
-  if (!bonus) { bonus = false; } else {
-    // Migration old bonus_feature key to tver_fix and nhkradio_bypass
-    tver_fix = true;
-    nhkradio_bypass = true;
-  }
 
   //clean previous unfinshed recording or downloading content if exists.
   await chrome.storage.local.clear();
