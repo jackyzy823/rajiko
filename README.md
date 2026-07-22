@@ -50,6 +50,15 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2026.4 - **kotonoha**
+
+    Since auth endpoint changing from https://radiko.jp/v2/api/auth* to https://api.radiko.jp/v2/api/auth*, now there's a preflight OPTION request due to CORS.
+    In Firefox, skip webRequest listener for XHR OPTIONS request/response.
+    In Chrome, update matching url for rules.
+    Question, however without cookie (since cors), how to check timefree30plus feature?
+
+    Update radio map
+
 + version 3.2026.3 - **heavenly blue**
 
     Correctly display download history in Firefox Incognito mode.

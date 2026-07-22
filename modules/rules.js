@@ -250,7 +250,7 @@ export function updateAreaRules(area_id, info) {
                     condition: {
                         // Exclude the req from extension
                         excludedInitiatorDomains: [chrome.runtime.id],
-                        urlFilter: "*://radiko.jp/v2/api/auth1*"
+                        urlFilter: "*://*.radiko.jp/v2/api/auth1*"
                     }
                 },
                 {
@@ -259,7 +259,7 @@ export function updateAreaRules(area_id, info) {
                     condition: {
                         // Exclude the req from extension
                         excludedInitiatorDomains: [chrome.runtime.id],
-                        urlFilter: "*://radiko.jp/v2/api/auth2*"
+                        urlFilter: "*://*.radiko.jp/v2/api/auth2*"
                     }
                 },
                 {
@@ -286,7 +286,7 @@ export function updateAreaRules(area_id, info) {
                     condition: {
                         // Only for extension's Fetch to remove unnecessary headers.
                         initiatorDomains: [chrome.runtime.id],
-                        urlFilter: "*://radiko.jp/v2/api/auth*"
+                        urlFilter: "*://*.radiko.jp/v2/api/auth*"
                     }
                 }],
             removeRuleIds: [RULEID.APPAREA, RULEID.AREA, RULEID.AUTH1, RULEID.AUTH2, RULEID.AUTH_FETCH]

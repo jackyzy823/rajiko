@@ -34,7 +34,7 @@ export async function retrieve_token(radioname, default_area_id) {
 
         let info = genRandomInfo();
         let rapp = APP_VERSION_MAP[info.appversion];
-        let auth1 = await fetch("https://radiko.jp/v2/api/auth1", {
+        let auth1 = await fetch("https://api.radiko.jp/v2/api/auth1", {
             headers: {
                 'X-Radiko-App': rapp,
                 'X-Radiko-App-Version': info.appversion,
@@ -47,7 +47,7 @@ export async function retrieve_token(radioname, default_area_id) {
         let offset = parseInt(auth1.headers.get('x-radiko-keyoffset'));
         let length = parseInt(auth1.headers.get('x-radiko-keylength'));
         let partial = btoa(atob(APP_KEY_MAP[rapp]).slice(offset, offset + length));
-        let auth2 = await fetch('https://radiko.jp/v2/api/auth2', {
+        let auth2 = await fetch('https://api.radiko.jp/v2/api/auth2', {
             headers: {
                 'X-Radiko-App': rapp,
                 'X-Radiko-App-Version': info.appversion,

@@ -173,6 +173,7 @@ chrome.webRequest.onBeforeRequest.addListener(
 chrome.webRequest.onHeadersReceived.addListener(
   async resp => {
     if (initiatorFromExtension(resp)) { return; }
+    if (resp.method == "OPTIONS") { return; }
 
     let token = "";
     let offset = 0;
@@ -195,7 +196,7 @@ chrome.webRequest.onHeadersReceived.addListener(
     }
 
     if (set != 0b111) {
-      console.error("no enough info from auth2 response.");
+      console.warn("no enough info from auth2 response.");
       return;
     }
 
@@ -209,7 +210,7 @@ chrome.webRequest.onHeadersReceived.addListener(
       info = genRandomInfo();
       await chrome.storage.local.set({ "device_info": info });
       console.error("no device_info in local storage");
-      // return
+      return;
     }
 
     let { selected_areaid: area_id } = await chrome.storage.local.get("selected_areaid");
@@ -228,7 +229,7 @@ chrome.webRequest.onHeadersReceived.addListener(
     // https://bugzilla.mozilla.org/show_bug.cgi?id=1380812
     // https://bugzilla.mozilla.org/show_bug.cgi?id=1670278
     // ** So firefox user should be warned **
-    let resp2 = await fetch('https://radiko.jp/v2/api/auth2', {
+    let resp2 = await fetch('https://api.radiko.jp/v2/api/auth2', {
       headers: {
         'X-Radiko-App': APP_VERSION_MAP[info.appversion],
         'X-Radiko-App-Version': info.appversion,
@@ -329,6 +330,7 @@ if (isFirefox()) {
       // like RULEID.AUTH_FETCH 
       return;
     }
+    if (req.method == "OPTIONS") { return;}
     let { device_info: info } = await chrome.storage.local.get("device_info");
     if (!info) {
       // This should not happen and is not recoverable
@@ -375,6 +377,7 @@ if (isFirefox()) {
   // Fix response header in auth1
   chrome.webRequest.onHeadersReceived.addListener(async resp => {
     if (initiatorFromExtension(resp)) { return; }
+    if (resp.method == "OPTIONS") { return;}
     for (let i = 0; i < resp.responseHeaders.length; i++) {
       if (resp.responseHeaders[i].name.toLowerCase() == "x-radiko-keyoffset") {
         resp.responseHeaders[i].value = "0"; //to avoid too big offset cause radiko's js error
@@ -414,6 +417,7 @@ if (isFirefox()) {
       // like RULEID.AUTH_FETCH 
       return;
     }
+    if (req.method == "OPTIONS") { return;}
     let filter = browser.webRequest.filterResponseData(req.requestId);
 
     filter.onstop = async event => {
@@ -426,12 +430,13 @@ if (isFirefox()) {
 
     return {};
   }, {
-    urls: ["*://radiko.jp/v2/api/auth2*"]
+    urls: ["*://*.radiko.jp/v2/api/auth2*"]
   }, ["blocking"]);
 
   // THE correct way to set authtoken to m3u8
   chrome.webRequest.onBeforeSendHeaders.addListener(async req => {
     if (initiatorFromExtension(req)) { return; }
+    if (req.method == "OPTIONS") { return;}
     let radioname = (new URL(req.url)).searchParams.get("station_id");
     let { selected_areaid: selected_areaid } = await chrome.storage.local.get("selected_areaid");
     if (radioAreaId[radioname].area.includes(selected_areaid)) {
