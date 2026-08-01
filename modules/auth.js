@@ -9,12 +9,13 @@ import { genRandomInfo, genGPS, isFirefox, checkRadikoSessionAndInvalidateAuthTo
  */
 export async function retrieve_token(radioname, default_area_id, session_info) {
     let availableArea = radioAreaId[radioname].area;
-    let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
     let { incognito: incognito, cookieStoreId: cookieStoreId } = session_info;
+    let auth_tokens_key = incognito ? "auth_tokens:incognito" : "auth_tokens";
+    let { [auth_tokens_key]: authTokens } = await chrome.storage.session.get({ [auth_tokens_key]: {} });
 
     let session = await chrome.cookies.get({ name: "radiko_session", storeId: cookieStoreId, url: "https://radiko.jp" });
     if (session) {
-        await checkRadikoSessionAndInvalidateAuthTokens(session.value);
+        await checkRadikoSessionAndInvalidateAuthTokens(session.value, incognito);
     }
 
     let hadTokenArea = availableArea.filter((area) => {
@@ -71,7 +72,7 @@ export async function retrieve_token(radioname, default_area_id, session_info) {
         let auth2 = await fetch('https://api.radiko.jp/v2/api/auth2', { headers: auth2Headers });
         if (auth2.status == 200) {
             authTokens[pickArea] = { token: token, requestTime: Date.now() };
-            await chrome.storage.session.set({ "auth_tokens": authTokens });
+            await chrome.storage.session.set({ [auth_tokens_key]: authTokens });
             return [token, pickArea];
         } else {
             throw new Error("Retrieve token failed");

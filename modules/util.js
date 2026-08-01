@@ -209,11 +209,15 @@ export async function revokeBlobUrl(blob) {
 }
 
 // when login , radiko_session will changed, and if tf30, previous authtoken won't be useful
-export async function checkRadikoSessionAndInvalidateAuthTokens(radiko_session){
-    let previous = await chrome.storage.session.get("radiko_session");
+// or we listen on https://radiko.jp/ap/member/webapi/v2/member/login/check ? and
+// https://radiko.jp/ap/member/webapi/v2/member/login 's set-cookie
+export async function checkRadikoSessionAndInvalidateAuthTokens(radiko_session, incognito){
+    let auth_tokens_key = incognito ? "auth_tokens:incognito" : "auth_tokens";
+    let radiko_session_key = incognito ? "radiko_session:incognito" : "radiko_session";
+    let { [radiko_session_key]: previous } = await chrome.storage.session.get(radiko_session_key);
     if(previous === radiko_session) {
         return
     }
-    await chrome.storage.session.remove("auth_tokens");
-    await chrome.storage.session.set({"radiko_session":radiko_session});
+    await chrome.storage.session.remove(auth_tokens_key);
+    await chrome.storage.session.set({ [radiko_session_key] : radiko_session });
 }

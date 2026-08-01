@@ -102,7 +102,9 @@ if (!isFirefox()) {
         return;
       }
 
-      let session_info = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
+      // only firefox supports req.incognito so under chrome, we check inIncognitoContext
+      // only firefox supports req.cookieStoreId, however undefined in chrome do no harm.
+      let session_info = { "incognito": req.incognito || chrome.extension.inIncognitoContext , "cookieStoreId": req.cookieStoreId };
       let [token, area_id] = await retrieve_token(radioname, selected_areaid, session_info);
       // We update rules in `"*://*.radiko.jp/v3/station/stream/pc_html5/*"` listener.
     },
@@ -156,7 +158,7 @@ chrome.webRequest.onBeforeRequest.addListener(
       return;
     }
     // Too LATE
-    let session_info = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
+    let session_info = { "incognito": req.incognito || chrome.extension.inIncognitoContext, "cookieStoreId": req.cookieStoreId };
     let [token, area_id] = await retrieve_token(radioname, selected_areaid, session_info);
     if (!isFirefox()) {
       updateRadioRules(radioname, area_id, token);
@@ -245,19 +247,21 @@ chrome.webRequest.onHeadersReceived.addListener(
 
     // from tf30 , it requires setting x-radiko-session  to cookie: radiko_session for identiting user
     // because subdomain api.radiko.jp can't include cookie radiko_session for radiko.jp
+    // It is lucky for us, since it's hard to manipulate cookie than header
     let session = await chrome.cookies.get({ name: "radiko_session", storeId: resp.cookieStoreId, url: "https://radiko.jp" });
     if (session) {
       headers["X-Radiko-Session"] = session.value;
-      await checkRadikoSessionAndInvalidateAuthTokens(session.value);
+      await checkRadikoSessionAndInvalidateAuthTokens(session.value, resp.incognito || chrome.extension.inIncognitoContext);
     }
 
     let resp2 = await fetch('https://api.radiko.jp/v2/api/auth2', { headers: headers });
 
     // <del>Don't</del> save the token from default_area_id <del>to avoid race condition.</del>
     if (resp2.status == 200) {
-      let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
+      let auth_tokens_key = resp.incognito || chrome.extension.inIncognitoContext ? "auth_tokens:incognito" : "auth_tokens";
+      let { [auth_tokens_key]: authTokens } = await chrome.storage.session.get({ [auth_tokens_key]: {} });
       authTokens[area_id] = { token: token, requestTime: Date.now() };
-      await chrome.storage.session.set({ "auth_tokens": authTokens });
+      await chrome.storage.session.set({ [auth_tokens_key]: authTokens });
     }
   },
   {
@@ -446,7 +450,7 @@ if (isFirefox()) {
     }
 
     // Good timing! Firefox!
-    let session_info = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
+    let session_info = { "incognito": req.incognito || chrome.extension.inIncognitoContext, "cookieStoreId": req.cookieStoreId };
     let [token, area_id] = await retrieve_token(radioname, selected_areaid, session_info);
 
     req.requestHeaders = req.requestHeaders.filter(function (x) {
