@@ -208,9 +208,12 @@ export async function revokeBlobUrl(blob) {
     }
 }
 
-export function cookieString(cookies) {
-    return cookies.reduce((base, val, idx, arr) => {
-        // the last one don't have ';'
-        return base + val.name + '=' + val.value + ( idx < arr.length -1 ? '; '  : '' );
-    }, '');
+// when login , radiko_session will changed, and if tf30, previous authtoken won't be useful
+export async function checkRadikoSessionAndInvalidateAuthTokens(radiko_session){
+    let previous = await chrome.storage.session.get("radiko_session");
+    if(previous === radiko_session) {
+        return
+    }
+    await chrome.storage.session.remove("auth_tokens");
+    await chrome.storage.session.set({"radiko_session":radiko_session});
 }

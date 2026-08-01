@@ -1,20 +1,20 @@
-import { APP_VERSION_MAP, APP_KEY_MAP, COOKIE_INTERCEPT } from "./static.js";
+import { APP_VERSION_MAP, APP_KEY_MAP } from "./static.js";
 import { radioAreaId } from "./constants.js"
-import { genRandomInfo, genGPS, isFirefox, cookieString } from "./util.js"
+import { genRandomInfo, genGPS, isFirefox, checkRadikoSessionAndInvalidateAuthTokens } from "./util.js"
 
 /**
  * The max lifetime of a token is 90 mins. and Radiko web will refresh it after 70mins (42e5).
  *
  * Auth token generated with premium radiko_session cookie can access the tf30 resource.
  */
-export async function retrieve_token(radioname, default_area_id, firefox_quirks) {
+export async function retrieve_token(radioname, default_area_id, session_info) {
     let availableArea = radioAreaId[radioname].area;
     let { auth_tokens: authTokens } = await chrome.storage.session.get({ "auth_tokens": {} });
-    let { incognito: incognito, cookieStoreId: cookieStoreId } = firefox_quirks;
-    if (isFirefox() && incognito) {
-        let cookies = await chrome.cookies.getAll({ storeId: cookieStoreId, domain: "radiko.jp" });
-        // scope hoisting
-        var firefoxIncognitoCookie = cookieString(cookies);
+    let { incognito: incognito, cookieStoreId: cookieStoreId } = session_info;
+
+    let session = await chrome.cookies.get({ name: "radiko_session", storeId: cookieStoreId, url: "https://radiko.jp" });
+    if (session) {
+        await checkRadikoSessionAndInvalidateAuthTokens(session.value);
     }
 
     let hadTokenArea = availableArea.filter((area) => {
@@ -47,10 +47,6 @@ export async function retrieve_token(radioname, default_area_id, firefox_quirks)
             'X-Radiko-User': info.userid,
         };
 
-        if (firefoxIncognitoCookie) {
-            auth1Headers[COOKIE_INTERCEPT] = firefoxIncognitoCookie;
-        }
-
         let auth1 = await fetch("https://api.radiko.jp/v2/api/auth1", { headers : auth1Headers });
 
         let token = auth1.headers.get('x-radiko-authtoken')
@@ -68,8 +64,8 @@ export async function retrieve_token(radioname, default_area_id, firefox_quirks)
             'X-Radiko-Location': genGPS(pickArea),
         };
 
-        if (firefoxIncognitoCookie) {
-            auth2Headers[COOKIE_INTERCEPT] = firefoxIncognitoCookie;
+        if (session) {
+            auth2Headers["X-Radiko-Session"] = session.value;
         }
 
         let auth2 = await fetch('https://api.radiko.jp/v2/api/auth2', { headers: auth2Headers });

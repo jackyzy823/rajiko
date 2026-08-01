@@ -26,8 +26,6 @@ export const PLAYER_RULE_TEMPLATE = [
     `*://*.smartstream.ne.jp/${TEMPLATE_RADIO_NAME}/_definst_/simul-stream.stream/playlist.m3u8*`
 ]
 
-// for modify cookie in fetch
-export const COOKIE_INTERCEPT = "Cookie-Intercept";
 
 export const NHK_PERMISSION = {
     origins: [

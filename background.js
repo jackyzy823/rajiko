@@ -1,5 +1,5 @@
-import { APP_VERSION_MAP, APP_KEY_MAP, IGNORELIST, COOKIE_INTERCEPT } from "./modules/static.js";
-import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox, cookieString } from "./modules/util.js"
+import { APP_VERSION_MAP, APP_KEY_MAP, IGNORELIST } from "./modules/static.js";
+import { genRandomInfo, genGPS, initiatorFromExtension, isFirefox, checkRadikoSessionAndInvalidateAuthTokens } from "./modules/util.js"
 import { downloadtimeShift } from "./modules/timeshift.js"
 import { retrieve_token } from "./modules/auth.js"
 import { updateRadioRules, setUpNHKRadio, setUpTVer, updateAreaRules, setUpMobileRadiko, setUpRecochokuUserAgent } from "./modules/rules.js";
@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
 
     chrome.action.setBadgeBackgroundColor?.({ color: "#e73c64" });
     chrome.action.setBadgeText?.({ text: list.length.toString() });
-    downloadtimeShift(link, area_id, tf30, msg["firefox_quirks"]);
+    downloadtimeShift(link, area_id, tf30, msg["session_info"]);
   } else if (msg["start-recording"]) {
     let radioname = msg["start-recording"];
     console.log(`Start recording ${radioname}`);
@@ -67,7 +67,7 @@ chrome.runtime.onMessage.addListener(async function (msg, sender, respCallback) 
     //TODO Firefox listen on what? onCompleted or onBeforeSendHeaders
     chrome.webRequest.onCompleted.addListener(
       // create a listener function
-      stream_listener_builder(radioname, msg["firefox_quirks"]),
+      stream_listener_builder(radioname, msg["session_info"]),
       {
         urls: [
           `*://*.smartstream.ne.jp/${radioname}/*.aac*`,
@@ -102,8 +102,8 @@ if (!isFirefox()) {
         return;
       }
 
-      let firefox_quirks = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
-      let [token, area_id] = await retrieve_token(radioname, selected_areaid, firefox_quirks);
+      let session_info = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
+      let [token, area_id] = await retrieve_token(radioname, selected_areaid, session_info);
       // We update rules in `"*://*.radiko.jp/v3/station/stream/pc_html5/*"` listener.
     },
     {
@@ -156,8 +156,8 @@ chrome.webRequest.onBeforeRequest.addListener(
       return;
     }
     // Too LATE
-    let firefox_quirks = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
-    let [token, area_id] = await retrieve_token(radioname, selected_areaid, firefox_quirks);
+    let session_info = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
+    let [token, area_id] = await retrieve_token(radioname, selected_areaid, session_info);
     if (!isFirefox()) {
       updateRadioRules(radioname, area_id, token);
     }
@@ -242,21 +242,13 @@ chrome.webRequest.onHeadersReceived.addListener(
       // modifying UA does not work here. so we use session rules RULEID.AUTH_FETCH.
       'User-Agent': info.useragent
     };
-    if (isFirefox() && resp.incognito) {
-        // workaround for incognito:spanning cookie issue for tf30
-        // we get incognito and cookieStoreId from popup injection and pass it to retrieve_token.
-        // Here we get them from resp details
-        // ref: https://github.com/qsniyg/maxurl/commit/1259467a58a5504dddc0c3aca147b3d1c46f8cad
-        // TODO only add radiko_session here and retrieve_token
-        // TODO and keep auth1 omit cookie (IGNORE_LIST, RULEID.AUTH1) again, but add radiko_session via intercept (hard to do for declarativeNetRequest)?
 
-        // Must specify domain, otherwise cookie from tver or etc (from host permission/ optional host permission) will be included.
-        let cookies = await chrome.cookies.getAll({ storeId: resp.cookieStoreId, domain: "radiko.jp" });
-        // fetch set 'cookie' directly has no effect, it is overrided by normal window one.
-        // xhr forbid to set cookie (see devtool warning)
-        // currently, we flag the request with COOKIE_INTERCEPT header and replace cookie with COOKIE_INTERCEPT's value within onBeforeSendHeaders
-        // so ugly.
-        headers[COOKIE_INTERCEPT] = cookieString(cookies);
+    // from tf30 , it requires setting x-radiko-session  to cookie: radiko_session for identiting user
+    // because subdomain api.radiko.jp can't include cookie radiko_session for radiko.jp
+    let session = await chrome.cookies.get({ name: "radiko_session", storeId: resp.cookieStoreId, url: "https://radiko.jp" });
+    if (session) {
+      headers["X-Radiko-Session"] = session.value;
+      await checkRadikoSessionAndInvalidateAuthTokens(session.value);
     }
 
     let resp2 = await fetch('https://api.radiko.jp/v2/api/auth2', { headers: headers });
@@ -333,37 +325,6 @@ chrome.runtime.onStartup.addListener(async () => {
  * 
  */
 if (isFirefox()) {
-  // Firefox quirks: modify cookie of auth1/2 if firefox and incognito
-  chrome.webRequest.onBeforeSendHeaders.addListener(async req => {
-    // only modify request from webextension
-    if (!initiatorFromExtension(req)) {
-      return;
-    }
-    // here req.incognito is not correct, we couldn't check inIncognitoContext here too.
-    // so the only thing we can do is to check the existence of COOKIE_INTERCEPT.
-
-    var firefoxIncognitoCookie = req.requestHeaders.find((x) => x.name.toLowerCase() == COOKIE_INTERCEPT.toLowerCase());
-
-    if (firefoxIncognitoCookie) {
-      //remove it
-      req.requestHeaders = req.requestHeaders.filter(function (x) {
-        return x.name.toLowerCase() != COOKIE_INTERCEPT.toLowerCase();
-      });
-      // replace cookie value
-      for (const header of req.requestHeaders) {
-        if (header.name.toLowerCase() === "Cookie".toLowerCase()) {
-          header.value = firefoxIncognitoCookie.value;
-        }
-      }
-    }
-
-    return {
-      requestHeaders: req.requestHeaders
-    };
-  }, {
-    urls: ["*://*.radiko.jp/v2/api/auth*"]
-  }, ["blocking", "requestHeaders"]);
-
   // Set request header in auth1
   chrome.webRequest.onBeforeSendHeaders.addListener(async req => {
     if (initiatorFromExtension(req)) {
@@ -485,8 +446,8 @@ if (isFirefox()) {
     }
 
     // Good timing! Firefox!
-    let firefox_quirks = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
-    let [token, area_id] = await retrieve_token(radioname, selected_areaid, firefox_quirks);
+    let session_info = { "incognito": req.incognito, "cookieStoreId": req.cookieStoreId };
+    let [token, area_id] = await retrieve_token(radioname, selected_areaid, session_info);
 
     req.requestHeaders = req.requestHeaders.filter(function (x) {
       return !["x-radiko-authtoken", "x-radiko-areaid"].includes(x.name.toLowerCase()); //remove previous token
