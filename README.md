@@ -50,6 +50,10 @@ Permission Details:
 
 What's new:
 ----------
++ version 3.2026.5 - **destination unknown**
+
+    Fix tf30 issue
+
 + version 3.2026.4 - **kotonoha**
 
     Since auth endpoint changing from https://radiko.jp/v2/api/auth* to https://api.radiko.jp/v2/api/auth*, now there's a preflight OPTION request due to CORS.
@@ -375,6 +379,9 @@ Technical Details:
 2. But how do you generate the partialkey/how do you get fullkey?
 
     By reversing android dynamic library,You can get the fullkey from .data segment  after bypassing the root check ,emulator check and lots of anti-debugging tricks and waiting for itself to repair the .data segment.
+
+3. How tf30 works
+    since 2026-07, radiko use https://api.radiko.jp subdomain to make auth1/auth2 requests, so it must use x-radiko-session to keep tracing user info instead of cookie (since cookie is for .radiko.jp domain not for subdomain). After auth pass, the auth token is valid for tf30 program.
 
 ABOUT AAC
 ------------
